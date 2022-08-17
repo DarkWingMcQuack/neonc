@@ -3,8 +3,9 @@ struct TextPosition{
 	row: u64
 }
 
-pub struct TextArea <'a>{
-	text: &'a str,
+pub(crate) struct TextArea <'a>{
+	filename: &'a str,
+	content: &'a str,
 	start: TextPosition,
 	end: TextPosition
 }
