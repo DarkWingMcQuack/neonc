@@ -1,8 +1,8 @@
 #pragma once
 
-#include "parser/Utils.hpp"
 #include <ast/Ast.hpp>
 #include <lexer/Lexer.hpp>
+#include <parser/Utils.hpp>
 #include <string_view>
 
 namespace parser {
@@ -44,9 +44,49 @@ public:
 
             lexer_.pop();
 
-			auto value = parse_int_unsafe(token.getValue());
+            auto value = parse_int_unsafe(token.getValue());
 
             return ast::Integer{token.getArea(), value};
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr auto self_type() noexcept
+        -> std::optional<ast::Self>
+    {
+        if(auto token_opt = lexer_.peek()) {
+            auto token = std::move(token_opt.value());
+
+            if(token.getType() != lexing::TokenTypes::SELF_TYPE) {
+                return std::nullopt;
+            }
+
+            lexer_.pop();
+
+            auto value = parse_int_unsafe(token.getValue());
+
+            return ast::Self{token.getArea()};
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr auto self_value() noexcept
+        -> std::optional<ast::Self>
+    {
+        if(auto token_opt = lexer_.peek()) {
+            auto token = std::move(token_opt.value());
+
+            if(token.getType() != lexing::TokenTypes::SELF_VALUE) {
+                return std::nullopt;
+            }
+
+            lexer_.pop();
+
+            auto value = parse_int_unsafe(token.getValue());
+
+            return ast::Self{token.getArea()};
         }
 
         return std::nullopt;
