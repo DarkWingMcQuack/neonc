@@ -9,6 +9,7 @@
 #include <lexer/Tokens.hpp>
 #include <optional>
 #include <queue>
+#include <string_view>
 #include <vector>
 
 namespace lexing {
