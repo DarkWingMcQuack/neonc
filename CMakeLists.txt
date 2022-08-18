@@ -86,6 +86,7 @@ target_sources(NeonLib
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/Ast.hpp
 
   ${CMAKE_CURRENT_LIST_DIR}/include/parser/Utils.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/parser/Parser.hpp
 )
 
 # add the dependencies of the target to enforce
