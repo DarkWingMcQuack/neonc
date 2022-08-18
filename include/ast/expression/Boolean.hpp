@@ -8,6 +8,7 @@ namespace ast {
 
 class Boolean : AreaBase
 {
+public:
     constexpr Boolean(lexing::TextArea area, bool value) noexcept
         : AreaBase{std::move(area)}, value_(value) {}
 
