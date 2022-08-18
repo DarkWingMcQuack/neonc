@@ -138,10 +138,10 @@ target_link_libraries(neonc PRIVATE
 add_dependencies(neonc NeonLib)
 
 
-# if (BUILD_TESTS)
-#   enable_testing()
-#   add_subdirectory(test)
-# endif (BUILD_TESTS)
+if (BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif (BUILD_TESTS)
 
 # if (BUILD_BENCHMARKS)
 #   add_subdirectory(benchmark)
