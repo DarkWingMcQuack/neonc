@@ -60,6 +60,14 @@ private:
                 auto value = moveForward(3);
                 return Token{TokenTypes::LET, start, value};
             }
+            if(true_re(content_)) {
+                auto value = moveForward(4);
+                return Token{TokenTypes::TRUE, start, value};
+            }
+            if(false_re(content_)) {
+                auto value = moveForward(5);
+                return Token{TokenTypes::FALSE, start, value};
+            }
             if(fun_re(content_)) {
                 auto value = moveForward(3);
                 return Token{TokenTypes::FUN, start, value};

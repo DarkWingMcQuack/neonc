@@ -52,6 +52,29 @@ public:
         return std::nullopt;
     }
 
+    constexpr auto boolean() noexcept
+        -> std::optional<ast::Boolean>
+    {
+        if(auto token_opt = lexer_.peek()) {
+            auto token = std::move(token_opt.value());
+
+            switch(token.getType()) {
+            case lexing::TokenTypes::TRUE:
+                lexer_.pop();
+                return ast::Boolean(token.getArea(), true);
+
+            case lexing::TokenTypes::FALSE:
+                lexer_.pop();
+                return ast::Boolean(token.getArea(), false);
+
+            default:
+                return std::nullopt;
+            }
+        }
+
+        return std::nullopt;
+    }
+
     constexpr auto self_type() noexcept
         -> std::optional<ast::Self>
     {

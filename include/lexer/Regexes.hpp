@@ -19,6 +19,8 @@ constexpr auto while_re = ctre::starts_with<"while[^a-zA-Z0-9_]">;
 constexpr auto for_re = ctre::starts_with<"for[^a-zA-Z0-9_]">;
 constexpr auto self_value_re = ctre::starts_with<"self[^a-zA-Z0-9_]">;
 constexpr auto self_type_re = ctre::starts_with<"Self[^a-zA-Z0-9_]">;
+constexpr auto true_re = ctre::starts_with<"true\\s">;
+constexpr auto false_re = ctre::starts_with<"false\\s">;
 
 // values
 constexpr auto integer_re = ctre::starts_with<"0|[1-9][0-9]*">;

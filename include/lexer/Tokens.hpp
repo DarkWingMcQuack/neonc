@@ -52,6 +52,8 @@ enum class TokenTypes : std::int64_t {
     EQ,
     NEQ,
     IDENTIFIER,
+    TRUE,
+    FALSE,
     END_OF_FILE
 };
 
@@ -144,6 +146,10 @@ constexpr auto get_description(TokenTypes token) -> std::string_view
         return "NEQ";
     case TokenTypes::IDENTIFIER:
         return "IDENTIFIER";
+    case TokenTypes::TRUE:
+        return "TRUE";
+    case TokenTypes::FALSE:
+        return "FALSE";
     case TokenTypes::END_OF_FILE:
         return "<EOF>";
     default:
