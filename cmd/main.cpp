@@ -4,7 +4,7 @@
 #include <fmt/core.h>
 #include <iostream>
 #include <lexer/Lexer.hpp>
-#include <parser/Utils.hpp>
+#include <parser/Parser.hpp>
 
 auto main(int argc, char *argv[]) -> int
 {
