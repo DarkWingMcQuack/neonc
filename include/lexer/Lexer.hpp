@@ -299,16 +299,17 @@ private:
     }
 
     // TODO: implement f-strings
-    // TODO: implement escape sequences
-    // FIXME: does currently not work
     constexpr auto lexStandardString() noexcept -> std::optional<Token>
     {
         // start at i = to skip first "
+        bool last_was_slash = false;
         std::size_t i = 1;
         for(; i < content_.length(); i++) {
-            if(content_[i] == '\"') {
+            if(content_[i] == '\"' and not last_was_slash) {
                 break;
             }
+
+            last_was_slash = content_[i] == '\\' and not last_was_slash;
         }
 
         // TODO: here there should be a 'missing closing "'-error be reported somehow
@@ -317,7 +318,7 @@ private:
         }
 
         const auto start = position_;
-        const auto value = moveForward(i+1);
+        const auto value = moveForward(i + 1);
 
         return Token{TokenTypes::STANDARD_STRING, start, value};
     }
