@@ -20,6 +20,8 @@ public:
     constexpr Lexer(std::string_view content) noexcept
         : content_(content) {}
 
+    // TODO: this should not return an std::optional, but an std::expected
+    // which makes it possible to return errormessages from the lexer, like "unkown token"
     constexpr auto peek() noexcept -> std::optional<Token>
     {
         if(!peek_.has_value()) {
