@@ -12,6 +12,7 @@ enum class TokenTypes : std::int64_t {
     LET = 0,
     FUN,
     INTEGER,
+    STANDARD_STRING,
     DOUBLE,
     TYPE,
     TYPECLASS,
@@ -70,6 +71,8 @@ constexpr auto get_description(TokenTypes token) -> std::string_view
         return "R_ARROW";
     case TokenTypes::INTEGER:
         return "INTEGER";
+    case TokenTypes::STANDARD_STRING:
+        return "STANDARD_STRING";
     case TokenTypes::DOUBLE:
         return "DOUBLE";
     case TokenTypes::TYPE:
