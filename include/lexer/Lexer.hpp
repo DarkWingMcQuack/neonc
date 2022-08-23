@@ -133,6 +133,7 @@ private:
         }
 
         if(content_.starts_with('\"')) {
+            fmt::print("hello\n");
             return lexStandardString();
         }
 
@@ -312,7 +313,7 @@ private:
         }
 
         // TODO: here there should be a 'missing closing "'-error be reported somehow
-        if(content_[i] != '\n') [[unlikely]] {
+        if(content_[i] != '\"') [[unlikely]] {
             return std::nullopt;
         }
 
