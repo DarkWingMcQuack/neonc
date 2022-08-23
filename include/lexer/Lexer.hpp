@@ -130,6 +130,10 @@ private:
             return Token{TokenTypes::COLON, start, value};
         }
 
+        if(content_.starts_with('\"')) {
+            return lexStandardString();
+        }
+
         if(content_.starts_with('.')) {
             auto value = moveForward(1);
             return Token{TokenTypes::DOT, start, value};
@@ -290,6 +294,30 @@ private:
         position_ += pos;
 
         return value;
+    }
+
+    // TODO: implement f-strings
+    constexpr auto lexStandardString() noexcept -> std::optional<Token>
+    {
+        // start at i = to skip first "
+        std::size_t i = 1;
+        auto valid = true;
+        for(; i < content_.length(); i++) {
+            if(content_[i] == '\"' and valid) {
+                break;
+            }
+            valid = !valid and content_[i] == '\\';
+        }
+
+        // TODO: here there should be a 'missing closing "'-error be reported somehow
+        if(content_[i] != '\n') [[unlikely]] {
+            return std::nullopt;
+        }
+
+        const auto start = position_;
+        const auto value = moveForward(i);
+
+        return Token{TokenTypes::STANDARD_STRING, start, value};
     }
 
 private:
