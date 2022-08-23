@@ -115,6 +115,26 @@ public:
         return std::nullopt;
     }
 
+    constexpr auto string() noexcept
+        -> std::optional<ast::String>
+    {
+        if(auto token_opt = lexer_.peek()) {
+            auto token = std::move(token_opt.value());
+
+            if(token.getType() != lexing::TokenTypes::STANDARD_STRING) {
+                return std::nullopt;
+            }
+
+            lexer_.pop();
+
+            auto value = parse_int_unsafe(token.getValue());
+
+            return ast::String{token.getArea(), token.getValue()};
+        }
+
+        return std::nullopt;
+    }
+
 private:
     std::string_view content_;
     lexing::Lexer lexer_;
