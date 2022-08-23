@@ -133,7 +133,6 @@ private:
         }
 
         if(content_.starts_with('\"')) {
-            fmt::print("hello\n");
             return lexStandardString();
         }
 
@@ -300,17 +299,16 @@ private:
     }
 
     // TODO: implement f-strings
+    // TODO: implement escape sequences
     // FIXME: does currently not work
     constexpr auto lexStandardString() noexcept -> std::optional<Token>
     {
         // start at i = to skip first "
         std::size_t i = 1;
-        auto valid = true;
         for(; i < content_.length(); i++) {
-            if(content_[i] == '\"' and valid) {
+            if(content_[i] == '\"') {
                 break;
             }
-            valid = !valid and content_[i] == '\\';
         }
 
         // TODO: here there should be a 'missing closing "'-error be reported somehow
@@ -319,7 +317,7 @@ private:
         }
 
         const auto start = position_;
-        const auto value = moveForward(i);
+        const auto value = moveForward(i+1);
 
         return Token{TokenTypes::STANDARD_STRING, start, value};
     }
