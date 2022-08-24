@@ -29,7 +29,9 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("type", lexing::TokenTypes::TYPE);
     assertStringToLexedToken("typeclass", lexing::TokenTypes::TYPECLASS);
     assertStringToLexedToken(" ", lexing::TokenTypes::WHITESPACE);
+    assertStringToLexedToken("    \t", lexing::TokenTypes::WHITESPACE);
     assertStringToLexedToken("\n", lexing::TokenTypes::NEWLINE);
+    assertStringToLexedToken("\n\n\n\n", lexing::TokenTypes::NEWLINE);
     assertStringToLexedToken("//", lexing::TokenTypes::LINE_COMMENT_START);
     assertStringToLexedToken("(", lexing::TokenTypes::L_PARANTHESIS);
     assertStringToLexedToken(")", lexing::TokenTypes::R_PARANTHESIS);
