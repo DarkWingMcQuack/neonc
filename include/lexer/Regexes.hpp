@@ -4,7 +4,7 @@
 
 namespace lexing {
 // whitespace and newline
-constexpr auto ws_re = ctre::starts_with<"\\s+">;
+constexpr auto ws_re = ctre::starts_with<"[ \f\r\t\v]+">;
 constexpr auto nl_re = ctre::starts_with<"\\n+">;
 
 // keywords
