@@ -24,7 +24,8 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("fun", lexing::TokenTypes::FUN);
     assertStringToLexedToken("42", lexing::TokenTypes::INTEGER);
     assertStringToLexedToken("\"i am a string\"", lexing::TokenTypes::STANDARD_STRING);
-    assertStringToLexedToken("3.1415 ", lexing::TokenTypes::DOUBLE);
+    assertStringToLexedToken("3.1415", lexing::TokenTypes::DOUBLE);
+    assertStringToLexedToken("3.1415e19", lexing::TokenTypes::DOUBLE);
     assertStringToLexedToken("type", lexing::TokenTypes::TYPE);
     assertStringToLexedToken("typeclass", lexing::TokenTypes::TYPECLASS);
     assertStringToLexedToken(" ", lexing::TokenTypes::WHITESPACE);
@@ -70,7 +71,7 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("", lexing::TokenTypes::END_OF_FILE);
 }
 
-TEST(LexerTest, DoubleTokenTest)
+TEST(LexerTest, TrippleTokenTest)
 {
     auto lexer = lexing::Lexer{"let fun"};
     auto result = lexer.peek<3>();
@@ -92,6 +93,12 @@ TEST(LexerTest, DoubleTokenTest)
     EXPECT_EQ(l2.getType(), lexing::TokenTypes::LET);
     EXPECT_EQ(w2.getType(), lexing::TokenTypes::WHITESPACE);
     EXPECT_EQ(f2.getType(), lexing::TokenTypes::FUN);
+
+    lexer.pop<3>();
+    auto r_end = lexer.peek();
+    ASSERT_TRUE(!!r_end);
+
+	EXPECT_EQ(r_end.value().getType(), lexing::TokenTypes::END_OF_FILE);
 }
 
 TEST(LexerTest, FunctionDeclarationTest)
