@@ -1,10 +1,11 @@
-#include <lexer/Lexer.hpp>
 #include <iostream>
+#include <lexer/Lexer.hpp>
 
 #include <gtest/gtest.h>
 
 
-auto assertStringToLexedToken(const std::string& input, lexing::TokenTypes expectedToken) -> void {
+auto assertStringToLexedToken(const std::string& input, lexing::TokenTypes expectedToken) -> void
+{
     auto lexer = lexing::Lexer(input);
     auto actualToken = lexer.peek();
     if(!actualToken.has_value())
@@ -67,6 +68,30 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("true", lexing::TokenTypes::TRUE);
     assertStringToLexedToken("false", lexing::TokenTypes::FALSE);
     assertStringToLexedToken("", lexing::TokenTypes::END_OF_FILE);
+}
+
+TEST(LexerTest, DoubleTokenTest)
+{
+    auto lexer = lexing::Lexer{"let fun"};
+    auto result = lexer.peek<3>();
+
+    ASSERT_TRUE(!!result);
+
+    auto [l, w, f] = result.value();
+
+    EXPECT_EQ(l.getType(), lexing::TokenTypes::LET);
+    EXPECT_EQ(w.getType(), lexing::TokenTypes::WHITESPACE);
+    EXPECT_EQ(f.getType(), lexing::TokenTypes::FUN);
+
+    result = lexer.peek<3>();
+
+    ASSERT_TRUE(!!result);
+
+    auto [l2, w2, f2] = result.value();
+
+    EXPECT_EQ(l2.getType(), lexing::TokenTypes::LET);
+    EXPECT_EQ(w2.getType(), lexing::TokenTypes::WHITESPACE);
+    EXPECT_EQ(f2.getType(), lexing::TokenTypes::FUN);
 }
 
 TEST(LexerTest, FunctionDeclarationTest)
