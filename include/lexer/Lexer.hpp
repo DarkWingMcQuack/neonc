@@ -16,14 +16,15 @@ namespace lexing {
 
 class Lexer
 {
+    // helper functions to construct an std::array of size N inplace when the Type T is not default constructable
     template<size_t... Inds>
-    std::array<Token, sizeof...(Inds)> array_from_lexed_impl(std::integer_sequence<size_t, Inds...>)
+    auto array_from_lexed_impl(std::integer_sequence<size_t, Inds...>) -> std::array<Token, sizeof...(Inds)>
     {
         return {lexed_[Inds]...};
     }
 
     template<auto N>
-    std::array<Token, N> array_from_lexed()
+    auto array_from_lexed() -> std::array<Token, N>
     {
         return array_from_lexed_impl(std::make_index_sequence<N>{});
     }
@@ -64,7 +65,7 @@ public:
         }
 
 
-		return array_from_lexed<N>();
+        return array_from_lexed<N>();
     }
 
     template<auto N = 1ul>
