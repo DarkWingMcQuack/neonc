@@ -31,6 +31,44 @@ public:
         return peek_;
     }
 
+    template<auto N = 1>
+    constexpr auto peek() noexcept -> std::optional<Token>
+    requires(N == 1)
+    {
+        if(lexed_.empty()) {
+            auto next = lexNext();
+            if(not next.has_value()) {
+                return std::nullopt;
+            }
+
+            lexed_.emplace_back(std::move(next.value()));
+        }
+
+        return lexed_.back();
+    }
+
+    template<auto N = 2>
+    constexpr auto peek() noexcept -> std::optional<std::array<Token, N>>
+    requires(N > 1)
+    {
+        while(lexed_.size() < N) {
+
+            auto next = lexNext();
+
+            if(not next.has_value()) {
+                return std::nullopt;
+            }
+
+            lexed_.emplace_back(std::move(next.value()));
+        }
+
+        std::array<Token, N> ret_array;
+
+        std::copy_n(std::begin(lexed_), N, std::begin(ret_array));
+
+        return ret_array;
+    }
+
     constexpr auto pop() noexcept -> void
     {
         peek_ = std::nullopt;
@@ -335,6 +373,7 @@ private:
     std::size_t line_ = 0;
     std::size_t column_ = 0;
     std::optional<Token> peek_;
+    std::vector<Token> lexed_;
 };
 
 } // namespace lexing
