@@ -1,5 +1,5 @@
-#include <numeric>
 #include <lexer/Lexer.hpp>
+#include <iostream>
 
 #include <gtest/gtest.h>
 
@@ -55,6 +55,7 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("self", lexing::TokenTypes::SELF_VALUE);
     assertStringToLexedToken("Self", lexing::TokenTypes::SELF_TYPE);
     assertStringToLexedToken(".", lexing::TokenTypes::DOT);
+    assertStringToLexedToken(",", lexing::TokenTypes::COMMA);
     assertStringToLexedToken(":", lexing::TokenTypes::COLON);
     assertStringToLexedToken("<", lexing::TokenTypes::LT);
     assertStringToLexedToken("<=", lexing::TokenTypes::LE);
@@ -68,3 +69,21 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("", lexing::TokenTypes::END_OF_FILE);
 }
 
+TEST(LexerTest, FunctionDeclarationTest)
+{
+    std::string input = R"(
+        fun foo(int a, int b)
+        {
+            let a = 5
+        }
+    )";
+    auto lexer = lexing::Lexer(input);
+
+    while(auto token = lexer.peek()) {
+        std::cout << lexing::get_description(token.value().getType()) << "\n";
+        if(token.value().getType() == lexing::TokenTypes::END_OF_FILE) {
+            break;
+        }
+        lexer.pop();
+    }
+}

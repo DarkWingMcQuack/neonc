@@ -45,6 +45,7 @@ enum class TokenTypes : std::int64_t {
     SELF_VALUE,
     SELF_TYPE,
     DOT,
+    COMMA,
     COLON,
     LT,
     LE,
@@ -135,6 +136,8 @@ constexpr auto get_description(TokenTypes token) -> std::string_view
         return "DOT";
     case TokenTypes::COLON:
         return "COLON";
+    case TokenTypes::COMMA:
+        return "COMMA";
     case TokenTypes::LT:
         return "LT";
     case TokenTypes::LE:

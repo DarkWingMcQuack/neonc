@@ -53,7 +53,7 @@ private:
 
         if(auto match = nl_re(content_)) {
             position_ += match.size();
-            auto value = content_.substr(0, match.size());
+            auto value = moveForward(match.size());
             return Token{TokenTypes::NEWLINE, start, value};
         }
 
@@ -140,6 +140,12 @@ private:
             auto value = moveForward(1);
             return Token{TokenTypes::DOT, start, value};
         }
+
+        if(content_.starts_with(',')) {
+            auto value = moveForward(1);
+            return Token{TokenTypes::COMMA, start, value};
+        }
+
 
         // this needs to be checked before -
         if(content_.starts_with("->")) {
