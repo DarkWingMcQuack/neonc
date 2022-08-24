@@ -20,17 +20,6 @@ public:
     constexpr Lexer(std::string_view content) noexcept
         : content_(content) {}
 
-    // TODO: this should not return an std::optional, but an std::expected
-    // which makes it possible to return errormessages from the lexer, like "unkown token"
-    constexpr auto peek() noexcept -> std::optional<Token>
-    {
-        if(!peek_.has_value()) {
-            peek_ = lexNext();
-        }
-
-        return peek_;
-    }
-
     template<auto N = 1>
     constexpr auto peek() noexcept -> std::optional<Token>
     requires(N == 1)
@@ -47,7 +36,7 @@ public:
         return lexed_.back();
     }
 
-    template<auto N = 2>
+    template<auto N>
     constexpr auto peek() noexcept -> std::optional<std::array<Token, N>>
     requires(N > 1)
     {
@@ -69,9 +58,12 @@ public:
         return ret_array;
     }
 
+    template<auto N = 1ul>
     constexpr auto pop() noexcept -> void
     {
-        peek_ = std::nullopt;
+        for(std::size_t i = 0; i < N; i++) {
+            lexed_.pop_back();
+        }
     }
 
 
@@ -372,7 +364,6 @@ private:
     std::uint64_t position_;
     std::size_t line_ = 0;
     std::size_t column_ = 0;
-    std::optional<Token> peek_;
     std::vector<Token> lexed_;
 };
 
