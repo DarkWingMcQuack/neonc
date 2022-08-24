@@ -16,6 +16,18 @@ namespace lexing {
 
 class Lexer
 {
+    template<size_t... Inds>
+    std::array<Token, sizeof...(Inds)> array_from_lexed_impl(std::integer_sequence<size_t, Inds...>)
+    {
+        return {lexed_[Inds]...};
+    }
+
+    template<auto N>
+    std::array<Token, N> array_from_lexed()
+    {
+        return array_from_lexed_impl(std::make_index_sequence<N>{});
+    }
+
 public:
     constexpr Lexer(std::string_view content) noexcept
         : content_(content) {}
@@ -51,11 +63,8 @@ public:
             lexed_.emplace_back(std::move(next.value()));
         }
 
-        std::array<Token, N> ret_array;
 
-        std::copy_n(std::begin(lexed_), N, std::begin(ret_array));
-
-        return ret_array;
+		return array_from_lexed<N>();
     }
 
     template<auto N = 1ul>
