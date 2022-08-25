@@ -87,6 +87,7 @@ PenaltyExcessCharacter: 1061596
 PenaltyReturnTypeOnItsOwnLine: 125
 PointerAlignment: Right
 ReflowComments: true
+RequiresClausePosition: OwnLine
 SortIncludes: true
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
