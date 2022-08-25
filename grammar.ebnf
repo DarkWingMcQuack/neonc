@@ -49,9 +49,13 @@ binary_expression = expression , "+"  , expression |
                     expression , "&&" , expression |
                     expression , "||" , expression ;
 
-tuple_expression = "(" , expression , "," , expression , {"," , expression} , ")"
+tuple_expression = "(" , expression , "," , expression , {"," , expression} , ")" ;
 
-oneline_if_expression = expression , "if" , expression , "else" , expression
+oneline_if_expression = expression , "if" , expression , "else" , expression ;
+
+function_call_expression = (expression , "(" , [expression , {"," , expression}] ")") |
+						   (expression , "{" , [expression , {"," , expression}] "}") ;
+
 
 (*TODO: block_expression, if_expressions, for_compression, list_comprehensions*)
 
@@ -60,4 +64,5 @@ expression = literal |
 			 unary_expression |
 			 binary_expression |
 			 tuple_expression |
+			 function_call |
 			 oneline_if_expression;
