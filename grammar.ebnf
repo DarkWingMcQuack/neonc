@@ -66,3 +66,20 @@ expression = literal |
 			 tuple_expression |
 			 function_call |
 			 oneline_if_expression;
+
+
+(*Types*)
+
+named_type = identifier , {"::" , identifier} ;
+optional_type = type , "?" ;
+tuple_type = "(" , type "," type , {"," , type} , ")";
+union_type = type , "|" , type , {"|" , type} ;
+lambda_paramter_type_list = ("(" , type , "," , type , {"," , type} , ")") | type ;
+lambda_type = lambda_paramter_type_list , "=>" , type ;
+
+type = "(" , type , ")" |
+       named_type       |
+	   tuple_type       |
+	   union_type       |
+	   optional_type    |
+	   lambda_type      ;
