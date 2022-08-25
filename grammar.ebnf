@@ -30,29 +30,34 @@ literal = identifier | string | boolean | double | integer ;
 unary_expression = "+" , expression |
                    "-" , expression ;
 
-binary_expression = expression , "+" , expression |
-                    expression , "-" , expression |
-                    expression , "*" , expression |
-                    expression , "/" , expression |
-                    expression , "%" , expression |
+binary_expression = expression , "+"  , expression |
+                    expression , "-"  , expression |
+                    expression , "*"  , expression |
+                    expression , "/"  , expression |
+                    expression , "%"  , expression |
                     expression , "<<" , expression |
                     expression , ">>" , expression |
-                    expression , "<" , expression |
+                    expression , "<"  , expression |
                     expression , "<=" , expression |
-                    expression , ">" , expression |
+                    expression , ">"  , expression |
                     expression , ">=" , expression |
                     expression , "==" , expression |
                     expression , "!=" , expression |
-                    expression , "&" , expression |
-                    expression , "^" , expression |
-                    expression , "|" , expression |
+                    expression , "&"  , expression |
+                    expression , "^"  , expression |
+                    expression , "|"  , expression |
                     expression , "&&" , expression |
                     expression , "||" , expression ;
 
 tuple_expression = "(" , expression , "," , expression , {"," , expression} , ")"
 
+oneline_if_expression = expression , "if" , expression , "else" , expression
+
+(*TODO: block_expression, if_expressions, for_compression, list_comprehensions*)
+
 expression = literal |
              "(" , expression , ")" |
 			 unary_expression |
 			 binary_expression |
-			 tuple_expression;
+			 tuple_expression |
+			 oneline_if_expression;
