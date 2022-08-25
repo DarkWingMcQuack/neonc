@@ -59,7 +59,7 @@ enum class TokenTypes : std::int64_t {
     END_OF_FILE
 };
 
-constexpr auto get_description(TokenTypes token) -> std::string_view
+constexpr auto get_description(TokenTypes token) noexcept -> std::string_view
 {
     switch(token) {
     case TokenTypes::LET:
