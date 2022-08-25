@@ -76,8 +76,10 @@ tuple_type = "(" , type "," type , {"," , type} , ")";
 union_type = type , "|" , type , {"|" , type} ;
 lambda_paramter_type_list = ("(" , type , "," , type , {"," , type} , ")") | type ;
 lambda_type = lambda_paramter_type_list , "=>" , type ;
+self_type = "Self" ;
 
 type = "(" , type , ")" |
+	   self_type        |
        named_type       |
 	   tuple_type       |
 	   union_type       |
