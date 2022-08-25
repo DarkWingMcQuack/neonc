@@ -24,3 +24,35 @@ double = integer , "." {digit_with_zero} , [("e" | "E") , ["+" | "-"] , integer]
 boolean = "true" | "false" ;
 
 string = "\"" , {letter | ("\\" , [letter | "\\" | "\""]) | whitespace} , "\"" ;
+
+literal = identifier | string | boolean | double | integer ;
+
+unary_expression = "+" , expression |
+                   "-" , expression ;
+
+binary_expression = expression , "+" , expression |
+                    expression , "-" , expression |
+                    expression , "*" , expression |
+                    expression , "/" , expression |
+                    expression , "%" , expression |
+                    expression , "<<" , expression |
+                    expression , ">>" , expression |
+                    expression , "<" , expression |
+                    expression , "<=" , expression |
+                    expression , ">" , expression |
+                    expression , ">=" , expression |
+                    expression , "==" , expression |
+                    expression , "!=" , expression |
+                    expression , "&" , expression |
+                    expression , "^" , expression |
+                    expression , "|" , expression |
+                    expression , "&&" , expression |
+                    expression , "||" , expression ;
+
+tuple_expression = "(" , expression , "," , expression , {"," , expression} , ")"
+
+expression = literal |
+             "(" , expression , ")" |
+			 unary_expression |
+			 binary_expression |
+			 tuple_expression;
