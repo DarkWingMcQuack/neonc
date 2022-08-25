@@ -85,3 +85,25 @@ type = "(" , type , ")" |
 	   union_type       |
 	   optional_type    |
 	   lambda_type      ;
+
+
+(*Statements*)
+end_symbol = "\n" | ";"
+
+let_stmt = "let" , identifier , [":" , type] , "=" , expression , end_symbol;
+block = "{" , statement, {end_symbol, statement} , "}" ;
+else_stmt = "else" , block ;
+elif_stmt = "elif" , expression , block ;
+if_stmt "if" , expression , block , {elif_stmt} , [else_stmt] ;
+while_stmt = "while" , expression , block ;
+
+for_stmt_monadic_clause = identifier "<-" expression
+for_stmt_let_clause = identifier "=" expression
+for_stmt_clause
+for_stmt = "for" , "{" for_stmt_clause , {end_symbol , for_stmt_clause} , "}" , block ;
+
+statment = let_stmt   |
+           if_stmt    |
+		   while_stmt |
+		   for_stmt   |
+		   expression , end_symbol;
