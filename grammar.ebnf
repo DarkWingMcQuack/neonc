@@ -1,0 +1,26 @@
+(*This is the grammar of the neo language*)
+
+
+digit_without_zero = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+digit_with_zero = "0" | digit_without_zero ;
+
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+       | "x" | "y" | "z" ;
+
+whitespace = " " | "\t" | "\f" | "\r" | "\v" ;
+
+identifier = (letter | "_") , {letter | "_" | digit_with_zero} ;
+
+integer = "0" | (digit_without_zero , {digit_with_zero}) ;
+
+double = integer , "." {digit_with_zero} , [("e" | "E") , ["+" | "-"] , integer] ;
+
+boolean = "true" | "false" ;
+
+string = "\"" , {letter | ("\\" , [letter | "\\" | "\""]) | whitespace} , "\"" ;
