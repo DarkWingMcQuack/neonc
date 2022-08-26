@@ -65,12 +65,16 @@ else_expr = "else" , block_expr ;
 elif_expr = "elif" , expression , block_expr ;
 if_expr = "if" , expression , block_expr , {elif_expr} , [else_expr] ;
 
-for_monadic_clause = identifier "<-" expression
-for_let_clause = identifier "=" expression
-for_clause = for_monadic_clause | for_let_clause
+for_monadic_clause = identifier "<-" expression ;
+for_let_clause = identifier "=" expression ;
+for_clause = for_monadic_clause | for_let_clause ;
 for_expr_1 = "for" , "{" for_monadic_clause , {end_symbol , for_clause} , "}" , "yield" , expression;
 for_expr_2 = "for" , "(" for_monadic_clause , {end_symbol , for_clause} , ")" , "yield" , expression;
-for_expr = for_expr_1 | for_expr_2
+for_expr = for_expr_1 | for_expr_2 ;
+
+lambda_parameter = identifier , [":" , type] ; 
+lambda_start = ( "(" , [lambda_parameter , {"," , lambda_parameter}] , ")" ) | lambda_parameter ;
+lambda_parameter = lambda_start , "=>" , [type] , expression ;
 
 
 expression = literal                |
@@ -82,6 +86,7 @@ expression = literal                |
 			 block_expr             |
 			 if_expr                |
 			 for_expr               |
+			 lambda_expr            |
 			 oneline_if_expression;
 
 
