@@ -27,10 +27,11 @@ string = "\"" , {letter | ("\\" , [letter | "\\" | "\""]) | whitespace} , "\"" ;
 
 literal = identifier | string | boolean | double | integer ;
 
-end_symbol = "\n" | ";"
+end_symbol = "\n" | ";" ;
 
 unary_expression = "+" , expression |
-                   "-" , expression ;
+                   "-" , expression |
+                   "!" , expression ;
 
 binary_expression = expression , "+"  , expression |
                     expression , "-"  , expression |
@@ -115,7 +116,7 @@ let_stmt = "let" , identifier , [":" , type] , "=" , expression , end_symbol;
 block = "{" , statement, {end_symbol, statement} , "}" ;
 else_stmt = "else" , block ;
 elif_stmt = "elif" , expression , block ;
-if_stmt "if" , expression , block , {elif_stmt} , [else_stmt] ;
+if_stmt = "if" , expression , block , {elif_stmt} , [else_stmt] ;
 while_stmt = "while" , expression , block ;
 
 for_stmt_1 = "for" , "{" for_monadic_clause , {end_symbol , for_clause} , "}" , block ;
