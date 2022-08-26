@@ -100,10 +100,18 @@ while_stmt = "while" , expression , block ;
 for_stmt_monadic_clause = identifier "<-" expression
 for_stmt_let_clause = identifier "=" expression
 for_stmt_clause
-for_stmt = "for" , "{" for_stmt_clause , {end_symbol , for_stmt_clause} , "}" , block ;
+for_stmt_1 = "for" , "{" for_stmt_clause , {end_symbol , for_stmt_clause} , "}" , block ;
+for_stmt_2 = "for" , "(" for_stmt_clause , {end_symbol , for_stmt_clause} , ")" , block ;
+for_stmt = for_stmt_1 | for_stmt_2
+
+direct_import = "import" , identifier , {"::" , identifier} , ["::" , "*"] ;
+typeclass_import = directimport , "for" , type ;
+
+import = direct_import | typeclass_import ;
 
 statment = let_stmt   |
            if_stmt    |
 		   while_stmt |
 		   for_stmt   |
+		   import     |
 		   expression , end_symbol;
