@@ -65,7 +65,9 @@ else_expr = "else" , block_expr ;
 elif_expr = "elif" , expression , block_expr ;
 if_expr = "if" , expression , block_expr , {elif_expr} , [else_expr] ;
 
-
+for_monadic_clause = identifier "<-" expression
+for_let_clause = identifier "=" expression
+for_clause = for_monadic_clause | for_let_clause
 for_expr_1 = "for" , "{" for_monadic_clause , {end_symbol , for_clause} , "}" , "yield" , expression;
 for_expr_2 = "for" , "(" for_monadic_clause , {end_symbol , for_clause} , ")" , "yield" , expression;
 for_expr = for_expr_1 | for_expr_2
@@ -111,9 +113,6 @@ elif_stmt = "elif" , expression , block ;
 if_stmt "if" , expression , block , {elif_stmt} , [else_stmt] ;
 while_stmt = "while" , expression , block ;
 
-for_monadic_clause = identifier "<-" expression
-for_let_clause = identifier "=" expression
-for_clause = for_monadic_clause | for_let_clause
 for_stmt_1 = "for" , "{" for_monadic_clause , {end_symbol , for_clause} , "}" , block ;
 for_stmt_2 = "for" , "(" for_monadic_clause , {end_symbol , for_clause} , ")" , block ;
 for_stmt = for_stmt_1 | for_stmt_2
