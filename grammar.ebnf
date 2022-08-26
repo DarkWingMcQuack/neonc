@@ -57,14 +57,23 @@ function_call_expression = (expression , "(" , [expression , {"," , expression}]
 						   (expression , "{" , [expression , {"," , expression}] "}") ;
 
 
-(*TODO: block_expression, if_expressions, for_compression, list_comprehensions*)
+block_expr = "{" , {statement , end_symbol} , expression ,"}" ;
 
-expression = literal |
+else_expr = "else" , block_expr ;
+elif_expr = "elif" , expression , block_expr ;
+if_expr ="if" , expression , block_expr , {elif_expr} , [else_expr] ;
+
+
+(*TODO: for_compression*)
+
+expression = literal                |
              "(" , expression , ")" |
-			 unary_expression |
-			 binary_expression |
-			 tuple_expression |
-			 function_call |
+			 unary_expression       |
+			 binary_expression      |
+			 tuple_expression       |
+			 function_call          |
+			 block_expr             |
+			 if_expr                |
 			 oneline_if_expression;
 
 
