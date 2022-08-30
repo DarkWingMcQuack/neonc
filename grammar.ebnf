@@ -19,7 +19,7 @@ identifier = (letter | "_") , {letter | "_" | digit_with_zero} ;
 
 integer = "0" | (digit_without_zero , {digit_with_zero}) ;
 
-double = integer , "." {digit_with_zero} , [("e" | "E") , ["+" | "-"] , integer] ;
+double = integer , "." , {digit_with_zero} , [("e" | "E") , ["+" | "-"] , integer] ;
 
 boolean = "true" | "false" ;
 
@@ -124,7 +124,8 @@ for_stmt_2 = "for" , "(" for_monadic_clause , {end_symbol , for_clause} , ")" , 
 for_stmt = for_stmt_1 | for_stmt_2
 
 direct_import = "import" , identifier , {"::" , identifier} , ["::" , "*"] ;
-typeclass_import = directimport , "for" , type ;
+
+typeclass_import = "for" , type , directimport ;
 
 import = direct_import | typeclass_import ;
 
