@@ -23,7 +23,7 @@ double = integer , "." , {digit_with_zero} , [("e" | "E") , ["+" | "-"] , intege
 
 boolean = "true" | "false" ;
 
-string = "\"" , {letter | ("\\" , [letter | "\\" | "\""]) | whitespace} , "\"" ;
+string = '"' , {letter | ("\\" , [letter | "\\" | '"']) | whitespace} , '"' ;
 
 literal = identifier | string | boolean | double | integer ;
 
@@ -69,8 +69,8 @@ if_expr = "if" , expression , block_expr , {elif_expr} , [else_expr] ;
 for_monadic_clause = identifier , "<-" , expression ,  ["if", expression];
 for_let_clause = identifier , "=" , expression ;
 for_clause = for_monadic_clause | for_let_clause ;
-for_expr_1 = "for" , "{" for_monadic_clause , {end_symbol , for_clause} , "}" , "yield" , expression;
-for_expr_2 = "for" , "(" for_monadic_clause , {end_symbol , for_clause} , ")" , "yield" , expression;
+for_expr_1 = "for" , "{" , for_monadic_clause , {end_symbol , for_clause} , "}" , "yield" , expression;
+for_expr_2 = "for" , "(" , for_monadic_clause , {end_symbol , for_clause} , ")" , "yield" , expression;
 for_expr = for_expr_1 | for_expr_2 ;
 
 (*discuss if this syntax is ok or even wanted*)
@@ -78,20 +78,20 @@ oneline_for = "[", expression , "for" , for_monadic_clause , ["if", expression] 
 
 lambda_parameter = identifier , [":" , type] ; 
 lambda_start = ( "(" , [lambda_parameter , {"," , lambda_parameter}] , ")" ) | lambda_parameter ;
-lambda_parameter = lambda_start , "=>" , [type] , expression ;
+lambda_expr = lambda_start , "=>" , [type] , expression ;
 
 
-expression = literal                |
-             "(" , expression , ")" |
-			 unary_expression       |
-			 binary_expression      |
-			 tuple_expression       |
-			 function_call          |
-			 block_expr             |
-			 if_expr                |
-			 for_expr               |
-			 oneline_for            |
-			 lambda_expr            |
+expression = literal                    |
+             "(" , expression , ")"     |
+			 unary_expression           |
+			 binary_expression          |
+			 tuple_expression           |
+			 function_call_expression   |
+			 block_expr                 |
+			 if_expr                    |
+            for_expr                    |
+			 oneline_for                |
+			 lambda_expr                |
 			 oneline_if_expression;
 
 
@@ -99,7 +99,7 @@ expression = literal                |
 
 named_type = identifier , {"::" , identifier} ;
 optional_type = type , "?" ;
-tuple_type = "(" , type "," type , {"," , type} , ")";
+tuple_type = "(" , type , "," , type , {"," , type} , ")";
 union_type = type , "|" , type , {"|" , type} ;
 lambda_paramter_type_list = ("(" , type , "," , type , {"," , type} , ")") | type ;
 lambda_type = lambda_paramter_type_list , "=>" , type ;
@@ -125,15 +125,15 @@ while_stmt = "while" , expression , block ;
 
 for_stmt_1 = "for" , "{" , for_monadic_clause , {end_symbol , for_clause} , "}" , block ;
 for_stmt_2 = "for" , "(" , for_monadic_clause , {end_symbol , for_clause} , ")" , block ;
-for_stmt = for_stmt_1 | for_stmt_2
+for_stmt = for_stmt_1 | for_stmt_2 ;
 
 direct_import = "import" , identifier , {"::" , identifier} , ["::" , "*"] ;
 
-typeclass_import = "for" , type , directimport ;
+typeclass_import = "for" , type , direct_import ;
 
 import = direct_import | typeclass_import ;
 
-statment = let_stmt   |
+statement = let_stmt   |
            if_stmt    |
 		   while_stmt |
 		   for_stmt   |
