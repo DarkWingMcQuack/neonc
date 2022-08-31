@@ -139,3 +139,6 @@ statment = let_stmt   |
 		   for_stmt   |
 		   import     |
 		   expression , end_symbol;
+
+struct_member = identifier , ":", type ;
+struct = "struct" , identifier , "{" , {struct_member , end_symbol} , "}" ;
