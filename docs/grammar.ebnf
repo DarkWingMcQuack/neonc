@@ -83,16 +83,16 @@ lambda_expr = lambda_start , "=>" , [type] , expression ;
 
 expression = literal                    |
              "(" , expression , ")"     |
-			 unary_expression           |
-			 binary_expression          |
-			 tuple_expression           |
-			 function_call_expression   |
-			 block_expr                 |
-			 if_expr                    |
+             unary_expression           |
+             binary_expression          |
+             tuple_expression           |
+             function_call_expression   |
+             block_expr                 |
+             if_expr                    |
              for_expr                   |
-			 oneline_for                |
-			 lambda_expr                |
-			 oneline_if_expression;
+             oneline_for                |
+             lambda_expr                |
+             oneline_if_expression;
 
 
 (*Types*)
@@ -108,10 +108,10 @@ self_type = "Self" ;
 type = "(" , type , ")" |
 	   self_type        |
        named_type       |
-	   tuple_type       |
-	   union_type       |
-	   optional_type    |
-	   lambda_type      ;
+       tuple_type       |
+       union_type       |
+       optional_type    |
+       lambda_type      ;
 
 
 (*Statements*)
@@ -135,10 +135,10 @@ import = direct_import | typeclass_import ;
 
 statement = let_stmt   |
             if_stmt    |
-		    while_stmt |
-		    for_stmt   |
-		    import     |
-		    expression , end_symbol;
+            while_stmt |
+            for_stmt   |
+            import     |
+            expression , end_symbol;
 
 struct_member = identifier , ":", type ;
 struct = "struct" , identifier , "{" , {struct_member , end_symbol} , "}" ;
