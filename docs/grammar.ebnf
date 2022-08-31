@@ -89,7 +89,7 @@ expression = literal                    |
 			 function_call_expression   |
 			 block_expr                 |
 			 if_expr                    |
-            for_expr                    |
+             for_expr                   |
 			 oneline_for                |
 			 lambda_expr                |
 			 oneline_if_expression;
@@ -134,11 +134,11 @@ typeclass_import = "for" , type , direct_import ;
 import = direct_import | typeclass_import ;
 
 statement = let_stmt   |
-           if_stmt    |
-		   while_stmt |
-		   for_stmt   |
-		   import     |
-		   expression , end_symbol;
+            if_stmt    |
+		    while_stmt |
+		    for_stmt   |
+		    import     |
+		    expression , end_symbol;
 
 struct_member = identifier , ":", type ;
 struct = "struct" , identifier , "{" , {struct_member , end_symbol} , "}" ;
