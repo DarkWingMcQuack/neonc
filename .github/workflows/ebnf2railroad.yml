@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: npm install -g ebnf2railroad
-    - run: ebnf2railroad docs/grammar.ebnf
+    - run: ebnf2railroad docs/grammar.ebnf -o docs/index.html
     - run: |
           git config --global user.name 'Github Actions'
           git config --global user.email 'github@actions.bot'
