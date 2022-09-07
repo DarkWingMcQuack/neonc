@@ -134,7 +134,7 @@ auto nextShouldBe(Lexer& lexer, lexing::TokenTypes expectedToken)
 
 TEST(LexerTest, FunctionDeclarationTest)
 {
-    std::string input = R"(
+    auto input = R"(
         fun foo(int a, int b)
         {
             let a = 5
@@ -171,4 +171,19 @@ TEST(LexerTest, StringLexTest)
     assertStringToLexedToken(R"("this \\is a string yes")", lexing::TokenTypes::STANDARD_STRING);
     assertStringToLexedToken(R"("this \n is a string yes")", lexing::TokenTypes::STANDARD_STRING);
     assertStringToLexedToken(R"("this \t  is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+}
+
+TEST(LexerTest, LineCommentTest)
+{
+    auto input = R"(
+               //asdasdsdasd
+               asdsd
+               )";
+
+    auto lexer = lexing::Lexer(input);
+
+	nextShouldBe(lexer, lexing::TokenTypes::LINE_COMMENT_START);
+	nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+	nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
+	
 }
