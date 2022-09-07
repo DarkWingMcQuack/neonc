@@ -3,17 +3,20 @@
 
 #include <gtest/gtest.h>
 
+using lexing::Lexer;
 
-auto assertStringToLexedToken(const std::string& input, lexing::TokenTypes expectedToken) -> void
+auto assertStringToLexedToken(const std::string& input,
+                              lexing::TokenTypes expectedToken) -> void
 {
     auto lexer = lexing::Lexer(input);
     auto actualToken = lexer.peek();
     if(!actualToken.has_value())
         FAIL() << "actual token is empty; expected token: "
-               << lexing::get_description(expectedToken)
-               << " for input string: \"" << input << "\"";
+               << lexing::get_description(expectedToken) << " for input string: \""
+               << input << "\"";
     ASSERT_EQ(actualToken.value().getType(), expectedToken)
-        << "input string: \"" << input << "\" did not yield expected lexer token: "
+        << "input string: \"" << input
+        << "\" did not yield expected lexer token: "
         << lexing::get_description(expectedToken) << "; returned token is: "
         << lexing::get_description(actualToken.value().getType());
 }
@@ -100,7 +103,33 @@ TEST(LexerTest, TrippleTokenTest)
     auto r_end = lexer.peek();
     ASSERT_TRUE(!!r_end);
 
-	EXPECT_EQ(r_end.value().getType(), lexing::TokenTypes::END_OF_FILE);
+    EXPECT_EQ(r_end.value().getType(), lexing::TokenTypes::END_OF_FILE);
+}
+
+auto nextShouldBe(Lexer& lexer, lexing::TokenTypes expectedToken)
+{
+    auto actualToken = lexer.peek();
+
+    // clang-format off
+    while(actualToken.has_value() and
+		  (actualToken.value().getType() == lexing::TokenTypes::WHITESPACE
+		   or actualToken.value().getType() == lexing::TokenTypes::NEWLINE)) {
+        lexer.pop();
+        actualToken = lexer.peek();
+    }
+    // clang-format on
+
+    if(!actualToken.has_value())
+        FAIL() << "actual token is empty; expected token: "
+               << lexing::get_description(expectedToken);
+
+    lexer.pop();
+
+    ASSERT_EQ(actualToken.value().getType(), expectedToken)
+        << "input string: \"" << actualToken.value().getValue()
+        << "\" did not yield expected lexer token: "
+        << lexing::get_description(expectedToken) << "; returned token is: "
+        << lexing::get_description(actualToken.value().getType());
 }
 
 TEST(LexerTest, FunctionDeclarationTest)
@@ -111,13 +140,23 @@ TEST(LexerTest, FunctionDeclarationTest)
             let a = 5
         }
     )";
+
     auto lexer = lexing::Lexer(input);
 
-    while(auto token = lexer.peek()) {
-        std::cout << lexing::get_description(token.value().getType()) << "\n";
-        if(token.value().getType() == lexing::TokenTypes::END_OF_FILE) {
-            break;
-        }
-        lexer.pop();
-    }
+    nextShouldBe(lexer, lexing::TokenTypes::FUN);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::L_PARANTHESIS);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::COMMA);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::R_PARANTHESIS);
+    nextShouldBe(lexer, lexing::TokenTypes::L_BRACKET);
+    nextShouldBe(lexer, lexing::TokenTypes::LET);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::ASSIGN);
+    nextShouldBe(lexer, lexing::TokenTypes::INTEGER);
+    nextShouldBe(lexer, lexing::TokenTypes::R_BRACKET);
+    nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
 }
