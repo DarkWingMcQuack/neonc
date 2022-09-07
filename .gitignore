@@ -10,6 +10,8 @@
 ~$*.xlsx
 *.pptx
 
+docs/index.html
+
 
 # compilation database
 compile_commands.json

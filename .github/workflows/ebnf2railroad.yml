@@ -25,6 +25,6 @@ jobs:
     - run: |
           git config --global user.name 'Github Actions'
           git config --global user.email 'github@actions.bot'
-          git add docs/index.html
+          git add -f docs/index.html
           git commit -am "update grammar.html"
           git push
