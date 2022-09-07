@@ -160,3 +160,15 @@ TEST(LexerTest, FunctionDeclarationTest)
     nextShouldBe(lexer, lexing::TokenTypes::R_BRACKET);
     nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
 }
+
+
+TEST(LexerTest, StringLexTest)
+{
+    assertStringToLexedToken("\"asddas tis is a string\"", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken("\"asddas \\\"tis is a string, to\"", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken(R"("this is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken(R"("this \"is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken(R"("this \\is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken(R"("this \n is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+    assertStringToLexedToken(R"("this \t  is a string yes")", lexing::TokenTypes::STANDARD_STRING);
+}
