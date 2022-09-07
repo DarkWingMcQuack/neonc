@@ -19,12 +19,23 @@ jobs:
         node-version: [12.x]
 
     steps:
-    - uses: actions/checkout@v3
-    - run: npm install -g ebnf2railroad
-    - run: ebnf2railroad docs/grammar.ebnf -o docs/index.html
-    - run: |
-          git config --global user.name 'Github Actions'
-          git config --global user.email 'github@actions.bot'
-          git add -f docs/index.html
-          git commit -am "update grammar.html"
-          git push
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v29.0.3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: List all changed files
+        run: |
+            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+              echo "$file was changed"
+            done
+
+      - run: npm install -g ebnf2railroad
+      - run: ebnf2railroad docs/grammar.ebnf -o docs/index.html
+      - run: |
+            git config --global user.name 'Github Actions'
+            git config --global user.email 'github@actions.bot'
+            git add -f docs/index.html
+            git commit -am "update grammar.html"
+            git push
