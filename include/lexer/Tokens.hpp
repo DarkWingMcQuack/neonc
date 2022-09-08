@@ -18,6 +18,7 @@ enum class TokenTypes : std::int64_t {
     TYPECLASS,
     WHITESPACE,
     NEWLINE,
+    UNDERSCORE,
     LINE_COMMENT_START,
     L_PARANTHESIS,
     R_PARANTHESIS,
@@ -85,6 +86,8 @@ constexpr auto get_description(TokenTypes token) noexcept -> std::string_view
         return "WHITESPACE";
     case TokenTypes::NEWLINE:
         return "NEWLINE";
+    case TokenTypes::UNDERSCORE:
+        return "UNDERSCORE";
     case TokenTypes::LINE_COMMENT_START:
         return "LINE_COMMENT_START";
     case TokenTypes::L_PARANTHESIS:
