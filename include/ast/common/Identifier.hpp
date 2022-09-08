@@ -8,7 +8,7 @@
 
 namespace ast {
 
-class Identifier : AreaBase
+class Identifier : public AreaBase
 {
 public:
     constexpr Identifier(lexing::TextArea area, std::string_view value) noexcept
