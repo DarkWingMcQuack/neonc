@@ -27,6 +27,7 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("let", lexing::TokenTypes::LET);
     assertStringToLexedToken("fun", lexing::TokenTypes::FUN);
     assertStringToLexedToken("_", lexing::TokenTypes::UNDERSCORE);
+    assertStringToLexedToken("::", lexing::TokenTypes::COLON_COLON);
     assertStringToLexedToken("42", lexing::TokenTypes::INTEGER);
     assertStringToLexedToken("\"i am a string\"", lexing::TokenTypes::STANDARD_STRING);
     assertStringToLexedToken("3.1415", lexing::TokenTypes::DOUBLE);
