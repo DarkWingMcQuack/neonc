@@ -167,6 +167,11 @@ private:
             return Token{TokenTypes::INTEGER, start, value};
         }
 
+        if(content_.starts_with("::")) {
+            auto value = moveForward(2);
+            return Token{TokenTypes::COLON_COLON, start, value};
+        }
+
         if(content_.starts_with(':')) {
             auto value = moveForward(1);
             return Token{TokenTypes::COLON, start, value};

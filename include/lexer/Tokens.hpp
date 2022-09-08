@@ -47,6 +47,7 @@ enum class TokenTypes : std::int64_t {
     DOT,
     COMMA,
     COLON,
+	COLON_COLON,
     LT,
     LE,
     GT,
@@ -156,6 +157,8 @@ constexpr auto get_description(TokenTypes token) noexcept -> std::string_view
         return "TRUE";
     case TokenTypes::FALSE:
         return "FALSE";
+    case TokenTypes::COLON_COLON:
+        return "COLON_COLON";
     case TokenTypes::END_OF_FILE:
         return "<EOF>";
     default:
