@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+
 using lexing::Lexer;
 
 auto assertStringToLexedToken(const std::string& input,
@@ -25,6 +26,7 @@ TEST(LexerTest, SingleTokenTest)
 {
     assertStringToLexedToken("let", lexing::TokenTypes::LET);
     assertStringToLexedToken("fun", lexing::TokenTypes::FUN);
+    assertStringToLexedToken("_", lexing::TokenTypes::UNDERSCORE);
     assertStringToLexedToken("42", lexing::TokenTypes::INTEGER);
     assertStringToLexedToken("\"i am a string\"", lexing::TokenTypes::STANDARD_STRING);
     assertStringToLexedToken("3.1415", lexing::TokenTypes::DOUBLE);
@@ -74,6 +76,19 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("true", lexing::TokenTypes::TRUE);
     assertStringToLexedToken("false", lexing::TokenTypes::FALSE);
     assertStringToLexedToken("", lexing::TokenTypes::END_OF_FILE);
+}
+
+
+TEST(LexerTest, IdentifierTest)
+{
+    assertStringToLexedToken("_let", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("afun", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("asdf", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("d", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("letsda", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("true1", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("true_", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("_true_", lexing::TokenTypes::IDENTIFIER);
 }
 
 TEST(LexerTest, TrippleTokenTest)
@@ -182,8 +197,7 @@ TEST(LexerTest, LineCommentTest)
 
     auto lexer = lexing::Lexer(input);
 
-	nextShouldBe(lexer, lexing::TokenTypes::LINE_COMMENT_START);
-	nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
-	nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
-	
+    nextShouldBe(lexer, lexing::TokenTypes::LINE_COMMENT_START);
+    nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
+    nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
 }
