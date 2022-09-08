@@ -14,6 +14,12 @@ public:
     constexpr Identifier(lexing::TextArea area, std::string_view value) noexcept
         : AreaBase{std::move(area)}, value_(value) {}
 
+    constexpr auto operator==(const Identifier& other) const noexcept
+        -> bool
+    {
+        return value_ == other.value_;
+    }
+
     constexpr auto getValue() const noexcept -> std::string_view
     {
         return value_;

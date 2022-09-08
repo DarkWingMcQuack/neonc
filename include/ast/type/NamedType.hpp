@@ -17,6 +17,12 @@ public:
           namespce_(std::move(namespce)),
           type_(std::move(type)) {}
 
+    constexpr auto operator==(const NamedType& other) const noexcept
+        -> bool
+    {
+        return type_ == other.type_ and namespce_ == other.namespce_;
+    }
+
     constexpr auto getNamespace() const noexcept -> const std::vector<Identifier>&
     {
         return namespce_;
