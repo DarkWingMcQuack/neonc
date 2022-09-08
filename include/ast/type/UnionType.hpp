@@ -20,16 +20,16 @@ public:
         return types_ == other.types_;
     }
 
-    auto size() const noexcept -> std::size_t
+    constexpr auto size() const noexcept -> std::size_t
     {
         return types_.size();
     }
 
-    auto getTypes() const noexcept -> const std::vector<Type>&
+    constexpr auto getTypes() const noexcept -> const std::vector<Type>&
     {
         return types_;
     }
-    auto getTypes() noexcept -> std::vector<Type>&
+    constexpr auto getTypes() noexcept -> std::vector<Type>&
     {
         return types_;
     }

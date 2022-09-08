@@ -11,7 +11,7 @@ namespace ast {
 class OptionalType : public AreaBase
 {
 public:
-    OptionalType(lexing::TextArea area, Type&& type) noexcept
+    constexpr OptionalType(lexing::TextArea area, Type&& type) noexcept
         : AreaBase(area),
           type_(std::move(type)) {}
 
@@ -22,11 +22,11 @@ public:
     }
 
 
-    auto getType() const noexcept -> const Type&
+    constexpr auto getType() const noexcept -> const Type&
     {
         return type_;
     }
-    auto getType() noexcept -> Type&
+    constexpr auto getType() noexcept -> Type&
     {
         return type_;
     }

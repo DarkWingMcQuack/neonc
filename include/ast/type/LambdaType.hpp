@@ -10,7 +10,7 @@ namespace ast {
 class LambdaType : public AreaBase
 {
 public:
-    LambdaType(lexing::TextArea area, std::vector<Type>&& arguments, Type&& return_type) noexcept
+    constexpr LambdaType(lexing::TextArea area, std::vector<Type>&& arguments, Type&& return_type) noexcept
         : AreaBase(area),
           arguments_(std::move(arguments)),
           return_(std::move(return_type)) {}
@@ -21,25 +21,25 @@ public:
         return arguments_ == other.arguments_ and return_ == other.return_;
     }
 
-    auto numberOfArguments() const noexcept -> std::size_t
+    constexpr auto numberOfArguments() const noexcept -> std::size_t
     {
         return arguments_.size();
     }
 
-    auto getArguments() const noexcept -> const std::vector<Type>&
+    constexpr auto getArguments() const noexcept -> const std::vector<Type>&
     {
         return arguments_;
     }
-    auto getArguments() noexcept -> std::vector<Type>&
+    constexpr auto getArguments() noexcept -> std::vector<Type>&
     {
         return arguments_;
     }
 
-    auto getReturnType() const noexcept -> const Type&
+    constexpr auto getReturnType() const noexcept -> const Type&
     {
         return return_;
     }
-    auto getReturnType() noexcept -> Type&
+    constexpr auto getReturnType() noexcept -> Type&
     {
         return return_;
     }
