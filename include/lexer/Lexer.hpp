@@ -97,6 +97,7 @@ private:
             return Token{TokenTypes::NEWLINE, start, value};
         }
 
+
         if(std::isalpha(content_.front())) {
             if(let_re(content_)) {
                 auto value = moveForward(3);
@@ -151,7 +152,15 @@ private:
                 return Token{TokenTypes::SELF_TYPE, start, value};
             }
 
-            auto match = identifier_re(content_);
+        }
+
+		//check _ before identifier to avoid lexing _ as identifier
+        if(underscore_re(content_)) {
+            auto value = moveForward(1);
+            return Token{TokenTypes::UNDERSCORE, start, value};
+        }
+
+        if(auto match = identifier_re(content_)) {
             auto value = moveForward(match.size());
             return Token{TokenTypes::IDENTIFIER, start, value};
         }
