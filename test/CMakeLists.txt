@@ -8,6 +8,7 @@ include(../cmake/gtest.cmake)
 
 add_executable(unit_tests
   lexer/LexerTest.cpp
+  parser/ParserTest.cpp
   main.cpp
 )
 
