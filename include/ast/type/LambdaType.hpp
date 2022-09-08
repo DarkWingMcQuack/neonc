@@ -15,6 +15,12 @@ public:
           arguments_(std::move(arguments)),
           return_(std::move(return_type)) {}
 
+    constexpr auto operator==(const LambdaType& other) const noexcept
+        -> bool
+    {
+        return arguments_ == other.arguments_ and return_ == other.return_;
+    }
+
     auto numberOfArguments() const noexcept -> std::size_t
     {
         return arguments_.size();

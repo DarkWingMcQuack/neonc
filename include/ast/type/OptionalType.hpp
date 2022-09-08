@@ -15,6 +15,12 @@ public:
         : AreaBase(area),
           type_(std::move(type)) {}
 
+    constexpr auto operator==(const OptionalType& other) const noexcept
+        -> bool
+    {
+        return type_ == other.type_;
+    }
+
 
     auto getType() const noexcept -> const Type&
     {

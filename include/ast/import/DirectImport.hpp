@@ -16,6 +16,12 @@ public:
           namespce_(std::move(namespce)),
           imported_element_(element) {}
 
+    constexpr auto operator==(const DirectImport& other) const noexcept
+        -> bool
+    {
+        return namespce_ == other.namespce_ and imported_element_ == other.imported_element_;
+    }
+
     auto getNamespace() const noexcept -> const std::vector<Identifier>&
     {
         return namespce_;
@@ -40,4 +46,4 @@ private:
     Identifier imported_element_;
 };
 
-}
+} // namespace ast

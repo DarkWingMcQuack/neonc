@@ -12,6 +12,12 @@ public:
     constexpr Boolean(lexing::TextArea area, bool value) noexcept
         : AreaBase{std::move(area)}, value_(value) {}
 
+    constexpr auto operator==(const Boolean& other) const noexcept
+        -> bool
+    {
+        return value_ == other.value_;
+    }
+
     constexpr auto getValue() const noexcept -> bool
     {
         return value_;

@@ -14,6 +14,12 @@ public:
         : AreaBase(area),
           types_(std::move(types)) {}
 
+    constexpr auto operator==(const TupleType& other) const noexcept
+        -> bool
+    {
+        return types_ == other.types_;
+    }
+
     auto size() const noexcept -> std::size_t
     {
         return types_.size();
