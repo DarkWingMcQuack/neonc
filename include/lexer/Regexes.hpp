@@ -9,6 +9,7 @@ constexpr auto nl_re = ctre::starts_with<"\\n+">;
 
 // keywords
 constexpr auto let_re = ctre::starts_with<"let([^a-zA-Z0-9_]|$)">;
+constexpr auto underscore_re = ctre::starts_with<"_([^a-zA-Z0-9_]|$)">;
 constexpr auto fun_re = ctre::starts_with<"fun([^a-zA-Z0-9_]|$)">;
 constexpr auto type_re = ctre::starts_with<"type([^a-zA-Z0-9_]|$)">;
 constexpr auto typeclass_re = ctre::starts_with<"typeclass([^a-zA-Z0-9_]|$)">;
