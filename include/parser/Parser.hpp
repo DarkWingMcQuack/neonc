@@ -135,6 +135,38 @@ public:
         return std::nullopt;
     }
 
+    constexpr auto named_type() noexcept
+        -> std::optional<ast::NamedType>
+    {
+        std::vector<ast::Identifier> names;
+
+        auto first_identifier_opt = identifier();
+        if(not first_identifier_opt) {
+            return std::nullopt;
+        }
+
+        names.emplace_back(std::move(first_identifier_opt.value()));
+
+        while(lexer_.peek() && lexer_.peek().value().getType() == lexing::TokenTypes::COLON_COLON) {
+            lexer_.pop();
+
+            auto identifier_opt = identifier();
+            if(not identifier_opt) {
+                // TODO: return expexted Identifier error
+                return std::nullopt;
+            }
+            names.emplace_back(std::move(identifier_opt.value()));
+        }
+
+        auto area = lexing::TextArea::combine(names.front().getArea(),
+                                              names.back().getArea());
+
+        auto type_name = std::move(names.back());
+        names.pop_back();
+
+        return ast::NamedType{area, std::move(names), std::move(type_name)};
+    }
+
 private:
     std::string_view content_;
     lexing::Lexer lexer_;
