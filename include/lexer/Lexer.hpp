@@ -68,6 +68,14 @@ public:
         return array_from_lexed<N>();
     }
 
+    constexpr auto next_is(TokenTypes type) noexcept -> bool
+    {
+        if(auto result = peek()) {
+            return result.value().getType() == type;
+        }
+        return false;
+    }
+
     template<auto N = 1ul>
     constexpr auto pop() noexcept -> void
     {
@@ -210,6 +218,11 @@ private:
         if(content_.starts_with(',')) {
             auto value = moveForward(1);
             return Token{TokenTypes::COMMA, start, value};
+        }
+
+        if(content_.starts_with('?')) {
+            auto value = moveForward(1);
+            return Token{TokenTypes::QUESTIONMARK, start, value};
         }
 
 
