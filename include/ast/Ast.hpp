@@ -10,6 +10,7 @@
 #include <ast/expression/String.hpp>
 #include <ast/import/DirectImport.hpp>
 #include <ast/type/NamedType.hpp>
+#include <common/Traits.hpp>
 
 namespace ast {
 
@@ -112,6 +113,36 @@ using ToplevelElement = std::variant<Import,
                                      std::unique_ptr<TypeDefinition>,
                                      std::unique_ptr<TypeclassDefinition>,
                                      std::unique_ptr<LetAssignment>>;
+
+
+template<class T>
+constexpr auto getTextArea(const T& ast_element) noexcept
+    -> lexing::TextArea
+{
+    // clang-format off
+    constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
+	constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, T>::value;
+    // clang-format on
+
+    if constexpr(is_unique_ptr) {
+        return ast_element->getArea();
+    } else if constexpr(not is_variant) {
+        return ast_element.getArea();
+    } else {
+
+        return std::visit(
+            [](const auto& e) {
+                constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, std::decay_t<decltype(e)>>::value;
+
+                if constexpr(is_unique_ptr) {
+                    return e->getArea();
+                } else {
+                    return e.getArea();
+                }
+            },
+            ast_element);
+    }
+}
 
 } // namespace ast
 
