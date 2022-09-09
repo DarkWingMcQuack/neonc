@@ -76,6 +76,19 @@ public:
         }
     }
 
+    constexpr auto pop_token(TokenTypes type) noexcept -> void
+    {
+        while(not lexed_.empty() and lexed_.back().getType() == type) {
+            lexed_.pop_back();
+            peek();
+        }
+    }
+
+    constexpr auto pop_ws() noexcept -> void
+    {
+        pop_token(TokenTypes::WHITESPACE);
+    }
+
 
 private:
     constexpr auto lexNext() noexcept -> std::optional<Token>
@@ -151,10 +164,9 @@ private:
                 auto value = moveForward(4);
                 return Token{TokenTypes::SELF_TYPE, start, value};
             }
-
         }
 
-		//check _ before identifier to avoid lexing _ as identifier
+        // check _ before identifier to avoid lexing _ as identifier
         if(underscore_re(content_)) {
             auto value = moveForward(1);
             return Token{TokenTypes::UNDERSCORE, start, value};
