@@ -9,9 +9,9 @@ namespace ast {
 class DirectImport : public AreaBase
 {
 public:
-    DirectImport(lexing::TextArea area,
-                 std::vector<Identifier>&& namespce,
-                 Identifier element) noexcept
+    constexpr DirectImport(lexing::TextArea area,
+                           std::vector<Identifier>&& namespce,
+                           Identifier element) noexcept
         : AreaBase(area),
           namespce_(std::move(namespce)),
           imported_element_(element) {}
@@ -22,21 +22,21 @@ public:
         return namespce_ == other.namespce_ and imported_element_ == other.imported_element_;
     }
 
-    auto getNamespace() const noexcept -> const std::vector<Identifier>&
+    constexpr auto getNamespace() const noexcept -> const std::vector<Identifier>&
     {
         return namespce_;
     }
-    auto getNamespace() noexcept -> std::vector<Identifier>&
+    constexpr auto getNamespace() noexcept -> std::vector<Identifier>&
     {
         return namespce_;
     }
 
-    auto getImportedElement() const noexcept -> const Identifier&
+    constexpr auto getImportedElement() const noexcept -> const Identifier&
     {
         return imported_element_;
     }
 
-    auto getImportedElement() noexcept -> Identifier&
+    constexpr auto getImportedElement() noexcept -> Identifier&
     {
         return imported_element_;
     }
