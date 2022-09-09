@@ -10,7 +10,7 @@ namespace ast {
 class UnionType : public AreaBase
 {
 public:
-    UnionType(lexing::TextArea area, std::vector<Type>&& types) noexcept
+    constexpr UnionType(lexing::TextArea area, std::vector<Type>&& types) noexcept
         : AreaBase(area),
           types_(std::move(types)) {}
 
