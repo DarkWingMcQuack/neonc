@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ast/Forward.hpp>
 #include <variant>
 
 #include <ast/common/Identifier.hpp>
@@ -21,11 +22,11 @@ class OptionalType;
 class LambdaType;
 
 using Type = std::variant<NamedType,
-						  SelfType,
-                          std::unique_ptr<UnionType>,
-                          std::unique_ptr<TupleType>,
-                          std::unique_ptr<OptionalType>,
-                          std::unique_ptr<LambdaType>>;
+                          SelfType,
+                          Forward<UnionType>,
+                          Forward<TupleType>,
+                          Forward<OptionalType>,
+                          Forward<LambdaType>>;
 
 class IfExpr;
 class FunctionCall;
@@ -59,34 +60,34 @@ using Expression = std::variant<Identifier,
                                 Boolean,
                                 String,
                                 Self,
-                                std::unique_ptr<IfExpr>,
-                                std::unique_ptr<FunctionCall>,
-                                std::unique_ptr<LambdaExpr>,
-                                std::unique_ptr<TupleExpr>,
-                                std::unique_ptr<BlockExpr>,
-                                std::unique_ptr<ForExpr>,
-                                std::unique_ptr<Addition>,
-                                std::unique_ptr<Substraction>,
-                                std::unique_ptr<Multiplication>,
-                                std::unique_ptr<Division>,
-                                std::unique_ptr<Remainder>,
-                                std::unique_ptr<LogicalOr>,
-                                std::unique_ptr<LogicalAnd>,
-                                std::unique_ptr<BitwiseOr>,
-                                std::unique_ptr<BitwiseAnd>,
-                                std::unique_ptr<LessThen>,
-                                std::unique_ptr<LessEqThen>,
-                                std::unique_ptr<GreaterThen>,
-                                std::unique_ptr<GreaterEqThen>,
-                                std::unique_ptr<Equal>,
-                                std::unique_ptr<NotEqual>,
-                                std::unique_ptr<UnaryMinus>,
-                                std::unique_ptr<UnaryPlus>,
-                                std::unique_ptr<LogicalNot>>;
+                                Forward<IfExpr>,
+                                Forward<FunctionCall>,
+                                Forward<LambdaExpr>,
+                                Forward<TupleExpr>,
+                                Forward<BlockExpr>,
+                                Forward<ForExpr>,
+                                Forward<Addition>,
+                                Forward<Substraction>,
+                                Forward<Multiplication>,
+                                Forward<Division>,
+                                Forward<Remainder>,
+                                Forward<LogicalOr>,
+                                Forward<LogicalAnd>,
+                                Forward<BitwiseOr>,
+                                Forward<BitwiseAnd>,
+                                Forward<LessThen>,
+                                Forward<LessEqThen>,
+                                Forward<GreaterThen>,
+                                Forward<GreaterEqThen>,
+                                Forward<Equal>,
+                                Forward<NotEqual>,
+                                Forward<UnaryMinus>,
+                                Forward<UnaryPlus>,
+                                Forward<LogicalNot>>;
 
 class TypeclassImport;
 using Import = std::variant<DirectImport,
-                            std::unique_ptr<TypeclassImport>>;
+                            Forward<TypeclassImport>>;
 
 
 class LetAssignment;
@@ -95,14 +96,14 @@ class ReturnStmt;
 
 using Statement = std::variant<Import,
                                Expression,
-                               std::unique_ptr<LetAssignment>,
-                               std::unique_ptr<WhileStmt>>;
+                               Forward<LetAssignment>,
+                               Forward<WhileStmt>>;
 
 using FunctionStatement = std::variant<Expression,
                                        Import,
-                                       std::unique_ptr<LetAssignment>,
-                                       std::unique_ptr<WhileStmt>,
-                                       std::unique_ptr<ReturnStmt>>;
+                                       Forward<LetAssignment>,
+                                       Forward<WhileStmt>,
+                                       Forward<ReturnStmt>>;
 
 class Namespace;
 class FunctionDefinition;
@@ -110,11 +111,11 @@ class TypeDefinition;
 class TypeclassDefinition;
 
 using ToplevelElement = std::variant<Import,
-                                     std::unique_ptr<FunctionDefinition>,
-                                     std::unique_ptr<Namespace>,
-                                     std::unique_ptr<TypeDefinition>,
-                                     std::unique_ptr<TypeclassDefinition>,
-                                     std::unique_ptr<LetAssignment>>;
+                                     Forward<FunctionDefinition>,
+                                     Forward<Namespace>,
+                                     Forward<TypeDefinition>,
+                                     Forward<TypeclassDefinition>,
+                                     Forward<LetAssignment>>;
 
 
 template<class T>
@@ -123,10 +124,10 @@ constexpr auto getTextArea(const T& ast_element) noexcept
 {
     // clang-format off
     constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
-	constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, T>::value;
+	constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
     // clang-format on
 
-    if constexpr(is_unique_ptr) {
+    if constexpr(is_forward) {
         return ast_element->getArea();
     } else if constexpr(not is_variant) {
         return ast_element.getArea();
@@ -134,9 +135,9 @@ constexpr auto getTextArea(const T& ast_element) noexcept
 
         return std::visit(
             [](const auto& e) {
-                constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, std::decay_t<decltype(e)>>::value;
+                constexpr bool is_forward = common::is_specialization_of<Forward, std::decay_t<decltype(e)>>::value;
 
-                if constexpr(is_unique_ptr) {
+                if constexpr(is_forward) {
                     return e->getArea();
                 } else {
                     return e.getArea();
@@ -152,10 +153,10 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 {
     // clang-format off
     constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
-	constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, T>::value;
+	constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
     // clang-format on
 
-    if constexpr(is_unique_ptr) {
+    if constexpr(is_forward) {
         ast_element->setArea(new_area);
     } else if constexpr(not is_variant) {
         ast_element.setArea(new_area);
@@ -163,9 +164,9 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 
         return std::visit(
             [&](auto& e) {
-                constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, std::decay_t<decltype(e)>>::value;
+                constexpr bool is_forward = common::is_specialization_of<Forward, std::decay_t<decltype(e)>>::value;
 
-                if constexpr(is_unique_ptr) {
+                if constexpr(is_forward) {
                     e->setArea(new_area);
                 } else {
                     e.setArea(new_area);

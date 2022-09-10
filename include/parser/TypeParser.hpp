@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ast/Ast.hpp>
+#include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
 #include <parser/IdentifierParser.hpp>
 #include <parser/Utils.hpp>
@@ -130,7 +131,7 @@ private:
 
         if(not lexer_.next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
-		  fmt::print("WEEEEEEEEEE\n");
+            fmt::print("WEEEEEEEEEE\n");
             return std::nullopt;
         }
 
@@ -139,7 +140,7 @@ private:
 
         auto area = lexing::TextArea::combine(start, closing_area);
 
-        return ast::Type{std::make_unique<ast::TupleType>(std::move(area), std::move(types))};
+        return ast::Type{forward<ast::TupleType>(std::move(area), std::move(types))};
     }
 
     // only invoke if the next token is |
@@ -174,7 +175,7 @@ private:
 
         auto area = lexing::TextArea::combine(start, closing_area);
 
-        return ast::Type{std::make_unique<ast::UnionType>(std::move(area), std::move(types))};
+        return ast::Type{forward<ast::UnionType>(std::move(area), std::move(types))};
     }
 
     constexpr auto lambda_type_with_multiple(lexing::TextArea start, ast::Type&& first_type) noexcept
@@ -219,9 +220,9 @@ private:
 
         auto area = lexing::TextArea::combine(start, ast::getTextArea(return_type));
 
-        return ast::Type{std::make_unique<ast::LambdaType>(std::move(area),
-                                                           std::move(types),
-                                                           std::move(return_type))};
+        return ast::Type{forward<ast::LambdaType>(std::move(area),
+                                                  std::move(types),
+                                                  std::move(return_type))};
     }
 
     // only invoke if the next token is )
@@ -291,7 +292,7 @@ private:
         auto end = lexer_.peek_and_pop().value().getArea();
         auto new_area = lexing::TextArea::combine(start, end);
 
-        return ast::Type{std::make_unique<ast::OptionalType>(new_area, std::move(first_type))};
+        return ast::Type{forward<ast::OptionalType>(new_area, std::move(first_type))};
     }
 
     // only call if the next token is a =>
@@ -313,9 +314,9 @@ private:
         auto area = lexing::TextArea::combine(ast::getTextArea(first_type),
                                               ast::getTextArea(ret_type));
 
-        return ast::Type{std::make_unique<ast::LambdaType>(area,
-                                                           std::move(first_type),
-                                                           std::move(ret_type))};
+        return ast::Type{forward<ast::LambdaType>(area,
+                                                  std::move(first_type),
+                                                  std::move(ret_type))};
     }
 };
 } // namespace parser
