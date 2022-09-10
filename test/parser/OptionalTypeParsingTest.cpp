@@ -1,3 +1,5 @@
+#include <ast/Ast.hpp>
+#include <ast/Forward.hpp>
 #include <concepts>
 #include <iostream>
 #include <lexer/Lexer.hpp>
@@ -11,8 +13,8 @@ using parser::TypeParser;
 auto optOf(auto type) -> ast::Type
 {
     return ast::Type{
-        std::make_unique<ast::OptionalType>(lexing::TextArea{0, 0},
-                                            ast::Type{std::move(type)})};
+        ast::forward<ast::OptionalType>(lexing::TextArea{0, 0},
+                                        ast::Type{std::move(type)})};
 }
 
 auto namedT(auto... elems) -> ast::NamedType
@@ -37,9 +39,18 @@ auto optional_type_test_positive(std::string_view text, auto expected)
     auto result = TypeParser{text, std::move(lexer)}.type();
 
     ASSERT_TRUE(!!result);
-    EXPECT_TRUE(std::holds_alternative<std::unique_ptr<ast::OptionalType>>(result.value()));
-    EXPECT_EQ(*std::get<std::unique_ptr<ast::OptionalType>>(result.value()),
-              *std::get<std::unique_ptr<ast::OptionalType>>(expected));
+    EXPECT_TRUE(std::holds_alternative<ast::Forward<ast::OptionalType>>(result.value()));
+    EXPECT_EQ(*std::get<ast::Forward<ast::OptionalType>>(result.value()),
+              *std::get<ast::Forward<ast::OptionalType>>(expected));
+}
+
+auto optional_type_test_negative(std::string_view text)
+{
+    lexing::Lexer lexer{text};
+    auto result = TypeParser{text, std::move(lexer)}.type();
+
+    ASSERT_TRUE(!!result);
+    EXPECT_FALSE(std::holds_alternative<ast::Forward<ast::OptionalType>>(result.value()));
 }
 
 
@@ -50,10 +61,16 @@ TEST(OptionalTypeParsingTest, OptionalTypeParsingPositiveTest)
     optional_type_test_positive("hello?", optOf(namedT("hello")));
     optional_type_test_positive("a::b::c?", optOf(namedT("a", "b", "c")));
     optional_type_test_positive("Self?", optOf(selfT()));
-    // optional_type_test_positive("Self??", optOf(optOf(selfT())));
-    // optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
+    optional_type_test_positive("Self??", optOf(optOf(selfT())));
+    optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
 }
 
 TEST(OptionalTypeParsingTest, OptionalTypeParsingNegativeTest)
 {
+    optional_type_test_negative("hello=>hello?");
+    optional_type_test_negative("hello?=>hello?");
+    optional_type_test_negative("hello");
+    optional_type_test_negative("(a|b?)");
+    optional_type_test_negative("(a?|b?)");
+    optional_type_test_negative("(a&b?)");
 }
