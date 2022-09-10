@@ -26,7 +26,6 @@ public:
         return type_ == other.type_;
     }
 
-
     constexpr auto getType() const noexcept -> const Type&
     {
         return type_;
