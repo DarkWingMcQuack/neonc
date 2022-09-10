@@ -39,7 +39,7 @@ function(set_flags target)
     $<$<CONFIG:DEBUG>:-Winit-self>
     $<$<CONFIG:DEBUG>:-ggdb>
     $<$<CONFIG:RELEASE>:-O3>
-    $<$<CONFIG:RELEASE>:-flto>
+    $<$<CONFIG:RELEASE>:-flto=auto>
     $<$<CONFIG:RELEASE>:-march=native>
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:RELEASE>>:-fipa-pta>
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:RELEASE>>:-fdevirtualize-at-ltrans>
