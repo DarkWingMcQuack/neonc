@@ -5,3 +5,9 @@
 #include <gtest/gtest.h>
 
 using parser::Parser;
+
+
+TEST(ParserTest, SimplePositiveParserTest)
+{
+    
+}
