@@ -10,14 +10,14 @@
 
 using parser::TypeParser;
 
-auto optOf(auto type) -> ast::Type
+inline auto optOf(auto type) -> ast::Type
 {
     return ast::Type{
         ast::forward<ast::OptionalType>(lexing::TextArea{0, 0},
                                         ast::Type{std::move(type)})};
 }
 
-auto namedT(auto... elems) -> ast::NamedType
+inline auto namedT(auto... elems) -> ast::NamedType
 {
     static_assert(sizeof...(elems) > 0);
 
@@ -28,12 +28,12 @@ auto namedT(auto... elems) -> ast::NamedType
     return ast::NamedType{{0, 0}, std::move(ns), std::move(last)};
 }
 
-auto selfT() -> ast::SelfType
+inline auto selfT() -> ast::SelfType
 {
     return ast::SelfType{{0, 0}};
 }
 
-auto lambdaT(auto... elems) -> ast::LambdaType
+inline auto lambdaT(auto... elems) -> ast::LambdaType
 {
     static_assert(sizeof...(elems) >= 2);
 
@@ -46,7 +46,7 @@ auto lambdaT(auto... elems) -> ast::LambdaType
     return ast::LambdaType{{0, 0}, std::move(params), std::move(last)};
 }
 
-auto optional_type_test_positive(std::string_view text, auto expected)
+inline auto optional_type_test_positive(std::string_view text, auto expected)
 {
     lexing::Lexer lexer{text};
     auto result = TypeParser{text, std::move(lexer)}.type();
@@ -57,7 +57,7 @@ auto optional_type_test_positive(std::string_view text, auto expected)
               *std::get<ast::Forward<ast::OptionalType>>(expected));
 }
 
-auto optional_type_test_negative(std::string_view text)
+inline auto optional_type_test_negative(std::string_view text)
 {
     lexing::Lexer lexer{text};
     auto result = TypeParser{text, std::move(lexer)}.type();
@@ -67,8 +67,6 @@ auto optional_type_test_negative(std::string_view text)
 }
 
 
-
-
 TEST(OptionalTypeParsingTest, OptionalTypeParsingPositiveTest)
 {
     optional_type_test_positive("hello?", optOf(namedT("hello")));
@@ -76,6 +74,7 @@ TEST(OptionalTypeParsingTest, OptionalTypeParsingPositiveTest)
     optional_type_test_positive("Self?", optOf(selfT()));
     optional_type_test_positive("Self??", optOf(optOf(selfT())));
     optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
+    optional_type_test_positive("(((Self)?)?)?", optOf(optOf(optOf(selfT()))));
     optional_type_test_positive("(hello=>hello)?", optOf(lambdaT(namedT("hello"), namedT("hello"))));
 }
 
