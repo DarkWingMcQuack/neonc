@@ -128,8 +128,9 @@ private:
             types.emplace_back(std::move(next_type.value()));
         }
 
-        if(lexer_.next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(not lexer_.next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
+		  fmt::print("WEEEEEEEEEE\n");
             return std::nullopt;
         }
 
@@ -163,7 +164,7 @@ private:
             types.emplace_back(std::move(next_type.value()));
         }
 
-        if(lexer_.next_is(lexing::TokenTypes::BITWISE_OR)) {
+        if(not lexer_.next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
             return std::nullopt;
         }
