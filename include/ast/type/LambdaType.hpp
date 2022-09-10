@@ -15,6 +15,13 @@ public:
           arguments_(std::move(arguments)),
           return_(std::move(return_type)) {}
 
+    constexpr LambdaType(lexing::TextArea area, Type&& argument, Type&& return_type) noexcept
+        : AreaBase(area),
+          return_(std::move(return_type))
+    {
+        arguments_.emplace_back(std::move(argument));
+    }
+
     constexpr LambdaType(LambdaType&&) noexcept = default;
     constexpr LambdaType(const LambdaType&) noexcept = delete;
     constexpr auto operator=(LambdaType&&) -> LambdaType& = default;
