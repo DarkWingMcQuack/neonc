@@ -14,6 +14,11 @@ public:
         : AreaBase(area),
           types_(std::move(types)) {}
 
+    constexpr UnionType(UnionType&&) noexcept = default;
+    constexpr UnionType(const UnionType&) noexcept = default;
+    constexpr auto operator=(UnionType&&) -> UnionType& = default;
+    constexpr auto operator=(const UnionType&) -> UnionType& = default;
+
     constexpr auto operator==(const UnionType& other) const noexcept
         -> bool
     {

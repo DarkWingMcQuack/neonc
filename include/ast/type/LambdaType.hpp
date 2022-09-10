@@ -15,6 +15,11 @@ public:
           arguments_(std::move(arguments)),
           return_(std::move(return_type)) {}
 
+    constexpr LambdaType(LambdaType&&) noexcept = default;
+    constexpr LambdaType(const LambdaType&) noexcept = delete;
+    constexpr auto operator=(LambdaType&&) -> LambdaType& = default;
+    constexpr auto operator=(const LambdaType&) -> LambdaType& = delete;
+
     constexpr auto operator==(const LambdaType& other) const noexcept
         -> bool
     {

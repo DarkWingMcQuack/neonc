@@ -17,6 +17,11 @@ public:
           namespce_(std::move(namespce)),
           type_(std::move(type)) {}
 
+    constexpr NamedType(NamedType&&) noexcept = default;
+    constexpr NamedType(const NamedType&) noexcept = delete;
+    constexpr auto operator=(NamedType&&) -> NamedType& = default;
+    constexpr auto operator=(const NamedType&) -> NamedType& = delete;
+
     constexpr auto operator==(const NamedType& other) const noexcept
         -> bool
     {

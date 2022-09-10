@@ -15,6 +15,11 @@ public:
         : AreaBase(area),
           type_(std::move(type)) {}
 
+    constexpr OptionalType(OptionalType&&) noexcept = default;
+    constexpr OptionalType(const OptionalType&) noexcept = delete;
+    constexpr auto operator=(OptionalType&&) -> OptionalType& = default;
+    constexpr auto operator=(const OptionalType&) -> OptionalType& = delete;
+
     constexpr auto operator==(const OptionalType& other) const noexcept
         -> bool
     {

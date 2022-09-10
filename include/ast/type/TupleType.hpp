@@ -14,6 +14,11 @@ public:
         : AreaBase(area),
           types_(std::move(types)) {}
 
+    constexpr TupleType(TupleType&&) noexcept = default;
+    constexpr TupleType(const TupleType&) noexcept = delete;
+    constexpr auto operator=(TupleType&&) -> TupleType& = default;
+    constexpr auto operator=(const TupleType&) -> TupleType& = delete;
+
     constexpr auto operator==(const TupleType& other) const noexcept
         -> bool
     {
