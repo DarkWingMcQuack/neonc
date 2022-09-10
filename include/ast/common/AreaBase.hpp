@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <lexer/TextArea.hpp>
 
 namespace ast {
@@ -14,6 +15,11 @@ public:
     [[nodiscard]] constexpr auto getArea() const noexcept -> lexing::TextArea
     {
         return area_;
+    }
+
+    constexpr auto setArea(lexing::TextArea area) noexcept -> void
+    {
+        area_ = std::move(area);
     }
 
 private:
