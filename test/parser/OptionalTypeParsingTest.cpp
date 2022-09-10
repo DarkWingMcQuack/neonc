@@ -86,5 +86,7 @@ TEST(OptionalTypeParsingTest, OptionalTypeParsingNegativeTest)
     optional_type_test_negative("hello");
     optional_type_test_negative("(a|b?)");
     optional_type_test_negative("(a?|b?)");
+    optional_type_test_negative("(a|b::s?)");
+    optional_type_test_negative("(a::b?|b::b?)");
     optional_type_test_negative("(a&b?)");
 }
