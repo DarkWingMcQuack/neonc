@@ -17,13 +17,13 @@ function (new_test source name)
 	${CTRE_INCLUDE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/../include
   )
-  add_test(
-	NAME ${name}
-	COMMAND ${CMAKE_BINARY_DIR}/test/${name}
-  )
 
   set_flags(${name})
   setup_linker(${name})
+
+  include(GoogleTest)
+  gtest_discover_tests(${name})
+
   
   add_dependencies(${name} gtest-project)
 endfunction()
