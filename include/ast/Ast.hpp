@@ -144,6 +144,35 @@ constexpr auto getTextArea(const T& ast_element) noexcept
     }
 }
 
+
+template<class T>
+constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
+{
+    // clang-format off
+    constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
+	constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, T>::value;
+    // clang-format on
+
+    if constexpr(is_unique_ptr) {
+        ast_element->setArea(new_area);
+    } else if constexpr(not is_variant) {
+        ast_element.setArea(new_area);
+    } else {
+
+        return std::visit(
+            [&](auto& e) {
+                constexpr bool is_unique_ptr = common::is_specialization_of<std::unique_ptr, std::decay_t<decltype(e)>>::value;
+
+                if constexpr(is_unique_ptr) {
+                    e->setArea(new_area);
+                } else {
+                    e.setArea(new_area);
+                }
+            },
+            ast_element);
+    }
+}
+
 } // namespace ast
 
 
