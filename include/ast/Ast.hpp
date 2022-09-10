@@ -10,6 +10,7 @@
 #include <ast/expression/String.hpp>
 #include <ast/import/DirectImport.hpp>
 #include <ast/type/NamedType.hpp>
+#include <ast/type/SelfType.hpp>
 #include <common/Traits.hpp>
 
 namespace ast {
@@ -20,6 +21,7 @@ class OptionalType;
 class LambdaType;
 
 using Type = std::variant<NamedType,
+						  SelfType,
                           std::unique_ptr<UnionType>,
                           std::unique_ptr<TupleType>,
                           std::unique_ptr<OptionalType>,
