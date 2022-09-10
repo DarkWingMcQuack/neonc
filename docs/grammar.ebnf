@@ -99,7 +99,7 @@ expression = literal                    |
 
 named_type = identifier , {"::" , identifier} ;
 optional_type = type , "?" ;
-tuple_type = "(" , type , "," , type , {"," , type} , ")";
+tuple_type = "(" , type , "&" , type , {"&" , type} , ")";
 union_type = type , "|" , type , {"|" , type} ;
 lambda_paramter_type_list = ("(" , type , "," , type , {"," , type} , ")") | type ;
 lambda_type = lambda_paramter_type_list , "=>" , type ;
