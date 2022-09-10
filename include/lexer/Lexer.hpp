@@ -33,6 +33,11 @@ public:
     constexpr Lexer(std::string_view content) noexcept
         : content_(content) {}
 
+    constexpr Lexer(Lexer&&) noexcept = default;
+    constexpr auto operator=(Lexer&&) noexcept -> Lexer& = default;
+    constexpr Lexer(const Lexer&) noexcept = delete;
+    constexpr auto operator=(const Lexer&) noexcept -> Lexer& = delete;
+
     template<auto N = 1>
     constexpr auto peek() noexcept -> std::optional<Token>
     requires(N == 1)
@@ -76,6 +81,14 @@ public:
         return false;
     }
 
+    constexpr auto next_area() noexcept -> std::optional<TextArea>
+    {
+        if(auto result = peek()) {
+            return result.value().getArea();
+        }
+        return std::nullopt;
+    }
+
     template<auto N = 1ul>
     constexpr auto pop() noexcept -> void
     {
@@ -97,6 +110,13 @@ public:
         pop_token(TokenTypes::WHITESPACE);
     }
 
+    template<auto N = 1>
+    constexpr auto peek_and_pop() noexcept
+    {
+        auto res = peek<N>();
+        pop<N>();
+        return res;
+    }
 
 private:
     constexpr auto lexNext() noexcept -> std::optional<Token>
