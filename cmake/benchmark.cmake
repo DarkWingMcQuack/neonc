@@ -15,14 +15,16 @@ set(CMAKE_ARGS
 
 ExternalProject_Add(benchmark-project
   PREFIX deps/benchmark
-  DOWNLOAD_NAME benchmark-1.6.0.tar.gz
+  DOWNLOAD_NAME benchmark-1.7.0.tar.gz
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
-  URL https://github.com/google/benchmark/archive/refs/tags/v1.6.0.tar.gz
+  URL https://github.com/google/benchmark/archive/refs/tags/v1.7.0.tar.gz
   PATCH_COMMAND cmake -E make_directory <SOURCE_DIR>/win32-deps/include
   CMAKE_ARGS ${CMAKE_ARGS}
   # Overwtire build and install commands to force Release build on MSVC.
   BUILD_COMMAND cmake --build <BINARY_DIR> --config Release
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+  DOWNLOAD_NO_PROGRESS ON
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 
