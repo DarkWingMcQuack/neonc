@@ -85,6 +85,12 @@ TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
     lambda_type_test_positive("hello?=>hello?", lambdaT(optOf(namedT("hello")),
 														optOf(namedT("hello"))));
 
+	lambda_type_test_positive("Self=>Self", lambdaT(selfT(),
+													selfT()));
+
+	lambda_type_test_positive("Self?=>Self?", lambdaT(optOf(selfT()),
+													  optOf(selfT())));
+
     lambda_type_test_positive("a=>b=>c", lambdaT(namedT("a"),
 												 lambdaT(namedT("b"),
 														 namedT("c"))));
@@ -116,4 +122,6 @@ TEST(LambdaTypeParsingTest, OptionalTypeParsingNegativeTest)
     lambda_type_test_negative("(a&b)");
     lambda_type_test_negative("(a|b)");
     lambda_type_test_negative("(hello=>hello)?");
+    lambda_type_test_negative("Self?");
+    lambda_type_test_negative("Self");
 }
