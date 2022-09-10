@@ -70,9 +70,18 @@ inline auto lambda_type_test_negative(std::string_view text)
 TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
 {
     lambda_type_test_positive("hello=>hello", lambdaT(namedT("hello"), namedT("hello")));
+    lambda_type_test_positive("(hello=>hello)", lambdaT(namedT("hello"), namedT("hello")));
+    lambda_type_test_positive("((hello=>hello))", lambdaT(namedT("hello"), namedT("hello")));
+    lambda_type_test_positive("hello?=>hello", lambdaT(optOf(namedT("hello")), namedT("hello")));
+    lambda_type_test_positive("hello?=>hello?", lambdaT(optOf(namedT("hello")), optOf(namedT("hello"))));
+    lambda_type_test_positive("a=>b=>c", lambdaT(namedT("a"), lambdaT(namedT("b"), namedT("c"))));
+    lambda_type_test_positive("(a=>b)=>c", lambdaT(lambdaT(namedT("a"), namedT("b")), namedT("c")));
+    lambda_type_test_positive("a?=>b?=>c?", lambdaT(optOf(namedT("a")), lambdaT(optOf(namedT("b")), optOf(namedT("c")))));
 }
 
 TEST(LambdaTypeParsingTest, OptionalTypeParsingNegativeTest)
 {
     lambda_type_test_negative("hello");
+    lambda_type_test_negative("hello?");
+    lambda_type_test_negative("(hello=>hello)?");
 }
