@@ -33,6 +33,19 @@ auto selfT() -> ast::SelfType
     return ast::SelfType{{0, 0}};
 }
 
+auto lambdaT(auto... elems) -> ast::LambdaType
+{
+    static_assert(sizeof...(elems) >= 2);
+
+    std::vector<ast::Type> params;
+    (params.emplace_back(std::move(elems)), ...);
+
+    auto last = std::move(params.back());
+    params.pop_back();
+
+    return ast::LambdaType{{0, 0}, std::move(params), std::move(last)};
+}
+
 auto optional_type_test_positive(std::string_view text, auto expected)
 {
     lexing::Lexer lexer{text};
@@ -63,6 +76,7 @@ TEST(OptionalTypeParsingTest, OptionalTypeParsingPositiveTest)
     optional_type_test_positive("Self?", optOf(selfT()));
     optional_type_test_positive("Self??", optOf(optOf(selfT())));
     optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
+    optional_type_test_positive("(hello=>hello)?", optOf(lambdaT(namedT("hello"), namedT("hello"))));
 }
 
 TEST(OptionalTypeParsingTest, OptionalTypeParsingNegativeTest)
