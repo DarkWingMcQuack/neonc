@@ -22,6 +22,9 @@ ExternalProject_Add(gtest-project
   # Overwtire build and install commands to force Release build on MSVC.
   BUILD_COMMAND cmake --build <BINARY_DIR> --config Release
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+
+  DOWNLOAD_NO_PROGRESS ON
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 

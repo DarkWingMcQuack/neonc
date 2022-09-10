@@ -19,6 +19,7 @@ include(cmake/tbb.cmake)
 include(cmake/ctre.cmake)
 include(cmake/namedtype.cmake)
 include(cmake/expected.cmake)
+include(cmake/flags.cmake)
 
 
 # needed for multithreading
@@ -117,6 +118,9 @@ target_link_libraries(NeonLib INTERFACE
 ## THE ACTUAL BINARY
 ###############################
 add_executable(neonc ${CMAKE_CURRENT_SOURCE_DIR}/cmd/main.cpp)
+
+set_flags(neonc)
+setup_linker(neonc)
 
 
 target_include_directories(neonc PRIVATE

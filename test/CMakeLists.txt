@@ -21,6 +21,9 @@ function (new_test source name)
 	NAME ${name}
 	COMMAND ${CMAKE_BINARY_DIR}/test/${name}
   )
+
+  set_flags(${name})
+  setup_linker(${name})
   
   add_dependencies(${name} gtest-project)
 endfunction()

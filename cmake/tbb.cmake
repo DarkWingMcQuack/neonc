@@ -18,8 +18,9 @@ ExternalProject_Add(tbb-project
   UPDATE_COMMAND ""
   CMAKE_ARGS ${CMAKE_ARGS}
   # Overwtire build and install commands to force Release build on MSVC.
-  BUILD_COMMAND cmake --build <BINARY_DIR> --config Release
+  BUILD_COMMAND cmake --build <BINARY_DIR> --config Release -- -j ${HOST_PROC_COUNT}
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 

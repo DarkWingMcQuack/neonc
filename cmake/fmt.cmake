@@ -5,7 +5,6 @@ set(CMAKE_ARGS
   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  -DBUILD_STATIC_LIBS=ON
   -DBUILD_SHARED_LIBS=OFF
   -DFMT_TEST:BOOL=OFF
   -DFMT_INSTALL:BOOL=ON
@@ -13,14 +12,14 @@ set(CMAKE_ARGS
 
 ExternalProject_Add(fmt-project
   PREFIX deps/fmt
-  DOWNLOAD_NAME fmt-7.1.3.tar.gz
+  DOWNLOAD_NAME fmt-9.0.0.tar.gz
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
-  URL https://github.com/fmtlib/fmt/archive/7.1.3.tar.gz
-  PATCH_COMMAND cmake -E make_directory <SOURCE_DIR>/win32-deps/include
+  DOWNLOAD_NO_PROGRESS ON
+  URL https://github.com/fmtlib/fmt/archive/9.0.0.tar.gz
   CMAKE_ARGS ${CMAKE_ARGS}
-  # Overwtire build and install commands to force Release build on MSVC.
-  BUILD_COMMAND cmake --build <BINARY_DIR> --config Release
+  BUILD_COMMAND cmake --build <BINARY_DIR> --config Release -- -j ${HOST_PROC_COUNT}
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 

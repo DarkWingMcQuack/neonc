@@ -1,50 +1,49 @@
-############################
-###Compiler flags
-############################
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}\
-          -pipe\
-          -Wall\
-          -Werror=format-security\
-          -ferror-limit=2\
-          -O0\
-          -g3\
-          -fno-optimize-sibling-calls\
-          -fno-omit-frame-pointer\
-          -Wfloat-equal\
-          -Wpointer-arith\
-          -Wformat-nonliteral\
-          -Winit-self\
-          -ggdb")
+function(setup_linker target)
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+	find_program(LLD lld)
+	if(LLD)
+	  message(STATUS "found lld, using it as linker")
+	  target_link_options(${target} PUBLIC -fuse-ld=lld)
+	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+	  message(FATAL_ERROR "Gold linker must be installed for building in Release mode.")
+	else()
+	  message(STATUS "LLD not available, using the system linker for target ${target}")
+	endif()
+  endif()
 
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}\
-          -pipe\
-          -Wall\
-          -O3\
-          -flto\
-          -march=native")
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
+    find_program(GNU_GOLD gold)
+    if(GNU_GOLD)
+	  message(STATUS "found GNU gold linker, using it as linker for target ${target}")
+	  target_link_options(${target} PUBLIC -fuse-ld=gold;LINKER:--threads,--thread-count=${HOST_PROC_COUNT})
+	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+	  message(FATAL_ERROR "Gold linker must be installed for building in Release mode.")
+	else()
+	  message(STATUS "Gold not available, using the system linker for target ${target}")
+	endif()
+  endif()
+endfunction()
 
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}\
-          -pipe\
-          -Wall\
-          -fmax-errors=2\
-          -Werror=format-security\
-          -O0\
-          -g3\
-          -Wfloat-equal\
-          -Wpointer-arith\
-          -Wformat-nonliteral\
-          -Winit-self\
-          -ggdb")
+function(set_flags target)
+  message(STATUS "setting compiler flags for target ${target}")
+  target_compile_options(${target} PUBLIC
+    -Wall -Werror=format-security -pipe
+    $<$<CONFIG:DEBUG>:-O0>
+    $<$<CONFIG:DEBUG>:-g3>
+    $<$<CXX_COMPILER_ID:Clang>:-ferror-limit=2>
+    $<$<CONFIG:DEBUG>:-fno-optimize-sibling-calls>
+	$<$<CONFIG:DEBUG>:-fno-omit-frame-pointer>
+    $<$<CONFIG:DEBUG>:-Wfloat-equal>
+    $<$<CONFIG:DEBUG>:-Wpointer-arith>
+    $<$<CONFIG:DEBUG>:-Wformat-nonliteral>
+    $<$<CONFIG:DEBUG>:-Winit-self>
+    $<$<CONFIG:DEBUG>:-ggdb>
+    $<$<CONFIG:RELEASE>:-O3>
+    $<$<CONFIG:RELEASE>:-flto>
+    $<$<CONFIG:RELEASE>:-march=native>
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:RELEASE>>:-fipa-pta>
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:RELEASE>>:-fdevirtualize-at-ltrans>
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:RELEASE>>:-fdevirtualize-speculatively>
+  )
 
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}\
-          -pipe\
-          -Wall\
-          -flto\
-          -fconcepts-diagnostics-depth=5\
-          -O3\
-          -fipa-pta\
-          -fdevirtualize-at-ltrans\
-          -march=native")
-endif()
+endfunction()

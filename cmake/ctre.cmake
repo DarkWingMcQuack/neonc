@@ -16,6 +16,8 @@ ExternalProject_Add(ctre-project
   # Overwtire build and install commands to force Release build on MSVC.
   BUILD_COMMAND ""
   INSTALL_COMMAND cmake -E copy_directory <SOURCE_DIR>/single-header <INSTALL_DIR>/include/ctre
+  DOWNLOAD_NO_PROGRESS ON
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 
@@ -25,8 +27,6 @@ add_library(ctre STATIC IMPORTED)
 set(CTRE_INCLUDE_DIR ${INSTALL_DIR}/include)
 file(MAKE_DIRECTORY ${CTRE_INCLUDE_DIR})  # Must exist.
 set_property(TARGET ctre PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CTRE_INCLUDE_DIR})
-
-message(${CTRE_INCLUDE_DIR})
 
 unset(INSTALL_DIR)
 unset(CMAKE_ARGS)

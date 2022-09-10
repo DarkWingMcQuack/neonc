@@ -10,14 +10,13 @@ set(CMAKE_ARGS
 ExternalProject_Add(namedtype-project
   PREFIX deps/namedtype
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
-  # GIT_REPOSITORY https://github.com/joboccara/NamedType
-  # use this fork until the comparison operator is fixed in the lib
-  GIT_REPOSITORY https://github.com/usefulcat/NamedType
+  GIT_REPOSITORY https://github.com/joboccara/NamedType
   CMAKE_ARGS ${CMAKE_ARGS}
   PATCH_COMMAND cmake -E make_directory <SOURCE_DIR>/win32-deps/include
   BUILD_COMMAND cmake --build <BINARY_DIR> --config Release
   UPDATE_COMMAND ""
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
 ExternalProject_Get_Property(namedtype-project INSTALL_DIR)
