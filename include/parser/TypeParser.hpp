@@ -131,7 +131,6 @@ private:
 
         if(not lexer_.next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
-            fmt::print("WEEEEEEEEEE\n");
             return std::nullopt;
         }
 
