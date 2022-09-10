@@ -36,7 +36,9 @@ TEST(SelfTypeParsingTest, SelfTypeParsingPositiveTest)
 TEST(SelfTypeParsingTest, SelfTypeParsingNegativeTest)
 {
     self_type_test_negative("hello?");
+    self_type_test_negative("hello??");
     self_type_test_negative("hello=>hello");
+    self_type_test_negative("hello=>hello=>hello");
     self_type_test_negative("(hello&hello)");
     self_type_test_negative("(hello|hello)");
     self_type_test_negative("(hello|hello)=>hello");
