@@ -30,6 +30,11 @@ public:
         return *elem_ == *rhs.elem_;
     }
 
+    constexpr auto operator!=(const Forward& rhs) const noexcept
+    {
+        return *elem_ != *rhs.elem_;
+    }
+
     // clang-format off
     constexpr auto operator*() noexcept -> T& { return *elem_;}
     constexpr auto operator*() const noexcept -> const T& { return *elem_;}
