@@ -11,6 +11,7 @@ add_executable(unit_tests
   parser/ParserTest.cpp
   parser/NamedTypeParsingTest.cpp
   parser/SelfTypeParsingTest.cpp
+  parser/OptionalTypeParsingTest.cpp
   parser/IdentifierParserTest.cpp
   main.cpp
 )
