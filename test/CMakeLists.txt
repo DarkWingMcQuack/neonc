@@ -9,13 +9,15 @@ include(../cmake/gtest.cmake)
 add_executable(unit_tests
   lexer/LexerTest.cpp
   parser/ParserTest.cpp
-  parser/TypeParserTest.cpp
+  parser/NamedTypeParsingTest.cpp
+  parser/SelfTypeParsingTest.cpp
   parser/IdentifierParserTest.cpp
   main.cpp
 )
 
 target_link_libraries(unit_tests LINK_PUBLIC
   gtest
+  fmt
 )
 
 
