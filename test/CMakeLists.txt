@@ -23,7 +23,6 @@ function (new_test source name)
 
   include(GoogleTest)
   gtest_discover_tests(${name})
-
   
   add_dependencies(${name} gtest-project)
 endfunction()
