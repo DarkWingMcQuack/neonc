@@ -21,7 +21,13 @@ public:
 
     constexpr auto expression() noexcept -> std::optional<ast::Expression>
     {
-        return literal();
+        if(auto result = literal()) {
+            return result;
+        }
+
+        if(auto result = if_expression()) {
+            return std::move(result.value());
+        }
     }
 
     constexpr auto statement() noexcept -> std::optional<ast::Statement>;
@@ -49,9 +55,6 @@ private:
             return result.value();
         }
 
-        if(auto result = if_expression()) {
-            return std::move(result.value());
-        }
 
         return std::nullopt;
     }
