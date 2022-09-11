@@ -28,6 +28,7 @@ inline auto namedT(auto... elems) -> ast::NamedType
     return ast::NamedType{{0, 0}, std::move(ns), std::move(last)};
 }
 
+
 inline auto selfT() -> ast::SelfType
 {
     return ast::SelfType{{0, 0}};

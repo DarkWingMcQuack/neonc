@@ -17,7 +17,27 @@ inline auto optOf(auto type) -> ast::Type
                                         ast::Type{std::move(type)})};
 }
 
-inline auto namedT(auto... elems) -> ast::NamedType
+inline auto tupleT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) > 0);
+
+    std::vector<ast::Type> types;
+    (types.emplace_back(std::move(elems)), ...);
+
+    return ast::forward<ast::TupleType>(lexing::TextArea{0, 0}, std::move(types));
+}
+
+inline auto unionT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) > 0);
+
+    std::vector<ast::Type> types;
+    (types.emplace_back(std::move(elems)), ...);
+
+    return ast::forward<ast::UnionType>(lexing::TextArea{0, 0}, std::move(types));
+}
+
+inline auto namedT(auto... elems) -> ast::Type
 {
     static_assert(sizeof...(elems) > 0);
 
@@ -28,7 +48,7 @@ inline auto namedT(auto... elems) -> ast::NamedType
     return ast::NamedType{{0, 0}, std::move(ns), std::move(last)};
 }
 
-inline auto selfT() -> ast::SelfType
+inline auto selfT() -> ast::Type
 {
     return ast::SelfType{{0, 0}};
 }
@@ -53,8 +73,7 @@ inline auto lambda_type_test_positive(std::string_view text, auto expected)
 
     ASSERT_TRUE(!!result);
     EXPECT_TRUE(std::holds_alternative<ast::Forward<ast::LambdaType>>(result.value()));
-    EXPECT_EQ(*std::get<ast::Forward<ast::LambdaType>>(result.value()),
-              *std::get<ast::Forward<ast::LambdaType>>(expected));
+    EXPECT_EQ(result.value(),expected);
 }
 
 inline auto lambda_type_test_negative(std::string_view text)
@@ -105,6 +124,15 @@ TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
 
     lambda_type_test_positive("(a,b)=>c", lambdaT(namedT("a"), namedT("b"),
 												  namedT("c")));
+
+    lambda_type_test_positive("(a|b)=>c", lambdaT(unionT(namedT("a"), namedT("b")),
+												  namedT("c")));
+
+    lambda_type_test_positive("(a&b)=>c", lambdaT(tupleT(namedT("a"), namedT("b")),
+												  namedT("c")));
+
+    lambda_type_test_positive("(a&b)=>(c|d)", lambdaT(tupleT(namedT("a"), namedT("b")),
+													  unionT(namedT("c"), namedT("d"))));
 
     lambda_type_test_positive("((a,b)=>c)=>(a=>b=>c)", lambdaT(
 															   lambdaT(namedT("a"), namedT("b"),
