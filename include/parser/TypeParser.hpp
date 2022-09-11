@@ -18,8 +18,7 @@ public:
         : IdentifierParser(lexer) {}
 
     constexpr auto type() noexcept
-        // -> std::optional<ast::Type>
-        -> nonstd::expected<ast::Type, common::Error>
+        -> std::optional<ast::Type>
     {
         auto start_type_opt = [this] {
             if(lexer_.next_is(lexing::TokenTypes::L_PARANTHESIS)) {
@@ -33,11 +32,9 @@ public:
 
         if(not start_type_opt) {
             // TODO: return error "expected Identifier or ( or Self"
-		  re
+            return std::nullopt;
         }
         auto start_type = std::move(start_type_opt.value());
-
-		return nonstd::expe
 
         return type(std::move(start_type));
     }
@@ -92,7 +89,7 @@ private:
 
         names.emplace_back(std::move(first_identifier_opt.value()));
 
-        while(lexer_.peek() && lexer_.peek().value().getType() == lexing::TokenTypes::COLON_COLON) {
+        while(lexer_.next_is(lexing::TokenTypes::COLON_COLON)) {
             lexer_.pop();
 
             auto identifier_opt = identifier();
