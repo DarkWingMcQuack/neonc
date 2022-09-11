@@ -49,6 +49,10 @@ private:
             return result.value();
         }
 
+        if(auto result = if_expression()) {
+            return std::move(result.value());
+        }
+
         return std::nullopt;
     }
 
@@ -107,6 +111,86 @@ private:
         }
 
         return std::nullopt;
+    }
+
+    constexpr auto block_expression() noexcept -> std::optional<ast::BlockExpr>
+    {
+        return std::nullopt;
+    }
+
+    constexpr auto elif_expression() noexcept -> std::optional<ast::ElifExpr>
+    {
+        if(not lexer_.next_is(lexing::TokenTypes::ELIF)) {
+            return std::nullopt;
+        }
+
+        auto start = lexer_.peek_and_pop().value().getArea();
+
+        auto elif_condition_opt = expression();
+        if(not elif_condition_opt) {
+            // TODO: propagate error
+            return std::nullopt;
+        }
+        auto elif_condition = std::move(elif_condition_opt.value());
+
+        auto block_expr_opt = block_expression();
+        if(not block_expr_opt) {
+            // TODO: propagate error
+            return std::nullopt;
+        }
+        auto block_expr = std::move(block_expr_opt.value());
+
+        auto end = ast::getTextArea(block_expr);
+
+        return ast::ElifExpr{lexing::TextArea::combine(start, end),
+                             std::move(elif_condition),
+                             std::move(block_expr)};
+    }
+
+    constexpr auto if_expression() noexcept -> std::optional<ast::Expression>
+    {
+        if(not lexer_.next_is(lexing::TokenTypes::IF)) {
+            return std::nullopt;
+        }
+
+        auto start = lexer_.peek_and_pop().value().getArea();
+
+        auto if_condition_opt = expression();
+        if(not if_condition_opt) {
+            // TODO: propagate error
+            return std::nullopt;
+        }
+        auto if_condition = std::move(if_condition_opt.value());
+
+        auto if_block_expr_opt = block_expression();
+        if(not if_block_expr_opt) {
+            // TODO: propagate error
+            return std::nullopt;
+        }
+        auto if_block_expr = std::move(if_block_expr_opt.value());
+
+        std::vector<ast::ElifExpr> elifs;
+        while(lexer_.next_is(lexing::TokenTypes::ELIF)) {
+            if(auto elif_expr = elif_expression()) {
+                elifs.emplace_back(std::move(elif_expr.value()));
+            }
+        }
+
+        auto else_block_opt = block_expression();
+        if(not else_block_opt) {
+            // TODO: propagate error
+            return std::nullopt;
+        }
+        auto else_block = std::move(else_block_opt.value());
+
+        auto end = ast::getTextArea(else_block);
+
+        return ast::Expression{
+            ast::forward<ast::IfExpr>(lexing::TextArea::combine(start, end),
+                                      std::move(if_condition),
+                                      std::move(if_block_expr),
+                                      std::move(elifs),
+                                      std::move(else_block))};
     }
 };
 
