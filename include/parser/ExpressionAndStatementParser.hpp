@@ -16,8 +16,8 @@ namespace parser {
 class ExpressionAndStatementParser : public TypeParser
 {
 public:
-    constexpr explicit ExpressionAndStatementParser(lexing::Lexer&& lexer) noexcept
-        : TypeParser(std::move(lexer)) {}
+    constexpr explicit ExpressionAndStatementParser(lexing::Lexer& lexer) noexcept
+        : TypeParser(lexer) {}
 
     constexpr auto expression() noexcept -> std::optional<ast::Expression>
     {

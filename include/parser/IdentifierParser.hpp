@@ -10,8 +10,8 @@ namespace parser {
 class IdentifierParser
 {
 public:
-    constexpr explicit IdentifierParser(lexing::Lexer&& lexer) noexcept
-        : lexer_(std::move(lexer)) {}
+    constexpr explicit IdentifierParser(lexing::Lexer& lexer) noexcept
+        : lexer_(lexer) {}
 
     constexpr auto identifier() noexcept
         -> std::optional<ast::Identifier>
@@ -24,12 +24,7 @@ public:
         return std::nullopt;
     }
 
-    constexpr auto getLexer() -> lexing::Lexer&
-    {
-        return lexer_;
-    }
-
 protected:
-    lexing::Lexer lexer_;
+    lexing::Lexer& lexer_;
 };
 } // namespace parser

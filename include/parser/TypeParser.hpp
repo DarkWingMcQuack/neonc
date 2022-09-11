@@ -2,7 +2,9 @@
 
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <common/Error.hpp>
 #include <lexer/Lexer.hpp>
+#include <nonstd/expected.hpp>
 #include <parser/IdentifierParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -12,11 +14,12 @@ namespace parser {
 class TypeParser : public IdentifierParser
 {
 public:
-    constexpr explicit TypeParser(lexing::Lexer&& lexer) noexcept
-        : IdentifierParser(std::move(lexer)) {}
+    constexpr explicit TypeParser(lexing::Lexer& lexer) noexcept
+        : IdentifierParser(lexer) {}
 
     constexpr auto type() noexcept
-        -> std::optional<ast::Type>
+        // -> std::optional<ast::Type>
+        -> nonstd::expected<ast::Type, common::Error>
     {
         auto start_type_opt = [this] {
             if(lexer_.next_is(lexing::TokenTypes::L_PARANTHESIS)) {
@@ -30,9 +33,11 @@ public:
 
         if(not start_type_opt) {
             // TODO: return error "expected Identifier or ( or Self"
-            return std::nullopt;
+		  re
         }
         auto start_type = std::move(start_type_opt.value());
+
+		return nonstd::expe
 
         return type(std::move(start_type));
     }
