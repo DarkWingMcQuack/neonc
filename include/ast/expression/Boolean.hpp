@@ -6,7 +6,7 @@
 
 namespace ast {
 
-class Boolean : AreaBase
+class Boolean : public AreaBase
 {
 public:
     constexpr Boolean(lexing::TextArea area, bool value) noexcept

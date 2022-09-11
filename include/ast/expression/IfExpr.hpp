@@ -12,127 +12,93 @@ namespace ast {
 class ElifExpr : public AreaBase
 {
 public:
-    ElifExpr(lexing::TextArea area,
-             Expression&& condition,
-             std::vector<Statement>&& body,
-             Expression&& ret_expr) noexcept
+    constexpr ElifExpr(lexing::TextArea area,
+                       Expression&& condition,
+                       BlockExpr&& block) noexcept
         : AreaBase(std::move(area)),
           condition_(std::move(condition)),
-          body_(std::move(body)),
-          ret_expr_(std::move(ret_expr)) {}
+          block_(std::move(block)) {}
 
-    auto getCondition() const noexcept -> const Expression&
+    constexpr auto getCondition() const noexcept -> const Expression&
     {
         return condition_;
     }
-    auto getCondition() noexcept -> Expression&
+    constexpr auto getCondition() noexcept -> Expression&
     {
         return condition_;
     }
 
-    auto getBody() const noexcept -> const std::vector<Statement>&
+    constexpr auto getBlock() const noexcept -> const BlockExpr&
     {
-        return body_;
+        return block_;
     }
-    auto getBody() noexcept -> std::vector<Statement>&
+    constexpr auto getBlock() noexcept -> BlockExpr&
     {
-        return body_;
-    }
-
-    auto getReturnExpression() const noexcept -> const Expression&
-    {
-        return ret_expr_;
-    }
-    auto getReturnExpression() noexcept -> Expression&
-    {
-        return ret_expr_;
+        return block_;
     }
 
 private:
     Expression condition_;
-    std::vector<Statement> body_;
-    Expression ret_expr_;
+    BlockExpr block_;
 };
 
 class IfExpr : public AreaBase
 {
 public:
-    IfExpr(lexing::TextArea area,
-           Expression&& condition,
-           std::vector<Statement>&& body,
-           Expression&& ret_expr,
-           std::vector<ElifExpr>&& elifs,
-           std::vector<Statement>&& else_body,
-           Expression&& else_ret_expr) noexcept
+    constexpr IfExpr(lexing::TextArea area,
+                     Expression&& condition,
+                     BlockExpr&& if_block,
+                     std::vector<ElifExpr>&& elifs,
+                     BlockExpr&& else_block) noexcept
         : AreaBase(std::move(area)),
           condition_(std::move(condition)),
-          body_(std::move(body)),
-          ret_expr_(std::move(ret_expr)),
+          if_block_(std::move(if_block)),
           elifs_(std::move(elifs)),
-          else_body_(std::move(else_body)),
-          else_ret_expr_(std::move(else_ret_expr)) {}
+          else_block_(std::move(else_block)) {}
 
-    auto getCondition() const noexcept -> const Expression&
-    {
-        return condition_;
-    }
-    auto getCondition() noexcept -> Expression&
+    constexpr auto getCondition() const noexcept -> const Expression&
     {
         return condition_;
     }
 
-    auto getBody() const noexcept -> const std::vector<Statement>&
+    constexpr auto getCondition() noexcept -> Expression&
     {
-        return body_;
-    }
-    auto getBody() noexcept -> std::vector<Statement>&
-    {
-        return body_;
+        return condition_;
     }
 
-    auto getReturnExpression() const noexcept -> const Expression&
+    constexpr auto getIfBlock() const noexcept -> const BlockExpr&
     {
-        return ret_expr_;
-    }
-    auto getReturnExpression() noexcept -> Expression&
-    {
-        return ret_expr_;
+        return if_block_;
     }
 
-    auto getElifs() const noexcept -> const std::vector<ElifExpr>&
+    constexpr auto getIfBlock() noexcept -> BlockExpr&
+    {
+        return if_block_;
+    }
+
+    constexpr auto getElifs() const noexcept -> const std::vector<ElifExpr>&
     {
         return elifs_;
     }
-    auto getElifs() noexcept -> std::vector<ElifExpr>&
+    constexpr auto getElifs() noexcept -> std::vector<ElifExpr>&
     {
         return elifs_;
     }
 
-    auto getElseBody() const noexcept -> const std::vector<Statement>&
+    constexpr auto getElseBlock() const noexcept -> const BlockExpr&
     {
-        return else_body_;
+        return else_block_;
     }
-    auto getElseBody() noexcept -> std::vector<Statement>&
+    constexpr auto getElseBlock() noexcept -> BlockExpr&
     {
-        return else_body_;
-    }
-
-    auto getElseReturnExpression() const noexcept -> const Expression&
-    {
-        return else_ret_expr_;
-    }
-    auto getElseReturnExpression() noexcept -> Expression&
-    {
-        return else_ret_expr_;
+        return else_block_;
     }
 
 private:
     Expression condition_;
-    std::vector<Statement> body_;
-    Expression ret_expr_;
+    BlockExpr if_block_;
     std::vector<ElifExpr> elifs_;
-    std::vector<Statement> else_body_;
-    Expression else_ret_expr_;
+    BlockExpr else_block_;
 };
 
 } // namespace ast

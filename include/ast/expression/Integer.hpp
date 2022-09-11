@@ -6,7 +6,7 @@
 
 namespace ast {
 
-class Integer : AreaBase
+class Integer : public AreaBase
 {
 public:
     constexpr Integer(lexing::TextArea area, std::int64_t value) noexcept

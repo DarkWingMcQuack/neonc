@@ -7,7 +7,7 @@
 
 namespace ast {
 
-class Double : AreaBase
+class Double : public AreaBase
 {
 public:
     constexpr Double(lexing::TextArea area, double value) noexcept
