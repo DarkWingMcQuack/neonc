@@ -10,7 +10,7 @@ using parser::TypeParser;
 auto self_type_test_positive(std::string_view text)
 {
     lexing::Lexer lexer{text};
-    auto result = TypeParser{std::move(lexer)}.type();
+    auto result = TypeParser{lexer}.type();
 
     ASSERT_TRUE(!!result);
     EXPECT_TRUE(std::holds_alternative<ast::SelfType>(result.value()));
@@ -19,7 +19,7 @@ auto self_type_test_positive(std::string_view text)
 auto self_type_test_negative(std::string_view text)
 {
     lexing::Lexer lexer{text};
-    auto result = TypeParser{std::move(lexer)}.type();
+    auto result = TypeParser{lexer}.type();
 
     ASSERT_TRUE(!!result);
     EXPECT_FALSE(std::holds_alternative<ast::NamedType>(result.value()));
