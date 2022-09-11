@@ -118,6 +118,12 @@ public:
         return res;
     }
 
+    constexpr auto get_current_position() const noexcept
+        -> TextArea
+    {
+        return TextArea{position_, position_};
+    }
+
 private:
     constexpr auto lexNext() noexcept -> std::optional<Token>
     {
