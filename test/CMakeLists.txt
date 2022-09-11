@@ -35,6 +35,7 @@ new_test(parser/SelfTypeParsingTest.cpp SelfTypeParsingTest)
 new_test(parser/OptionalTypeParsingTest.cpp OptionalTypeParsingTest)
 new_test(parser/LambdaTypeParsingTest.cpp LambdaTypeParsingTest)
 new_test(parser/TupleTypeParsingTest.cpp TupleTypeParsingTest)
+new_test(parser/UnionTypeParsingTest.cpp UnionTypeParsingTest)
 new_test(parser/IdentifierParserTest.cpp IdentifierParserTest)
 
 
