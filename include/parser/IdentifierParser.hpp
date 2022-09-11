@@ -10,9 +10,8 @@ namespace parser {
 class IdentifierParser
 {
 public:
-    constexpr IdentifierParser(std::string_view content, lexing::Lexer&& lexer) noexcept
-        : content_(content),
-          lexer_(std::move(lexer)) {}
+    constexpr explicit IdentifierParser(lexing::Lexer&& lexer) noexcept
+        : lexer_(std::move(lexer)) {}
 
     constexpr auto identifier() noexcept
         -> std::optional<ast::Identifier>
@@ -31,7 +30,6 @@ public:
     }
 
 protected:
-    std::string_view content_;
     lexing::Lexer lexer_;
 };
 } // namespace parser

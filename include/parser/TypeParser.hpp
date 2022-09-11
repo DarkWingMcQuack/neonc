@@ -12,8 +12,8 @@ namespace parser {
 class TypeParser : public IdentifierParser
 {
 public:
-    constexpr TypeParser(std::string_view content, lexing::Lexer&& lexer) noexcept
-        : IdentifierParser(content, std::move(lexer)) {}
+    constexpr explicit TypeParser(lexing::Lexer&& lexer) noexcept
+        : IdentifierParser(std::move(lexer)) {}
 
     constexpr auto type() noexcept
         -> std::optional<ast::Type>
