@@ -47,8 +47,7 @@ private:
         return std::nullopt;
     }
 
-    constexpr auto integer() noexcept
-        -> std::optional<ast::Integer>
+    constexpr auto integer() noexcept -> std::optional<ast::Integer>
     {
         if(not lexer_.next_is(lexing::TokenTypes::INTEGER)) {
             return std::nullopt;
@@ -59,8 +58,7 @@ private:
         return ast::Integer{token.getArea(), value};
     }
 
-    constexpr auto duoble() noexcept
-        -> std::optional<ast::Double>
+    constexpr auto duoble() noexcept -> std::optional<ast::Double>
     {
         if(not lexer_.next_is(lexing::TokenTypes::DOUBLE)) {
             return std::nullopt;
@@ -71,8 +69,7 @@ private:
         return ast::Double{token.getArea(), value};
     }
 
-    constexpr auto boolean() noexcept
-        -> std::optional<ast::Boolean>
+    constexpr auto boolean() noexcept -> std::optional<ast::Boolean>
     {
         if(lexer_.next_is(lexing::TokenTypes::TRUE)) {
             auto area = lexer_.next_area().value();
@@ -87,9 +84,7 @@ private:
         return std::nullopt;
     }
 
-
-    constexpr auto self_value() noexcept
-        -> std::optional<ast::Self>
+    constexpr auto self_value() noexcept -> std::optional<ast::Self>
     {
         if(lexer_.next_is(lexing::TokenTypes::SELF_VALUE)) {
             auto area = lexer_.peek_and_pop().value().getArea();
@@ -99,8 +94,7 @@ private:
         return std::nullopt;
     }
 
-    constexpr auto string() noexcept
-        -> std::optional<ast::String>
+    constexpr auto string() noexcept -> std::optional<ast::String>
     {
         if(lexer_.next_is(lexing::TokenTypes::STANDARD_STRING)) {
             auto token = lexer_.peek_and_pop().value();
