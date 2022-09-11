@@ -5,7 +5,7 @@
 
 namespace ast {
 
-class Self : AreaBase
+class Self : public AreaBase
 {
 public:
     constexpr Self(lexing::TextArea area) noexcept
