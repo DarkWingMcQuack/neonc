@@ -13,7 +13,7 @@ auto identifier_test(std::string_view text, std::string_view expected_value)
 
     lexing::Lexer lexer{text};
 
-    auto result = IdentifierParser{text, std::move(lexer)}.identifier();
+    auto result = IdentifierParser{std::move(lexer)}.identifier();
 
     ASSERT_TRUE(!!result);
 
