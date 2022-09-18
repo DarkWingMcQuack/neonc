@@ -11,6 +11,7 @@
 
 namespace parser {
 
+// TODO: discuss if tuple types should be (a & b & c) or (a, b, c)
 class TypeParser : public IdentifierParser
 {
 public:
