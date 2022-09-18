@@ -9,39 +9,41 @@ namespace ast {
 class LambdaParameter : public AreaBase
 {
 public:
-    LambdaParameter(lexing::TextArea area,
-                    Identifier&& name,
-                    Type&& type) noexcept
-        : AreaBase(area),
+    constexpr LambdaParameter(Identifier&& name,
+                              Type&& type) noexcept
+        : AreaBase(lexing::TextArea::combine(name.getArea(), getTextArea(type))),
           name_(std::move(name)),
           type_(std::move(type)) {}
 
-    LambdaParameter(lexing::TextArea area,
-                    Identifier&& name) noexcept
-        : AreaBase(area),
+    constexpr LambdaParameter(Identifier&& name) noexcept
+        : AreaBase(name.getArea()),
           name_(std::move(name)) {}
 
-    auto getName() const noexcept -> const Identifier&
+    constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;
     }
-    auto getName() noexcept -> Identifier&
+    constexpr auto getName() noexcept -> Identifier&
     {
         return name_;
     }
 
-    auto hasType() const noexcept -> bool
+    constexpr auto hasType() const noexcept -> bool
     {
         return type_.has_value();
     }
 
-    auto getType() const noexcept -> const std::optional<Type>&
+    constexpr auto getType() const noexcept -> const std::optional<Type>&
     {
         return type_;
     }
-    auto getType() noexcept -> std::optional<Type>&
+    constexpr auto getType() noexcept -> std::optional<Type>&
     {
         return type_;
+    }
+    constexpr auto setType(ast::Type&& type) noexcept
+    {
+        type_ = std::move(type);
     }
 
 private:
@@ -52,64 +54,51 @@ private:
 class LambdaExpr : public AreaBase
 {
 public:
-    LambdaExpr(lexing::TextArea area,
-               std::vector<LambdaParameter>&& parameters,
-               Type&& ret_type,
-               std::vector<Statement>&& body,
-               Expression&& ret_expr) noexcept
+    constexpr LambdaExpr(lexing::TextArea area,
+                         std::vector<LambdaParameter>&& parameters,
+                         Type&& ret_type,
+                         Expression&& ret_expr) noexcept
         : AreaBase(area),
           parameters_(std::move(parameters)),
           ret_type_(std::move(ret_type)),
-          body_(std::move(body)),
           ret_expr_(std::move(ret_expr)) {}
 
-    LambdaExpr(lexing::TextArea area,
-               std::vector<LambdaParameter>&& parameters,
-               std::vector<Statement>&& body,
-               Expression&& ret_expr) noexcept
+    constexpr LambdaExpr(lexing::TextArea area,
+                         std::vector<LambdaParameter>&& parameters,
+                         Expression&& ret_expr) noexcept
         : AreaBase(area),
           parameters_(std::move(parameters)),
           ret_type_(std::nullopt),
-          body_(std::move(body)),
           ret_expr_(std::move(ret_expr)) {}
 
-    auto getParameters() const noexcept -> const std::vector<LambdaParameter>&
+    constexpr auto getParameters() const noexcept -> const std::vector<LambdaParameter>&
     {
         return parameters_;
     }
-    auto getParameters() noexcept -> std::vector<LambdaParameter>&
+    constexpr auto getParameters() noexcept -> std::vector<LambdaParameter>&
     {
         return parameters_;
     }
 
-    auto hasReturnType() const noexcept -> bool
+    constexpr auto hasReturnType() const noexcept -> bool
     {
         return ret_type_.has_value();
     }
 
-    auto getReturnType() const noexcept -> const std::optional<Type>&
+    constexpr auto getReturnType() const noexcept -> const std::optional<Type>&
     {
         return ret_type_;
     }
-    auto getReturnType() noexcept -> std::optional<Type>&
+    constexpr auto getReturnType() noexcept -> std::optional<Type>&
     {
         return ret_type_;
     }
 
-    auto getBody() const noexcept -> const std::vector<Statement>&
-    {
-        return body_;
-    }
-    auto getBody() noexcept -> std::vector<Statement>&
-    {
-        return body_;
-    }
-
-    auto getReturnExpr() const noexcept -> const Expression&
+    constexpr auto getReturnExpr() const noexcept -> const Expression&
     {
         return ret_expr_;
     }
-    auto getReturnExpr() noexcept -> Expression&
+    constexpr auto getReturnExpr() noexcept -> Expression&
     {
         return ret_expr_;
     }
@@ -117,7 +106,6 @@ public:
 private:
     std::vector<LambdaParameter> parameters_;
     std::optional<Type> ret_type_;
-    std::vector<Statement> body_;
     Expression ret_expr_;
 };
 
