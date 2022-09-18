@@ -493,6 +493,7 @@ private:
                                               std::move(parameters),
                                               std::move(body))};
         };
-    };
+    }
+};
 
 } // namespace parser
