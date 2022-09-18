@@ -383,6 +383,10 @@ private:
             auto value = moveForward(1);
             return Token{TokenTypes::BITWISE_AND, start, value};
         }
+        if(content_.starts_with(";")) {
+            auto value = moveForward(1);
+            return Token{TokenTypes::SEMICOLON, start, value};
+        }
 
         return std::nullopt;
     }
