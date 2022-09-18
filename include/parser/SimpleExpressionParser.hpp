@@ -19,9 +19,9 @@ namespace parser {
 // 7. identifiers
 // 8. if-else expressions
 // 9. grouped expressions which are expresions surrounded by ()
-// 10. TODO: list comprehensions
-// 11. TODO: for expressions
-// 12. TODO: block expressions
+// 10. block expressions
+// 11. TODO: list comprehensions
+// 12. TODO: for expressions
 template<class T>
 class SimpleExpressionParser
 {
@@ -152,7 +152,50 @@ private:
 
 	constexpr auto block_expression() noexcept -> std::optional<ast::BlockExpr>
 	{
-		return std::nullopt;
+		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+			// TODO: return error "expected {"
+			return std::nullopt;
+		}
+		// pop the { and get its area
+		auto start = lexer().peek_and_pop().value().getArea();
+
+		std::vector<ast::Statement> stmts;
+		while(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+			auto stmt_opt = statement();
+			if(not stmt_opt.has_value()) {
+				// TODO: propagate error
+				return std::nullopt;
+			}
+			stmts.emplace_back(std::move(stmt_opt.value()));
+
+			if(not(lexer().next_is(lexing::TokenTypes::SEMICOLON) or lexer().next_is(lexing::TokenTypes::NEWLINE))) {
+				// TODO: return error "expected newline or ;"
+				return std::nullopt;
+			}
+			lexer().pop();
+		}
+
+		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+			// TODO: return error "a block expression needs to return an expression with =>expr"
+			return std::nullopt;
+		}
+		lexer().pop();
+
+		auto expr_opt = expression();
+		if(not expr_opt.has_value()) {
+			// TODO: propagate error
+			return std::nullopt;
+		}
+		auto expr = std::move(expr_opt.value());
+
+		if(not lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
+			// TODO: return error: "expected } after block return statment"
+			return std::nullopt;
+		}
+
+		auto end = lexer().peek_and_pop().value().getArea();
+		auto area = lexing::TextArea::combine(start, end);
+		return ast::BlockExpr{area, std::move(stmts), std::move(expr)};
 	}
 
 	constexpr auto elif_expression() noexcept -> std::optional<ast::ElifExpr>
@@ -508,10 +551,14 @@ private:
 		return static_cast<T*>(this)->identifier();
 	}
 
-
 	constexpr auto expression() noexcept -> std::optional<ast::Expression>
 	{
 		return static_cast<T*>(this)->expression();
+	}
+
+	constexpr auto statement() noexcept -> std::optional<ast::Statement>
+	{
+		return static_cast<T*>(this)->statement();
 	}
 
 	constexpr auto type() noexcept -> std::optional<ast::Type>
