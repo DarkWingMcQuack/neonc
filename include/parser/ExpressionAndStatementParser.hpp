@@ -1,5 +1,5 @@
-
 #pragma once
+
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
@@ -67,14 +67,15 @@ public:
             if(lexer_.next_is(lexing::TokenTypes::COMMA)) {
                 auto res = tuple_or_lambda_params(start, std::move(expr));
 
-                return std::visit([this, start = start](auto&& r) -> std::optional<ast::Expression> {
-                    if constexpr(std::same_as<std::nullopt_t, std::decay_t<decltype(r)>>) {
-                        return std::nullopt;
-                    } else {
-                        return try_lambda(start, std::move(r));
-                    }
-                },
-                                  std::move(res));
+                return std::visit(
+                    [this, start = start](auto&& r) -> std::optional<ast::Expression> {
+                        if constexpr(std::same_as<std::nullopt_t, std::decay_t<decltype(r)>>) {
+                            return std::nullopt;
+                        } else {
+                            return try_lambda(start, std::move(r));
+                        }
+                    },
+                    std::move(res));
             }
 
             if(lexer_.next_is(lexing::TokenTypes::L_BRACKET)) {
