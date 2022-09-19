@@ -2,7 +2,6 @@
 
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
-#include <common/Error.hpp>
 #include <lexer/Lexer.hpp>
 #include <nonstd/expected.hpp>
 #include <parser/IdentifierParser.hpp>
