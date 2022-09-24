@@ -28,7 +28,7 @@ public:
     {
         return rhs_;
     }
-    auto getightSide() noexcept -> Expression&
+    auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }
