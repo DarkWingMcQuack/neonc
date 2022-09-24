@@ -53,6 +53,7 @@ class NotEqual;
 class UnaryMinus;
 class UnaryPlus;
 class LogicalNot;
+class MemberAccess;
 
 using Expression = std::variant<Identifier,
                                 Integer,
@@ -83,7 +84,8 @@ using Expression = std::variant<Identifier,
                                 Forward<NotEqual>,
                                 Forward<UnaryMinus>,
                                 Forward<UnaryPlus>,
-                                Forward<LogicalNot>>;
+                                Forward<LogicalNot>,
+                                Forward<MemberAccess>>;
 
 class TypeclassImport;
 using Import = std::variant<DirectImport,
@@ -209,6 +211,7 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/expression/TupleExpr.hpp>
 #include <ast/expression/UnaryMinus.hpp>
 #include <ast/expression/UnaryPlus.hpp>
+#include <ast/expression/MemberAccess.hpp>
 
 #include <ast/statement/LetAssignment.hpp>
 #include <ast/statement/WhileStmt.hpp>
