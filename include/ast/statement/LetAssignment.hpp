@@ -10,31 +10,56 @@ namespace ast {
 
 class LetAssignment : public AreaBase
 {
-    LetAssignment(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
+    constexpr LetAssignment(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
         : AreaBase(area),
           name_(std::move(name)),
           rhs_(std::move(rhs)) {}
 
-    auto getName() const noexcept -> const Identifier&
+    constexpr LetAssignment(lexing::TextArea area, Identifier&& name, Type&& type, Expression&& rhs) noexcept
+        : AreaBase(area),
+          name_(std::move(name)),
+          type_(std::move(type)),
+          rhs_(std::move(rhs)) {}
+
+    constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;
     }
-    auto getName() noexcept -> Identifier&
+    constexpr auto getName() noexcept -> Identifier&
     {
         return name_;
     }
 
-    auto getRightHandSide() const noexcept -> const Expression&
+    constexpr auto hasType() const noexcept -> bool
+    {
+        return type_.has_value();
+    }
+
+    constexpr auto getType() const noexcept -> const std::optional<Type>&
+    {
+        return type_;
+    }
+    constexpr auto getType() noexcept -> std::optional<Type>&
+    {
+        return type_;
+    }
+    constexpr auto setType(ast::Type&& type) noexcept
+    {
+        type_ = std::move(type);
+    }
+
+    constexpr auto getRightHandSide() const noexcept -> const Expression&
     {
         return rhs_;
     }
-    auto getRightHandSide() noexcept -> Expression&
+    constexpr auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }
 
 private:
     Identifier name_;
+    std::optional<Type> type_;
     Expression rhs_;
 };
 

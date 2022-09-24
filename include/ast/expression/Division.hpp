@@ -10,25 +10,25 @@ namespace ast {
 class Division : public AreaBase
 {
 public:
-    Division(lexing::TextArea area, Expression&& lhs, Expression&& rhs) noexcept
+    constexpr Division(lexing::TextArea area, Expression&& lhs, Expression&& rhs) noexcept
         : AreaBase(area),
           lhs_(std::move(lhs)),
           rhs_(std::move(rhs)) {}
 
-    auto getLeftHandSide() const noexcept -> const Expression&
+    constexpr auto getLeftHandSide() const noexcept -> const Expression&
     {
         return lhs_;
     }
-    auto getLeftHandSide() noexcept -> Expression&
+    constexpr auto getLeftHandSide() noexcept -> Expression&
     {
         return lhs_;
     }
 
-    auto getRightHandSide() const noexcept -> const Expression&
+    constexpr auto getRightHandSide() const noexcept -> const Expression&
     {
         return rhs_;
     }
-    auto getightSide() noexcept -> Expression&
+    constexpr auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }

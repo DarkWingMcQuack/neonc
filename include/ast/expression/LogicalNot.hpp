@@ -8,15 +8,15 @@ namespace ast {
 class LogicalNot : public AreaBase
 {
 public:
-    LogicalNot(lexing::TextArea area, Expression&& rhs) noexcept
+    constexpr LogicalNot(lexing::TextArea area, Expression&& rhs) noexcept
         : AreaBase(area),
           rhs_(std::move(rhs)) {}
 
-    auto getRightHandSide() const noexcept -> const Expression&
+    constexpr auto getRightHandSide() const noexcept -> const Expression&
     {
         return rhs_;
     }
-    auto getightSide() noexcept -> Expression&
+    constexpr auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }

@@ -9,25 +9,25 @@ namespace ast {
 
 class ForExprLetElement : public AreaBase
 {
-    ForExprLetElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
+    constexpr ForExprLetElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
         : AreaBase(area),
           name_(std::move(name)),
           rhs_(std::move(rhs)) {}
 
-    auto getName() const noexcept -> const Identifier&
+    constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;
     }
-    auto getName() noexcept -> Identifier&
+    constexpr auto getName() noexcept -> Identifier&
     {
         return name_;
     }
 
-    auto getRightHandSide() const noexcept -> const Expression&
+    constexpr auto getRightHandSide() const noexcept -> const Expression&
     {
         return rhs_;
     }
-    auto getRightHandSide() noexcept -> Expression&
+    constexpr auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }
@@ -39,25 +39,25 @@ private:
 
 class ForExprMonadicElement : public AreaBase
 {
-    ForExprMonadicElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
+    constexpr ForExprMonadicElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
         : AreaBase(area),
           name_(std::move(name)),
           rhs_(std::move(rhs)) {}
 
-    auto getName() const noexcept -> const Identifier&
+    constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;
     }
-    auto getName() noexcept -> Identifier&
+    constexpr auto getName() noexcept -> Identifier&
     {
         return name_;
     }
 
-    auto getRightHandSide() const noexcept -> const Expression&
+    constexpr auto getRightHandSide() const noexcept -> const Expression&
     {
         return rhs_;
     }
-    auto getRightHandSide() noexcept -> Expression&
+    constexpr auto getRightHandSide() noexcept -> Expression&
     {
         return rhs_;
     }
@@ -72,25 +72,25 @@ using ForExprElement = std::variant<ForExprLetElement, ForExprMonadicElement>;
 class ForExpr : public AreaBase
 {
 public:
-    ForExpr(lexing::TextArea area, std::vector<ForExprElement>&& elements, Expression&& ret_expr) noexcept
+    constexpr ForExpr(lexing::TextArea area, std::vector<ForExprElement>&& elements, Expression&& ret_expr) noexcept
         : AreaBase(area),
           elements_(std::move(elements)),
           ret_expr_(std::move(ret_expr)) {}
 
-    auto getElements() const noexcept -> const std::vector<ForExprElement>&
+    constexpr auto getElements() const noexcept -> const std::vector<ForExprElement>&
     {
         return elements_;
     }
-    auto getElements() noexcept -> std::vector<ForExprElement>&
+    constexpr auto getElements() noexcept -> std::vector<ForExprElement>&
     {
         return elements_;
     }
 
-    auto getReturnExpression() const noexcept -> const Expression&
+    constexpr auto getReturnExpression() const noexcept -> const Expression&
     {
         return ret_expr_;
     }
-    auto getReturnExpression() noexcept -> Expression&
+    constexpr auto getReturnExpression() noexcept -> Expression&
     {
         return ret_expr_;
     }

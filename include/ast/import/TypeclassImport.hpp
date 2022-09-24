@@ -10,7 +10,7 @@ namespace ast {
 class TypeclassImport : public AreaBase
 {
 public:
-    TypeclassImport(lexing::TextArea area,
+    constexpr TypeclassImport(lexing::TextArea area,
                     std::vector<Identifier>&& namespce,
                     Identifier&& typeclass,
                     Type&& instance) noexcept
@@ -19,29 +19,29 @@ public:
           typeclass_(std::move(typeclass)),
           instance_(std::move(instance)) {}
 
-    auto getNamespace() const noexcept -> const std::vector<Identifier>&
+    constexpr auto getNamespace() const noexcept -> const std::vector<Identifier>&
     {
         return namespce_;
     }
-    auto getNamespace() noexcept -> std::vector<Identifier>&
+    constexpr auto getNamespace() noexcept -> std::vector<Identifier>&
     {
         return namespce_;
     }
 
-    auto getTypeclass() const noexcept -> const Identifier&
+    constexpr auto getTypeclass() const noexcept -> const Identifier&
     {
         return typeclass_;
     }
-    auto getTypeclass() noexcept -> Identifier&
+    constexpr auto getTypeclass() noexcept -> Identifier&
     {
         return typeclass_;
     }
 
-    auto getInstanceType() const noexcept -> const Type&
+    constexpr auto getInstanceType() const noexcept -> const Type&
     {
         return instance_;
     }
-    auto getInstanceType() noexcept -> Type&
+    constexpr auto getInstanceType() noexcept -> Type&
     {
         return instance_;
     }
