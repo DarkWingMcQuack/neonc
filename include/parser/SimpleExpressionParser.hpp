@@ -143,11 +143,11 @@ private:
 		return std::nullopt;
 	}
 
-	constexpr auto self_value() noexcept -> std::optional<ast::Self>
+	constexpr auto self_value() noexcept -> std::optional<ast::SelfExpr>
 	{
 		if(lexer().next_is(lexing::TokenTypes::SELF_VALUE)) {
 			auto area = lexer().peek_and_pop().value().getArea();
-			return ast::Self{area};
+			return ast::SelfExpr{area};
 		}
 
 		return std::nullopt;

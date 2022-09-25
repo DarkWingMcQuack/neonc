@@ -43,9 +43,9 @@ target_sources(NeonLib
   
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/AreaBase.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/Identifier.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/Self.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BinaryOperation.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/UnaryOperation.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/SelfExpr.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BlockExpr.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Boolean.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Double.hpp
@@ -68,6 +68,7 @@ target_sources(NeonLib
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/OptionalType.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/TupleType.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/UnionType.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/SelfType.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/Ast.hpp
 
   ${CMAKE_CURRENT_LIST_DIR}/include/parser/Utils.hpp

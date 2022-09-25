@@ -4,7 +4,7 @@
 #include <variant>
 
 #include <ast/common/Identifier.hpp>
-#include <ast/common/Self.hpp>
+#include <ast/expression/SelfExpr.hpp>
 #include <ast/expression/Boolean.hpp>
 #include <ast/expression/Double.hpp>
 #include <ast/expression/Integer.hpp>
@@ -60,7 +60,7 @@ using Expression = std::variant<Identifier,
                                 Double,
                                 Boolean,
                                 String,
-                                Self,
+                                SelfExpr,
                                 Forward<IfExpr>,
                                 Forward<FunctionCall>,
                                 Forward<LambdaExpr>,
