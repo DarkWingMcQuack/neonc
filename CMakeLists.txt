@@ -44,34 +44,18 @@ target_sources(NeonLib
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/AreaBase.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/Identifier.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/Self.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Addition.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BitwiseAnd.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BitwiseOr.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BinaryOperation.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/UnaryOperation.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BlockExpr.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Boolean.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Division.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Double.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Equal.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/ForExpr.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/FunctionCall.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/GreaterEqThen.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/GreaterThen.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/IfExpr.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Integer.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LambdaExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LessEqThen.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LessThen.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LogicalAnd.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LogicalNot.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LogicalOr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Multiplication.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/NotEqual.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Remainder.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/String.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Substraction.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/TupleExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/UnaryMinus.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/UnaryPlus.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/import/DirectImport.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/import/TypeclassImport.hpp
   ${CMAKE_CURRENT_LIST_DIR}/include/ast/statement/LetAssignment.hpp

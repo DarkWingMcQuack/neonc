@@ -187,31 +187,14 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/type/TupleType.hpp>
 #include <ast/type/UnionType.hpp>
 
-#include <ast/expression/Addition.hpp>
-#include <ast/expression/BitwiseAnd.hpp>
-#include <ast/expression/BitwiseOr.hpp>
 #include <ast/expression/BlockExpr.hpp>
-#include <ast/expression/Division.hpp>
-#include <ast/expression/Equal.hpp>
 #include <ast/expression/ForExpr.hpp>
 #include <ast/expression/FunctionCall.hpp>
-#include <ast/expression/GreaterEqThen.hpp>
-#include <ast/expression/GreaterThen.hpp>
 #include <ast/expression/IfExpr.hpp>
 #include <ast/expression/LambdaExpr.hpp>
-#include <ast/expression/LessEqThen.hpp>
-#include <ast/expression/LessThen.hpp>
-#include <ast/expression/LogicalAnd.hpp>
-#include <ast/expression/LogicalNot.hpp>
-#include <ast/expression/LogicalOr.hpp>
-#include <ast/expression/Multiplication.hpp>
-#include <ast/expression/NotEqual.hpp>
-#include <ast/expression/Remainder.hpp>
-#include <ast/expression/Substraction.hpp>
 #include <ast/expression/TupleExpr.hpp>
-#include <ast/expression/UnaryMinus.hpp>
-#include <ast/expression/UnaryPlus.hpp>
-#include <ast/expression/MemberAccess.hpp>
+#include <ast/expression/UnaryOperation.hpp>
+#include <ast/expression/BinaryOperation.hpp>
 
 #include <ast/statement/LetAssignment.hpp>
 #include <ast/statement/WhileStmt.hpp>
