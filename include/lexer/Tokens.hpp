@@ -49,7 +49,7 @@ enum class TokenTypes : std::int64_t {
     DOT,
     COMMA,
     COLON,
-	COLON_COLON,
+    COLON_COLON,
     LT,
     LE,
     GT,
@@ -175,6 +175,8 @@ constexpr auto get_description(TokenTypes token) noexcept -> std::string_view
     }
 }
 
+
+
 class Token
 {
 
@@ -200,6 +202,11 @@ public:
     constexpr auto getValue() const noexcept -> std::string_view
     {
         return value_;
+    }
+
+    constexpr auto isSeparator() const noexcept -> bool
+    {
+        return type_ == TokenTypes::SEMICOLON or type_ == TokenTypes::NEWLINE;
     }
 
 private:
