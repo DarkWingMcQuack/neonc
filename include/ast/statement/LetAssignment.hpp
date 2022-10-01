@@ -10,12 +10,10 @@ namespace ast {
 
 class LetAssignment : public AreaBase
 {
-    constexpr LetAssignment(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
-        : AreaBase(area),
-          name_(std::move(name)),
-          rhs_(std::move(rhs)) {}
-
-    constexpr LetAssignment(lexing::TextArea area, Identifier&& name, Type&& type, Expression&& rhs) noexcept
+    constexpr LetAssignment(lexing::TextArea area,
+                            Identifier&& name,
+                            std::optional<Type>&& type,
+                            Expression&& rhs) noexcept
         : AreaBase(area),
           name_(std::move(name)),
           type_(std::move(type)),

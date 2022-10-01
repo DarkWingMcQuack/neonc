@@ -4,10 +4,10 @@
 #include <variant>
 
 #include <ast/common/Identifier.hpp>
-#include <ast/expression/SelfExpr.hpp>
 #include <ast/expression/Boolean.hpp>
 #include <ast/expression/Double.hpp>
 #include <ast/expression/Integer.hpp>
+#include <ast/expression/SelfExpr.hpp>
 #include <ast/expression/String.hpp>
 #include <ast/import/DirectImport.hpp>
 #include <ast/type/NamedType.hpp>
@@ -95,11 +95,13 @@ using Import = std::variant<DirectImport,
 class LetAssignment;
 class WhileStmt;
 class ReturnStmt;
+class ForStmt;
 
 using Statement = std::variant<Import,
                                Expression,
                                Forward<LetAssignment>,
-                               Forward<WhileStmt>>;
+                               Forward<WhileStmt>,
+                               Forward<ForStmt>>;
 
 using FunctionStatement = std::variant<Expression,
                                        Import,
@@ -187,6 +189,7 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/type/TupleType.hpp>
 #include <ast/type/UnionType.hpp>
 
+#include <ast/expression/BinaryOperation.hpp>
 #include <ast/expression/BlockExpr.hpp>
 #include <ast/expression/ForExpr.hpp>
 #include <ast/expression/FunctionCall.hpp>
@@ -194,9 +197,9 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/expression/LambdaExpr.hpp>
 #include <ast/expression/TupleExpr.hpp>
 #include <ast/expression/UnaryOperation.hpp>
-#include <ast/expression/BinaryOperation.hpp>
 
 #include <ast/statement/LetAssignment.hpp>
 #include <ast/statement/WhileStmt.hpp>
+#include <ast/statement/ForStmt.hpp>
 
 #include <ast/import/TypeclassImport.hpp>
