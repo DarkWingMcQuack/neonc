@@ -96,11 +96,13 @@ class LetAssignment;
 class WhileStmt;
 class ReturnStmt;
 class ForStmt;
+class IfStmt;
 
 using Statement = std::variant<Import,
                                Expression,
                                Forward<LetAssignment>,
                                Forward<WhileStmt>,
+                               Forward<IfStmt>,
                                Forward<ForStmt>>;
 
 using FunctionStatement = std::variant<Expression,
@@ -201,5 +203,6 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/statement/LetAssignment.hpp>
 #include <ast/statement/WhileStmt.hpp>
 #include <ast/statement/ForStmt.hpp>
+#include <ast/statement/IfStmt.hpp>
 
 #include <ast/import/TypeclassImport.hpp>
