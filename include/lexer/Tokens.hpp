@@ -60,7 +60,6 @@ enum class TokenTypes : std::int64_t {
     TRUE,
     FALSE,
     SEMICOLON,
-    SMALL_LEFT_ARROW,
     END_OF_FILE
 };
 
@@ -169,8 +168,6 @@ constexpr auto get_description(TokenTypes token) noexcept -> std::string_view
         return "COLON_COLON";
     case TokenTypes::SEMICOLON:
         return "SEMICOLON";
-    case TokenTypes::SMALL_LEFT_ARROW:
-        return "SMALL_LEFT_ARROW";
     case TokenTypes::END_OF_FILE:
         return "<EOF>";
     default:

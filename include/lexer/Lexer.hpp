@@ -222,11 +222,6 @@ private:
             return Token{TokenTypes::INTEGER, start, value};
         }
 
-        if(content_.starts_with("<-")) {
-            auto value = moveForward(2);
-            return Token{TokenTypes::SMALL_LEFT_ARROW, start, value};
-        }
-
         if(content_.starts_with("::")) {
             auto value = moveForward(2);
             return Token{TokenTypes::COLON_COLON, start, value};
