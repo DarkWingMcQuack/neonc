@@ -135,12 +135,12 @@ private:
 	constexpr auto boolean() noexcept -> std::optional<ast::Boolean>
 	{
 		if(simple_expr_lexer().next_is(lexing::TokenTypes::TRUE)) {
-			auto area = simple_expr_lexer().next_area().value();
+			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
 			return ast::Boolean(area, true);
 		}
 
 		if(simple_expr_lexer().next_is(lexing::TokenTypes::FALSE)) {
-			auto area = simple_expr_lexer().next_area().value();
+			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
 			return ast::Boolean(area, false);
 		}
 
