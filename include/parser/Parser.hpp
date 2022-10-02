@@ -10,16 +10,22 @@
 
 namespace parser {
 
-class Parser : public TypeParser<Parser>,
-               public SimpleExpressionParser<Parser>,
-               public StatmentParser<Parser>,
-               public ForElementParser<Parser>,
-               public IdentifierParser<Parser>
+class Parser final : public TypeParser<Parser>,
+                     public SimpleExpressionParser<Parser>,
+                     public StatmentParser<Parser>,
+                     public ForElementParser<Parser>,
+                     public IdentifierParser<Parser>
 {
 public:
-    constexpr Parser(std::string_view content) noexcept
+    constexpr explicit Parser(std::string_view content) noexcept
         : content_(content),
           lexer_(content_) {}
+
+    constexpr Parser() noexcept = delete;
+    constexpr Parser(Parser&&) noexcept = default;
+    constexpr Parser(const Parser&) noexcept = delete;
+    constexpr auto operator=(Parser&&) noexcept -> Parser& = default;
+    constexpr auto operator=(const Parser&) noexcept -> Parser& = delete;
 
 
 private:
