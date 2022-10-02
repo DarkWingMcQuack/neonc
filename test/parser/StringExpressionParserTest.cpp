@@ -15,7 +15,7 @@ auto string_test_positive(std::string_view text, std::string_view expct)
 	ASSERT_TRUE(!!result);
 	ASSERT_TRUE(std::holds_alternative<ast::String>(result.value()));
 
-	EXPECT_EQ(std::get<ast::String>(result.value()), expexted) << "expected: " << expexted.getValue() << " got: " << std::get<ast::String>(result.value()).getValue();
+	EXPECT_EQ(std::get<ast::String>(result.value()), expexted);
 }
 
 auto string_test_negative(std::string_view text)
