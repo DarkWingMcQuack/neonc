@@ -38,7 +38,7 @@ class ForElementParser
 		return std::nullopt;
 	}
 
-	constexpr auto monadic_for_element(ast::Identifier&& id) noexcept noexcept
+	constexpr auto monadic_for_element(ast::Identifier&& id) noexcept
 		-> std::optional<ast::ForMonadicElement>
 	{
 		// sanity check
@@ -63,7 +63,7 @@ class ForElementParser
 									  std::move(rhs)};
 	}
 
-	constexpr auto let_for_element(ast::Identifier&& id) noexcept noexcept
+	constexpr auto let_for_element(ast::Identifier&& id) noexcept
 		-> std::optional<ast::ForLetElement>
 	{
 		// sanity check
