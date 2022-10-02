@@ -180,7 +180,59 @@ private:
 	}
 
 	constexpr auto forStmt() noexcept -> std::optional<ast::Statement>
-	{}
+	{
+		// sanity check
+		if(not lexer().next_is(lexing::TokenTypes::FOR)) {
+			return std::nullopt;
+		}
+		auto start = lexer().peek_and_pop().value().getArea();
+
+		// clang-format off
+		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+		   not lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+			// TODO: return error "expected ( or {"
+			return std::nullopt;
+		}
+		// clang-format on
+
+		auto enclosing_type = lexer().peek_and_pop().value().getType();
+
+		std::vector<ast::ForElement> elems;
+
+		// clang-format off
+		while(not lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+			  not lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+
+			auto elem_opt = for_element();
+			if(not elem_opt.has_value()) {
+				// TODO: propagate error
+				return std::nullopt;
+			}
+
+			elems.emplace_back(std::move(elem_opt.value()));
+		}
+		// clang-format on
+
+		if(not lexer().next_is(enclosing_type)) {
+			// TODO: return "expected $enclosing_type" error
+			return std::nullopt;
+		}
+		lexer().pop();
+
+		auto block_opt = block();
+		if(not block_opt.has_value()) {
+			// TODO: propagate error
+			return std::nullopt;
+		}
+		auto [block, end] = std::move(block_opt.value());
+
+		auto area = lexing::TextArea::combine(start, end);
+
+		return ast::Statement{
+			ast::forward<ast::ForStmt>(std::move(area),
+									   std::move(elems),
+									   std::move(block))};
+	}
 
 	constexpr auto elseStmt() noexcept -> std::optional<ast::ElseStmt>
 	{
@@ -298,6 +350,12 @@ private:
 	constexpr auto expression() noexcept -> std::optional<ast::Expression>
 	{
 		return static_cast<T*>(this)->expression();
+	}
+
+
+	constexpr auto for_element() noexcept -> std::optional<ast::ForElement>
+	{
+		return static_cast<T*>(this)->for_element();
 	}
 
 	constexpr auto type() noexcept -> std::optional<ast::Type>
