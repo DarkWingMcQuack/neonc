@@ -26,6 +26,7 @@ public:
     constexpr Parser(const Parser&) noexcept = delete;
     constexpr auto operator=(Parser&&) noexcept -> Parser& = default;
     constexpr auto operator=(const Parser&) noexcept -> Parser& = delete;
+    constexpr virtual ~Parser() noexcept = default;
 
 
 private:
