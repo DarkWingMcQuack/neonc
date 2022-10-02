@@ -23,6 +23,12 @@ public:
 
 
 private:
+    friend class TypeParser<Parser>;
+    friend class SimpleExpressionParser<Parser>;
+    friend class StatmentParser<Parser>;
+    friend class ForElementParser<Parser>;
+    friend class IdentifierParser<Parser>;
+
     std::string_view content_;
     lexing::Lexer lexer_;
 };

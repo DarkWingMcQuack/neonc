@@ -1,11 +1,10 @@
 #include <iostream>
 #include <lexer/Lexer.hpp>
 #include <parser/Parser.hpp>
-#include <parser/TypeParser.hpp>
 
 #include <gtest/gtest.h>
 
-using parser::TypeParser;
+using parser::Parser;
 
 auto named_type_test_positive(std::string_view text, std::string_view expected_type, auto... other)
 {
@@ -14,8 +13,7 @@ auto named_type_test_positive(std::string_view text, std::string_view expected_t
 
     ast::NamedType expexted{{0, 0}, std::move(ns), std::move(type)};
 
-    lexing::Lexer lexer{text};
-    auto result = TypeParser{lexer}.type();
+    auto result = Parser{text}.type();
 
     ASSERT_TRUE(!!result);
     ASSERT_TRUE(std::holds_alternative<ast::NamedType>(result.value()));
@@ -25,8 +23,7 @@ auto named_type_test_positive(std::string_view text, std::string_view expected_t
 
 auto named_type_test_negative(std::string_view text)
 {
-    lexing::Lexer lexer{text};
-    auto result = TypeParser{lexer}.type();
+    auto result = Parser{text}.type();
 
     ASSERT_TRUE(!!result);
     EXPECT_FALSE(std::holds_alternative<ast::NamedType>(result.value()));

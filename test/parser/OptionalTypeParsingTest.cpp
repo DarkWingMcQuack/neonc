@@ -4,11 +4,10 @@
 #include <iostream>
 #include <lexer/Lexer.hpp>
 #include <parser/Parser.hpp>
-#include <parser/TypeParser.hpp>
 
 #include <gtest/gtest.h>
 
-using parser::TypeParser;
+using parser::Parser;
 
 inline auto optOf(auto type) -> ast::Type
 {
@@ -49,8 +48,7 @@ inline auto lambdaT(auto... elems) -> ast::LambdaType
 
 inline auto optional_type_test_positive(std::string_view text, auto expected)
 {
-    lexing::Lexer lexer{text};
-    auto result = TypeParser{lexer}.type();
+    auto result = Parser{text}.type();
 
     ASSERT_TRUE(!!result);
     EXPECT_TRUE(std::holds_alternative<ast::Forward<ast::OptionalType>>(result.value()));
@@ -59,8 +57,7 @@ inline auto optional_type_test_positive(std::string_view text, auto expected)
 
 inline auto optional_type_test_negative(std::string_view text)
 {
-    lexing::Lexer lexer{text};
-    auto result = TypeParser{lexer}.type();
+    auto result = Parser{text}.type();
 
     ASSERT_TRUE(!!result);
     EXPECT_FALSE(std::holds_alternative<ast::Forward<ast::OptionalType>>(result.value()));

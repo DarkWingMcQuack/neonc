@@ -1,10 +1,9 @@
 #include <iostream>
-#include <lexer/Lexer.hpp>
-#include <parser/IdentifierParser.hpp>
+#include <parser/Parser.hpp>
 
 #include <gtest/gtest.h>
 
-using parser::IdentifierParser;
+using parser::Parser;
 
 
 auto identifier_test(std::string_view text, std::string_view expected_value)
@@ -13,7 +12,7 @@ auto identifier_test(std::string_view text, std::string_view expected_value)
 
     lexing::Lexer lexer{text};
 
-    auto result = IdentifierParser{lexer}.identifier();
+    auto result = Parser{text}.identifier();
 
     ASSERT_TRUE(!!result);
 

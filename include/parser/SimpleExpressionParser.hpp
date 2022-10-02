@@ -48,7 +48,7 @@ class SimpleExpressionParser
 			return result.value();
 		}
 
-		if(auto result = identifier()) {
+		if(auto result = static_cast<T*>(this)->identifier()) {
 			return simple_lambda(std::move(result.value()));
 		}
 
@@ -59,12 +59,12 @@ class SimpleExpressionParser
 
 		// if the expressions starts with a (
 		// it is a tuple, or a lambda expression or a grouped expression
-		if(lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
-			auto start = lexer().peek_and_pop().value().getArea();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+			auto start = simple_expr_lexer().peek_and_pop().value().getArea();
 
 			// parse the first expression after the ( because thats what all the three options
 			// what it could be have in common
-			auto expr_opt = expression();
+			auto expr_opt = static_cast<T*>(this)->expression();
 			if(not expr_opt) {
 				// TODO: propagate error
 				return std::nullopt;
@@ -72,7 +72,7 @@ class SimpleExpressionParser
 			auto expr = std::move(expr_opt.value());
 
 			// if the next token is ) then it was a grouped expression or a lambda
-			if(lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+			if(simple_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
 				// check if it could be a lambda otherwise return the expr itself
 				return try_lambda(start, std::move(expr));
 			}
@@ -80,7 +80,7 @@ class SimpleExpressionParser
 			// TODO: if next token is a : then it is a lambda expression
 
 			// if next token is a , then we have (<expr>, which coule be a lambda expression "(a, b) => c" or a tuple (a, b)
-			if(lexer().next_is(lexing::TokenTypes::COMMA)) {
+			if(simple_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
 
 				// try parsing a tuple or a lambda expression from the expressions lists
 				auto res = tuple_or_lambda_params(start, std::move(expr));
@@ -100,7 +100,7 @@ class SimpleExpressionParser
 			}
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
 			return block_expression();
 		}
 	}
@@ -108,35 +108,35 @@ class SimpleExpressionParser
 private:
 	constexpr auto integer() noexcept -> std::optional<ast::Integer>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::INTEGER)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::INTEGER)) {
 			return std::nullopt;
 		}
 
-		auto token = lexer().peek_and_pop().value();
+		auto token = simple_expr_lexer().peek_and_pop().value();
 		auto value = parse_int_unsafe(token.getValue());
 		return ast::Integer{token.getArea(), value};
 	}
 
 	constexpr auto duoble() noexcept -> std::optional<ast::Double>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::DOUBLE)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::DOUBLE)) {
 			return std::nullopt;
 		}
 
-		auto token = lexer().peek_and_pop().value();
+		auto token = simple_expr_lexer().peek_and_pop().value();
 		auto value = parse_double_unsafe(token.getValue());
 		return ast::Double{token.getArea(), value};
 	}
 
 	constexpr auto boolean() noexcept -> std::optional<ast::Boolean>
 	{
-		if(lexer().next_is(lexing::TokenTypes::TRUE)) {
-			auto area = lexer().next_area().value();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::TRUE)) {
+			auto area = simple_expr_lexer().next_area().value();
 			return ast::Boolean(area, true);
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::FALSE)) {
-			auto area = lexer().next_area().value();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::FALSE)) {
+			auto area = simple_expr_lexer().next_area().value();
 			return ast::Boolean(area, false);
 		}
 
@@ -145,8 +145,8 @@ private:
 
 	constexpr auto self_value() noexcept -> std::optional<ast::SelfExpr>
 	{
-		if(lexer().next_is(lexing::TokenTypes::SELF_VALUE)) {
-			auto area = lexer().peek_and_pop().value().getArea();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::SELF_VALUE)) {
+			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
 			return ast::SelfExpr{area};
 		}
 
@@ -155,8 +155,8 @@ private:
 
 	constexpr auto string() noexcept -> std::optional<ast::String>
 	{
-		if(lexer().next_is(lexing::TokenTypes::STANDARD_STRING)) {
-			auto token = lexer().peek_and_pop().value();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::STANDARD_STRING)) {
+			auto token = simple_expr_lexer().peek_and_pop().value();
 			return ast::String{token.getArea(), token.getValue()};
 		}
 
@@ -165,61 +165,61 @@ private:
 
 	constexpr auto block_expression() noexcept -> std::optional<ast::BlockExpr>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
 			// TODO: return error "expected {"
 			return std::nullopt;
 		}
 		// pop the { and get its area
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = simple_expr_lexer().peek_and_pop().value().getArea();
 
 		std::vector<ast::Statement> stmts;
-		while(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-			auto stmt_opt = statement();
+		while(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+			auto stmt_opt = static_cast<T*>(this)->statement();
 			if(not stmt_opt.has_value()) {
 				// TODO: propagate error
 				return std::nullopt;
 			}
 			stmts.emplace_back(std::move(stmt_opt.value()));
 
-			if(not(lexer().next_is(lexing::TokenTypes::SEMICOLON) or lexer().next_is(lexing::TokenTypes::NEWLINE))) {
+			if(not(simple_expr_lexer().next_is(lexing::TokenTypes::SEMICOLON) or simple_expr_lexer().next_is(lexing::TokenTypes::NEWLINE))) {
 				// TODO: return error "expected newline or ;"
 				return std::nullopt;
 			}
-			lexer().pop();
+			simple_expr_lexer().pop();
 		}
 
-		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			// TODO: return error "a block expression needs to return an expression with =>expr"
 			return std::nullopt;
 		}
-		lexer().pop();
+		simple_expr_lexer().pop();
 
-		auto expr_opt = expression();
+		auto expr_opt = static_cast<T*>(this)->expression();
 		if(not expr_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
 		}
 		auto expr = std::move(expr_opt.value());
 
-		if(not lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
 			// TODO: return error: "expected } after block return statment"
 			return std::nullopt;
 		}
 
-		auto end = lexer().peek_and_pop().value().getArea();
+		auto end = simple_expr_lexer().peek_and_pop().value().getArea();
 		auto area = lexing::TextArea::combine(start, end);
 		return ast::BlockExpr{area, std::move(stmts), std::move(expr)};
 	}
 
 	constexpr auto elif_expression() noexcept -> std::optional<ast::ElifExpr>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::ELIF)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::ELIF)) {
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = simple_expr_lexer().peek_and_pop().value().getArea();
 
-		auto elif_condition_opt = expression();
+		auto elif_condition_opt = static_cast<T*>(this)->expression();
 		if(not elif_condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -242,13 +242,13 @@ private:
 
 	constexpr auto if_expression() noexcept -> std::optional<ast::Expression>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::IF)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::IF)) {
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = simple_expr_lexer().peek_and_pop().value().getArea();
 
-		auto if_condition_opt = expression();
+		auto if_condition_opt = static_cast<T*>(this)->expression();
 		if(not if_condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -263,7 +263,7 @@ private:
 		auto if_block_expr = std::move(if_block_expr_opt.value());
 
 		std::vector<ast::ElifExpr> elifs;
-		while(lexer().next_is(lexing::TokenTypes::ELIF)) {
+		while(simple_expr_lexer().next_is(lexing::TokenTypes::ELIF)) {
 			if(auto elif_expr = elif_expression()) {
 				elifs.emplace_back(std::move(elif_expr.value()));
 			}
@@ -292,13 +292,13 @@ private:
 	// if this is not the case it simply returns the already parsed parameter again
 	constexpr auto simple_lambda(ast::Identifier&& parameter) noexcept -> std::optional<ast::Expression>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return std::move(parameter);
 		}
 
-		lexer().pop();
+		simple_expr_lexer().pop();
 
-		auto expr_opt = expression();
+		auto expr_opt = static_cast<T*>(this)->expression();
 		if(not expr_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -349,16 +349,16 @@ private:
 	// parse a lambda parameter <id> (: <type>)?
 	constexpr auto lambda_parameter() noexcept -> std::optional<ast::LambdaParameter>
 	{
-		auto id_opt = identifier();
+		auto id_opt = static_cast<T*>(this)->identifier();
 		if(not id_opt.has_value()) {
 			// TODO: propagte error
 			return std::nullopt;
 		}
 		auto id = std::move(id_opt.value());
 
-		if(lexer().next_is(lexing::TokenTypes::COLON)) {
-			lexer().pop();
-			auto type_opt = type();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
+			simple_expr_lexer().pop();
+			auto type_opt = static_cast<T*>(this)->type();
 			if(not type_opt.has_value()) {
 				// TODO: propagte error
 				return std::nullopt;
@@ -374,9 +374,9 @@ private:
 	// and the start is at the colon right before the type
 	constexpr auto lambda_parameter(ast::Identifier&& id) noexcept -> std::optional<ast::LambdaParameter>
 	{
-		if(lexer().next_is(lexing::TokenTypes::COLON)) {
-			lexer().pop();
-			auto type_opt = type();
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
+			simple_expr_lexer().pop();
+			auto type_opt = static_cast<T*>(this)->type();
 			if(not type_opt.has_value()) {
 				// TODO: propagte error
 				return std::nullopt;
@@ -398,15 +398,15 @@ private:
 		-> std::optional<std::vector<ast::LambdaParameter>>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::COLON)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
 			// TODO: log something
 			return std::nullopt;
 		}
 
 
-		lexer().pop();
+		simple_expr_lexer().pop();
 
-		auto type_opt = type();
+		auto type_opt = static_cast<T*>(this)->type();
 		if(not type_opt.has_value()) {
 			// TODO: propagte error
 			return std::nullopt;
@@ -422,8 +422,8 @@ private:
 
 		params.back().setType(std::move(type));
 
-		while(lexer().next_is(lexing::TokenTypes::COMMA)) {
-			lexer().pop();
+		while(simple_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
+			simple_expr_lexer().pop();
 			auto param_opt = lambda_parameter();
 			if(not param_opt.has_value()) {
 				return std::nullopt;
@@ -432,7 +432,7 @@ private:
 			params.emplace_back(std::move(param_opt.value()));
 		}
 
-		if(not lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
 			// TODO: return "expected ) error"
 			return std::nullopt;
 		}
@@ -449,10 +449,10 @@ private:
 		std::vector<ast::Expression> expressions;
 		expressions.emplace_back(std::move(first));
 
-		while(lexer().next_is(lexing::TokenTypes::COMMA)) {
-			lexer().pop();
+		while(simple_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
+			simple_expr_lexer().pop();
 
-			auto expr_opt = expression();
+			auto expr_opt = static_cast<T*>(this)->expression();
 			if(not expr_opt) {
 				// TODO: propagate error
 				return std::nullopt;
@@ -461,7 +461,7 @@ private:
 			expressions.emplace_back(std::move(expr));
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::COLON)) {
+		if(simple_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
 			auto params_opt = lambda_parameters_from_starting_tuple(std::move(expressions));
 			if(not params_opt.has_value()) {
 				return std::nullopt;
@@ -469,7 +469,7 @@ private:
 			return std::move(params_opt.value());
 		}
 
-		if(not lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
 			// TODO: return "expected ) error"
 			return std::nullopt;
 		}
@@ -486,14 +486,14 @@ private:
 	constexpr auto try_lambda(lexing::TextArea start, std::vector<ast::LambdaParameter>&& parameters) noexcept
 		-> std::optional<ast::Expression>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			// TODO: return error "expected =>"
 			return std::nullopt;
 		}
 
 		// consume =>
-		lexer().pop();
-		auto body_opt = expression();
+		simple_expr_lexer().pop();
+		auto body_opt = static_cast<T*>(this)->expression();
 		if(not body_opt.has_value()) {
 			return std::nullopt;
 		}
@@ -515,15 +515,15 @@ private:
 		-> std::optional<ast::Expression>
 	{
 		// if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return ast::Expression{
 				ast::forward<ast::TupleExpr>(std::move(tuple))};
 		}
 		// consume =>
-		lexer().pop();
+		simple_expr_lexer().pop();
 
 		// parse the body of the lambda expression
-		auto body_opt = expression();
+		auto body_opt = static_cast<T*>(this)->expression();
 		if(not body_opt.has_value()) {
 			return std::nullopt;
 		}
@@ -558,12 +558,12 @@ private:
 		-> std::optional<ast::Expression>
 	{
 		// if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-		if(not lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return std::move(first);
 			// consume =>
-			lexer().pop();
+			simple_expr_lexer().pop();
 
-			auto body_opt = expression();
+			auto body_opt = static_cast<T*>(this)->expression();
 			if(not body_opt.has_value()) {
 				return std::nullopt;
 			}
@@ -590,28 +590,7 @@ private:
 	}
 
 private:
-	constexpr auto identifier() noexcept
-		-> std::optional<ast::Identifier>
-	{
-		return static_cast<T*>(this)->identifier();
-	}
-
-	constexpr auto expression() noexcept -> std::optional<ast::Expression>
-	{
-		return static_cast<T*>(this)->expression();
-	}
-
-	constexpr auto statement() noexcept -> std::optional<ast::Statement>
-	{
-		return static_cast<T*>(this)->statement();
-	}
-
-	constexpr auto type() noexcept -> std::optional<ast::Type>
-	{
-		return static_cast<T*>(this)->type();
-	}
-
-	constexpr auto lexer() noexcept -> lexing::Lexer&
+	constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
 	{
 		return static_cast<T*>(this)->lexer_;
 	}

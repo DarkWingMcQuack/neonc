@@ -19,18 +19,18 @@ class ForElementParser
 {
 	constexpr auto for_element() noexcept -> std::optional<ast::ForElement>
 	{
-		auto id_opt = identifier();
+		auto id_opt = static_cast<T*>(this)->identifier();
 		if(not id_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
 		}
 		auto id = std::move(id_opt.value());
 
-		if(lexer().next_is(lexing::TokenTypes::SMALL_LEFT_ARROW)) {
+		if(for_element_lexer().next_is(lexing::TokenTypes::L_ARROW)) {
 			return monadic_for_element(std::move(id));
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+		if(for_element_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
 			return let_for_element(std::move(id));
 		}
 
@@ -42,12 +42,12 @@ class ForElementParser
 		-> std::optional<ast::ForMonadicElement>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::SMALL_LEFT_ARROW)) {
+		if(not for_element_lexer().next_is(lexing::TokenTypes::L_ARROW)) {
 			return std::nullopt;
 		}
-		lexer().pop();
+		for_element_lexer().pop();
 
-		auto rhs_opt = expression();
+		auto rhs_opt = static_cast<T*>(this)->expression();
 		if(not rhs_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -67,12 +67,12 @@ class ForElementParser
 		-> std::optional<ast::ForLetElement>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+		if(not for_element_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
 			return std::nullopt;
 		}
-		lexer().pop();
+		for_element_lexer().pop();
 
-		auto rhs_opt = expression();
+		auto rhs_opt = static_cast<T*>(this)->expression();
 		if(not rhs_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -89,17 +89,7 @@ class ForElementParser
 	}
 
 private:
-	constexpr auto identifier() noexcept -> std::optional<ast::Identifier>
-	{
-		return static_cast<T*>(this)->identifier();
-	}
-
-	constexpr auto expression() noexcept -> std::optional<ast::Expression>
-	{
-		return static_cast<T*>(this)->expression();
-	}
-
-	constexpr auto lexer() noexcept -> lexing::Lexer&
+	constexpr auto for_element_lexer() noexcept -> lexing::Lexer&
 	{
 		return static_cast<T*>(this)->lexer_;
 	}

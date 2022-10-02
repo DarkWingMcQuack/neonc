@@ -14,8 +14,8 @@ public:
     constexpr auto identifier() noexcept
         -> std::optional<ast::Identifier>
     {
-        if(lexer().next_is(lexing::TokenTypes::IDENTIFIER)) {
-            auto token = lexer().peek_and_pop().value();
+        if(identifier_lexer().next_is(lexing::TokenTypes::IDENTIFIER)) {
+            auto token = identifier_lexer().peek_and_pop().value();
             return ast::Identifier{token.getArea(), token.getValue()};
         }
 
@@ -23,7 +23,7 @@ public:
     }
 
 private:
-    constexpr auto lexer() noexcept -> lexing::Lexer&
+    constexpr auto identifier_lexer() noexcept -> lexing::Lexer&
     {
         return static_cast<T*>(this)->lexer_;
     }

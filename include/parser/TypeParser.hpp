@@ -19,10 +19,10 @@ public:
         -> std::optional<ast::Type>
     {
         auto start_type_opt = [this] {
-            if(lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+            if(type_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
                 return compound_type();
             }
-            if(lexer().next_is(lexing::TokenTypes::SELF_TYPE)) {
+            if(type_lexer().next_is(lexing::TokenTypes::SELF_TYPE)) {
                 return self_type();
             }
             return named_type();
@@ -41,7 +41,7 @@ private:
     constexpr auto type(ast::Type&& already_parsed) noexcept
         -> std::optional<ast::Type>
     {
-        if(lexer().next_is(lexing::TokenTypes::QUESTIONMARK)) {
+        if(type_lexer().next_is(lexing::TokenTypes::QUESTIONMARK)) {
             auto opt_opt = optional_type(std::move(already_parsed));
             if(not opt_opt) {
                 // TODO: propagate error
@@ -51,7 +51,7 @@ private:
             return type(std::move(opt_opt.value()));
         }
 
-        if(lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+        if(type_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
             auto lambda_opt = simple_lambda_type(std::move(already_parsed));
             if(not lambda_opt) {
                 // TODO: propagate error
@@ -61,14 +61,14 @@ private:
             return type(std::move(lambda_opt.value()));
         }
 
-        return already_parsed;
+        return std::make_optional(std::move(already_parsed));
     }
 
     constexpr auto self_type() noexcept
         -> std::optional<ast::Type>
     {
-        if(lexer().next_is(lexing::TokenTypes::SELF_TYPE)) {
-            auto area = lexer().peek_and_pop().value().getArea();
+        if(type_lexer().next_is(lexing::TokenTypes::SELF_TYPE)) {
+            auto area = type_lexer().peek_and_pop().value().getArea();
             return ast::Type{ast::SelfType{area}};
         }
 
@@ -80,17 +80,17 @@ private:
     {
         std::vector<ast::Identifier> names;
 
-        auto first_identifier_opt = identifier();
+        auto first_identifier_opt = static_cast<T*>(this)->identifier();
         if(not first_identifier_opt) {
             return std::nullopt;
         }
 
         names.emplace_back(std::move(first_identifier_opt.value()));
 
-        while(lexer().next_is(lexing::TokenTypes::COLON_COLON)) {
-            lexer().pop();
+        while(type_lexer().next_is(lexing::TokenTypes::COLON_COLON)) {
+            type_lexer().pop();
 
-            auto identifier_opt = identifier();
+            auto identifier_opt = static_cast<T*>(this)->identifier();
             if(not identifier_opt) {
                 // TODO: return expexted Identifier error
                 return std::nullopt;
@@ -117,9 +117,9 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
+        while(type_lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
             // pop the comma
-            lexer().pop();
+            type_lexer().pop();
 
             // parse the next type
             auto next_type = type();
@@ -132,13 +132,13 @@ private:
             types.emplace_back(std::move(next_type.value()));
         }
 
-        if(not lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(not type_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
             return std::nullopt;
         }
 
-        auto closing_area = lexer().next_area().value();
-        lexer().pop();
+        auto closing_area = type_lexer().next_area().value();
+        type_lexer().pop();
 
         auto area = lexing::TextArea::combine(start, closing_area);
 
@@ -154,9 +154,9 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
+        while(type_lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
             // pop the comma
-            lexer().pop();
+            type_lexer().pop();
 
             // parse the next type
             auto next_type = type();
@@ -169,13 +169,13 @@ private:
             types.emplace_back(std::move(next_type.value()));
         }
 
-        if(not lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(not type_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // return next token should be closing parentesis or type
             return std::nullopt;
         }
 
-        auto closing_area = lexer().next_area().value();
-        lexer().pop();
+        auto closing_area = type_lexer().next_area().value();
+        type_lexer().pop();
 
         auto area = lexing::TextArea::combine(start, closing_area);
 
@@ -190,9 +190,9 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(lexer().next_is(lexing::TokenTypes::COMMA)) {
+        while(type_lexer().next_is(lexing::TokenTypes::COMMA)) {
             // pop the comma
-            lexer().pop();
+            type_lexer().pop();
 
             // parse the next type
             auto next_type = type();
@@ -205,12 +205,12 @@ private:
             types.emplace_back(std::move(next_type.value()));
         }
 
-        if(lexer().peek_and_pop().value().getType() != lexing::TokenTypes::R_PARANTHESIS) {
+        if(type_lexer().peek_and_pop().value().getType() != lexing::TokenTypes::R_PARANTHESIS) {
             // TODO: return error next token should be )
             return std::nullopt;
         }
 
-        if(lexer().peek_and_pop().value().getType() != lexing::TokenTypes::LAMBDA_ARROW) {
+        if(type_lexer().peek_and_pop().value().getType() != lexing::TokenTypes::LAMBDA_ARROW) {
             // TODO: return error next token should be =>
             return std::nullopt;
         }
@@ -236,7 +236,7 @@ private:
     constexpr auto grouped_type(lexing::TextArea start, ast::Type&& first_type) noexcept
         -> ast::Type
     {
-        auto end = lexer().peek_and_pop().value().getArea();
+        auto end = type_lexer().peek_and_pop().value().getArea();
         auto new_area = lexing::TextArea::combine(start, end);
         ast::setTextArea(first_type, std::move(new_area));
         return first_type;
@@ -247,11 +247,11 @@ private:
     constexpr auto compound_type() noexcept
         -> std::optional<ast::Type>
     {
-        if(not lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+        if(not type_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
             return std::nullopt;
         }
         // get the area of the ( token
-        auto start_area = lexer().peek_and_pop().value().getArea();
+        auto start_area = type_lexer().peek_and_pop().value().getArea();
 
         // parse the first type after the (
         auto first_type_opt = type();
@@ -264,22 +264,22 @@ private:
         auto first_type = std::move(first_type_opt.value());
 
         // the type is a grouped type
-        if(lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(type_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             return grouped_type(start_area, std::move(first_type));
         }
 
         // the type is a tuple
-        if(lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
+        if(type_lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
             return tuple_type(start_area, std::move(first_type));
         }
 
         // the type is a union
-        if(lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
+        if(type_lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
             return union_type(start_area, std::move(first_type));
         }
 
         // the type is a lambda tpye with multiple parameters
-        if(lexer().next_is(lexing::TokenTypes::COMMA)) {
+        if(type_lexer().next_is(lexing::TokenTypes::COMMA)) {
             return lambda_type_with_multiple(start_area, std::move(first_type));
         }
 
@@ -291,12 +291,12 @@ private:
     constexpr auto optional_type(ast::Type&& first_type) noexcept
         -> std::optional<ast::Type>
     {
-        if(not lexer().next_is(lexing::TokenTypes::QUESTIONMARK)) {
+        if(not type_lexer().next_is(lexing::TokenTypes::QUESTIONMARK)) {
             return std::nullopt;
         }
 
         auto start = ast::getTextArea(first_type);
-        auto end = lexer().peek_and_pop().value().getArea();
+        auto end = type_lexer().peek_and_pop().value().getArea();
         auto area = lexing::TextArea::combine(start, end);
 
         return ast::Type{
@@ -309,7 +309,7 @@ private:
         -> std::optional<ast::Type>
     {
         // pop the =>
-        lexer().pop();
+        type_lexer().pop();
 
         auto ret_type_opt = type();
 
@@ -330,15 +330,9 @@ private:
     }
 
 private:
-    constexpr auto identifier() noexcept
-        -> std::optional<ast::Identifier>
+    constexpr auto type_lexer() noexcept -> lexing::Lexer&
     {
-        return static_cast<T*>(this)->identifier();
-    }
-
-    constexpr auto lexer() noexcept -> lexing::Lexer&
-    {
-        return static_cast<T*>(this)->lexer();
+        return static_cast<T*>(this)->lexer_;
     }
 };
 } // namespace parser

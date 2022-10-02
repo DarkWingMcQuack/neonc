@@ -20,23 +20,23 @@ class StatmentParser
 public:
 	constexpr auto statement() noexcept -> std::optional<ast::Statement>
 	{
-		if(lexer().next_is(lexing::TokenTypes::LET)) {
+		if(stmt_lexer().next_is(lexing::TokenTypes::LET)) {
 			return let();
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::WHILE)) {
+		if(stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {
 			return wile();
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::IF)) {
+		if(stmt_lexer().next_is(lexing::TokenTypes::IF)) {
 			return ifStmt();
 		}
 
-		if(lexer().next_is(lexing::TokenTypes::FOR)) {
+		if(stmt_lexer().next_is(lexing::TokenTypes::FOR)) {
 			return forStmt();
 		}
 
-		return expression();
+		return static_cast<T*>(this)->expression();
 	}
 
 private:
@@ -44,14 +44,14 @@ private:
 	constexpr auto let() noexcept -> std::optional<ast::Statement>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::LET)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::LET)) {
 			return std::nullopt;
 		}
 
 		// pop the let token and get the area of it as start
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
-		auto id_opt = identifier();
+		auto id_opt = stmt_identifier();
 		if(not id_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -60,10 +60,10 @@ private:
 
 		// parse optional type annotation
 		std::optional<ast::Type> t;
-		if(lexer().next_is(lexing::TokenTypes::COLON)) {
-			lexer().pop();
+		if(stmt_lexer().next_is(lexing::TokenTypes::COLON)) {
+			stmt_lexer().pop();
 
-			auto type_opt = type();
+			auto type_opt = stmt_type();
 			if(not type_opt.has_value()) {
 				// TODO: propagate error
 				return std::nullopt;
@@ -71,12 +71,12 @@ private:
 			t = std::move(type_opt.value());
 		}
 
-		if(not lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
 			// TODO: return error "expected ="
 			return std::nullopt;
 		}
 
-		auto rhs_opt = expression();
+		auto rhs_opt = static_cast<T*>(this)->expression();
 		if(not rhs_opt.has_value()) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -105,7 +105,7 @@ private:
 			}
 			stmts.emplace_back(stmt_opt.value());
 
-			auto next_token_opt = lexer().peek_and_pop();
+			auto next_token_opt = stmt_lexer().peek_and_pop();
 			if(not next_token_opt.has_value()) {
 				// TODO: return expected a token from the lexer, got none this seems to be a lexer bug
 				return std::nullopt;
@@ -123,11 +123,11 @@ private:
 
 	constexpr auto block() noexcept -> std::optional<std::pair<std::vector<ast::Statement>, lexing::TextArea>>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
 			// TODO: return expected {
 			return std::nullopt;
 		}
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
 		auto body_opt = stmt_list();
 		if(not body_opt) {
@@ -137,12 +137,12 @@ private:
 		auto body = std::move(body_opt.value());
 
 
-		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
 			// TODO: return expected }
 			return std::nullopt;
 		}
 
-		auto end = lexer().peek_and_pop().value().getArea();
+		auto end = stmt_lexer().peek_and_pop().value().getArea();
 		auto area = lexing::TextArea::combine(start, end);
 
 		return std::pair{std::move(body), std::move(area)};
@@ -151,14 +151,14 @@ private:
 	constexpr auto wile() noexcept -> std::optional<ast::Statement>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::WHILE)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {
 			// TODO: return expexted "while" token
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
-		auto condition_opt = expression();
+		auto condition_opt = static_cast<T*>(this)->expression();
 		if(not condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -182,28 +182,28 @@ private:
 	constexpr auto forStmt() noexcept -> std::optional<ast::Statement>
 	{
 		// sanity check
-		if(not lexer().next_is(lexing::TokenTypes::FOR)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::FOR)) {
 			return std::nullopt;
 		}
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
 		// clang-format off
-		if(not lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-		   not lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+		   not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
 			// TODO: return error "expected ( or {"
 			return std::nullopt;
 		}
 		// clang-format on
 
-		auto enclosing_type = lexer().peek_and_pop().value().getType();
+		auto enclosing_type = stmt_lexer().peek_and_pop().value().getstmt_type();
 
 		std::vector<ast::ForElement> elems;
 
 		// clang-format off
-		while(not lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-			  not lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+		while(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+			  not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
 
-			auto elem_opt = for_element();
+			auto elem_opt = stmt_for_element();
 			if(not elem_opt.has_value()) {
 				// TODO: propagate error
 				return std::nullopt;
@@ -213,11 +213,11 @@ private:
 		}
 		// clang-format on
 
-		if(not lexer().next_is(enclosing_type)) {
+		if(not stmt_lexer().next_is(enclosing_type)) {
 			// TODO: return "expected $enclosing_type" error
 			return std::nullopt;
 		}
-		lexer().pop();
+		stmt_lexer().pop();
 
 		auto block_opt = block();
 		if(not block_opt.has_value()) {
@@ -236,12 +236,12 @@ private:
 
 	constexpr auto elseStmt() noexcept -> std::optional<ast::ElseStmt>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::ELSE)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::ELSE)) {
 			// TODO: return error "expected else kexword"
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
 		auto body_opt = block();
 		if(not body_opt) {
@@ -257,13 +257,13 @@ private:
 
 	constexpr auto elifStmt() noexcept -> std::optional<ast::ElifStmt>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::ELIF)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::ELIF)) {
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
-		auto elif_condition_opt = expression();
+		auto elif_condition_opt = static_cast<T*>(this)->expression();
 		if(not elif_condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -286,13 +286,13 @@ private:
 
 	constexpr auto ifStmt() noexcept -> std::optional<ast::Statement>
 	{
-		if(not lexer().next_is(lexing::TokenTypes::IF)) {
+		if(not stmt_lexer().next_is(lexing::TokenTypes::IF)) {
 			return std::nullopt;
 		}
 
-		auto start = lexer().peek_and_pop().value().getArea();
+		auto start = stmt_lexer().peek_and_pop().value().getArea();
 
-		auto condition_opt = expression();
+		auto condition_opt = static_cast<T*>(this)->expression();
 		if(not condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
@@ -309,7 +309,7 @@ private:
 		auto area = lexing::TextArea::combine(start, end);
 
 		std::vector<ast::ElifExpr> elifs;
-		while(lexer().next_is(lexing::TokenTypes::ELIF)) {
+		while(stmt_lexer().next_is(lexing::TokenTypes::ELIF)) {
 			auto elif_opt = elifStmt();
 			if(not elif_opt) {
 				// TODO: propagate error
@@ -320,7 +320,7 @@ private:
 		}
 
 		std::optional<ast::ElseStmt> else_;
-		if(lexer().next_is(lexing::TokenTypes::ELSE)) {
+		if(stmt_lexer().next_is(lexing::TokenTypes::ELSE)) {
 			auto else_opt = elseStmt();
 			if(not else_opt.has_value()) {
 				// TODO: propagate error
@@ -341,29 +341,25 @@ private:
 
 
 private:
-	constexpr auto identifier() noexcept
+	constexpr auto stmt_identifier() noexcept
 		-> std::optional<ast::Identifier>
 	{
 		return static_cast<T*>(this)->identifier();
 	}
 
-	constexpr auto expression() noexcept -> std::optional<ast::Expression>
-	{
-		return static_cast<T*>(this)->expression();
-	}
 
 
-	constexpr auto for_element() noexcept -> std::optional<ast::ForElement>
+	constexpr auto stmt_for_element() noexcept -> std::optional<ast::ForElement>
 	{
 		return static_cast<T*>(this)->for_element();
 	}
 
-	constexpr auto type() noexcept -> std::optional<ast::Type>
+	constexpr auto stmt_type() noexcept -> std::optional<ast::Type>
 	{
 		return static_cast<T*>(this)->type();
 	}
 
-	constexpr auto lexer() noexcept -> lexing::Lexer&
+	constexpr auto stmt_lexer() noexcept -> lexing::Lexer&
 	{
 		return static_cast<T*>(this)->lexer_;
 	}
