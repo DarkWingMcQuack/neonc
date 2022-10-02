@@ -53,7 +53,7 @@ public:
 			return simple_lambda(std::move(result.value()));
 		}
 
-		if(auto result = if_expression()) {
+		if(auto result = static_cast<T*>(this)->if_expression()) {
 			return std::move(result.value());
 		}
 
@@ -215,85 +215,6 @@ private:
 		return ast::BlockExpr{area, std::move(stmts), std::move(expr)};
 	}
 
-	constexpr auto elif_expression() noexcept -> std::optional<ast::ElifExpr>
-	{
-		if(not simple_expr_lexer().next_is(lexing::TokenTypes::ELIF)) {
-			return std::nullopt;
-		}
-
-		auto start = simple_expr_lexer().peek_and_pop().value().getArea();
-
-		auto elif_condition_opt = static_cast<T*>(this)->expression();
-		if(not elif_condition_opt) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto elif_condition = std::move(elif_condition_opt.value());
-
-		auto block_expr_opt = block_expression();
-		if(not block_expr_opt) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto block_expr = std::move(block_expr_opt.value());
-
-		auto end = ast::getTextArea(block_expr);
-
-		return ast::ElifExpr{lexing::TextArea::combine(start, end),
-							 std::move(elif_condition),
-							 std::move(block_expr)};
-	}
-
-	constexpr auto if_expression() noexcept -> std::optional<ast::Expression>
-	{
-		if(not simple_expr_lexer().next_is(lexing::TokenTypes::IF)) {
-			return std::nullopt;
-		}
-
-		auto start = simple_expr_lexer().peek_and_pop().value().getArea();
-
-		auto if_condition_opt = static_cast<T*>(this)->expression();
-		if(not if_condition_opt) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto if_condition = std::move(if_condition_opt.value());
-
-		auto if_block_expr_opt = block_expression();
-		if(not if_block_expr_opt) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto if_block_expr = std::move(if_block_expr_opt.value());
-
-		std::vector<ast::ElifExpr> elifs;
-		while(simple_expr_lexer().next_is(lexing::TokenTypes::ELIF)) {
-			auto elif_expr = elif_expression();
-
-			if(not elif_expr.has_value()) {
-				// TODO: propagate error
-				return std::nullopt;
-			}
-
-			elifs.emplace_back(std::move(elif_expr.value()));
-		}
-
-		auto else_block_opt = block_expression();
-		if(not else_block_opt) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto else_block = std::move(else_block_opt.value());
-
-		auto end = ast::getTextArea(else_block);
-
-		return ast::Expression{
-			ast::forward<ast::IfExpr>(lexing::TextArea::combine(start, end),
-									  std::move(if_condition),
-									  std::move(if_block_expr),
-									  std::move(elifs),
-									  std::move(else_block))};
-	}
 
 	// given an already parsed identifier this method checks if it is a lambda expression
 	// if the identifier is followed by a => token it is a lambda expression and it parses the body and returns
