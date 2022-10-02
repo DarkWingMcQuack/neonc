@@ -49,7 +49,6 @@ TEST(SelfExpressionParserTest, SelfExpressionParsingNegativeTest)
 {
 	self_test_negative("hello=>a");
 	self_test_negative("(\"ello\",hello)");
-	self_test_negative("self");
 	self_test_negative("x");
 	self_test_negative("xasdas");
 	self_test_negative("_xasdas");
