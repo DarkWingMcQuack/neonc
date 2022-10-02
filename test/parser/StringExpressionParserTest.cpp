@@ -48,7 +48,7 @@ inline auto random_str(std::size_t len) noexcept -> std::string
 
 TEST(StringExpressionParserTest, StringExpressionParsingPositiveTest)
 {
-	for(std::int64_t i = 0; i < 9999; i++) {
+	for(std::int64_t i = 0; i < 999; i++) {
 		for(std::size_t j = 0; j < 10; j++) {
 			std::string s;
 
