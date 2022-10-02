@@ -133,9 +133,10 @@ private:
             return Token{TokenTypes::END_OF_FILE, start, content_};
         }
 
+        // skip whitespace
         if(auto match = ws_re(content_)) {
-            auto value = moveForward(match.size());
-            return Token{TokenTypes::WHITESPACE, start, value};
+            [[maybe_unused]] auto _ = moveForward(match.size());
+            return lexNext();
         }
 
         if(auto match = nl_re(content_)) {

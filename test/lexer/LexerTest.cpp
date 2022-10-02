@@ -35,8 +35,6 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("3.1415e19", lexing::TokenTypes::DOUBLE);
     assertStringToLexedToken("type", lexing::TokenTypes::TYPE);
     assertStringToLexedToken("typeclass", lexing::TokenTypes::TYPECLASS);
-    assertStringToLexedToken(" ", lexing::TokenTypes::WHITESPACE);
-    assertStringToLexedToken("    \t", lexing::TokenTypes::WHITESPACE);
     assertStringToLexedToken("\n", lexing::TokenTypes::NEWLINE);
     assertStringToLexedToken("\n\n\n\n", lexing::TokenTypes::NEWLINE);
     assertStringToLexedToken("//", lexing::TokenTypes::LINE_COMMENT_START);
@@ -93,28 +91,36 @@ TEST(LexerTest, IdentifierTest)
     assertStringToLexedToken("_true_", lexing::TokenTypes::IDENTIFIER);
 }
 
+TEST(LexerTest, WhitespaceSkipTest)
+{
+    assertStringToLexedToken(" _let", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken(" \t\t  _let", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken(" 2", lexing::TokenTypes::INTEGER);
+    assertStringToLexedToken(" \t   2", lexing::TokenTypes::INTEGER);
+}
+
 TEST(LexerTest, TrippleTokenTest)
 {
-    auto lexer = lexing::Lexer{"let fun"};
+    auto lexer = lexing::Lexer{"let fun let"};
     auto result = lexer.peek<3>();
 
     ASSERT_TRUE(!!result);
 
-    auto [l, w, f] = result.value();
+    auto [l, f, l2] = result.value();
 
     EXPECT_EQ(l.getType(), lexing::TokenTypes::LET);
-    EXPECT_EQ(w.getType(), lexing::TokenTypes::WHITESPACE);
     EXPECT_EQ(f.getType(), lexing::TokenTypes::FUN);
+    EXPECT_EQ(l2.getType(), lexing::TokenTypes::LET);
 
     result = lexer.peek<3>();
 
     ASSERT_TRUE(!!result);
 
-    auto [l2, w2, f2] = result.value();
+    auto [l3, f2, l4] = result.value();
 
-    EXPECT_EQ(l2.getType(), lexing::TokenTypes::LET);
-    EXPECT_EQ(w2.getType(), lexing::TokenTypes::WHITESPACE);
+    EXPECT_EQ(l3.getType(), lexing::TokenTypes::LET);
     EXPECT_EQ(f2.getType(), lexing::TokenTypes::FUN);
+    EXPECT_EQ(l4.getType(), lexing::TokenTypes::LET);
 
     lexer.pop<3>();
     auto r_end = lexer.peek();
