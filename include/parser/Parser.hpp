@@ -3,8 +3,9 @@
 #include <ast/Ast.hpp>
 #include <lexer/Lexer.hpp>
 #include <parser/ForElementParser.hpp>
-#include <parser/SimpleExpressionParser.hpp>
 #include <parser/IfExpressionParser.hpp>
+#include <parser/SimpleExpressionParser.hpp>
+#include <parser/SimpleLambdaOrIdentifierParser.hpp>
 #include <parser/StatementParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -15,6 +16,7 @@ class Parser final : public TypeParser<Parser>,
                      public SimpleExpressionParser<Parser>,
                      public StatmentParser<Parser>,
                      public IfExpressionParser<Parser>,
+                     public SimpleLambdaOrIdentifierParser<Parser>,
                      public ForElementParser<Parser>,
                      public IdentifierParser<Parser>
 {
@@ -43,6 +45,7 @@ private:
     friend class ForElementParser<Parser>;
     friend class IdentifierParser<Parser>;
     friend class IfExpressionParser<Parser>;
+    friend class SimpleLambdaOrIdentifierParser<Parser>;
 
     std::string_view content_;
     lexing::Lexer lexer_;
