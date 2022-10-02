@@ -38,5 +38,6 @@ new_test(parser/UnionTypeParsingTest.cpp UnionTypeParsingTest)
 new_test(parser/IdentifierParserTest.cpp IdentifierParserTest)
 new_test(parser/IdentifierExpressionParserTest.cpp IdentifierExpressionParserTest)
 new_test(parser/IntegerExpressionParserTest.cpp IntegerExpressionParserTest)
+new_test(parser/StringExpressionParserTest.cpp StringExpressionParserTest)
 
 
