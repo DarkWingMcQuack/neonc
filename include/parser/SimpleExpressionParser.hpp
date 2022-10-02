@@ -264,9 +264,14 @@ private:
 
 		std::vector<ast::ElifExpr> elifs;
 		while(simple_expr_lexer().next_is(lexing::TokenTypes::ELIF)) {
-			if(auto elif_expr = elif_expression()) {
-				elifs.emplace_back(std::move(elif_expr.value()));
+			auto elif_expr = elif_expression();
+
+			if(not elif_expr.has_value()) {
+				// TODO: propagate error
+				return std::nullopt;
 			}
+
+			elifs.emplace_back(std::move(elif_expr.value()));
 		}
 
 		auto else_block_opt = block_expression();
