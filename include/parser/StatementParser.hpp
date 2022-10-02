@@ -103,7 +103,7 @@ private:
 				// TODO: propagate error
 				return std::nullopt;
 			}
-			stmts.emplace_back(stmt_opt.value());
+			stmts.emplace_back(std::move(stmt_opt.value()));
 
 			auto next_token_opt = stmt_lexer().peek_and_pop();
 			if(not next_token_opt.has_value()) {
@@ -195,7 +195,7 @@ private:
 		}
 		// clang-format on
 
-		auto enclosing_type = stmt_lexer().peek_and_pop().value().getstmt_type();
+		auto enclosing_type = stmt_lexer().peek_and_pop().value().getType();
 
 		std::vector<ast::ForElement> elems;
 
@@ -308,7 +308,7 @@ private:
 
 		auto area = lexing::TextArea::combine(start, end);
 
-		std::vector<ast::ElifExpr> elifs;
+		std::vector<ast::ElifStmt> elifs;
 		while(stmt_lexer().next_is(lexing::TokenTypes::ELIF)) {
 			auto elif_opt = elifStmt();
 			if(not elif_opt) {

@@ -25,6 +25,7 @@ namespace parser {
 template<class T>
 class SimpleExpressionParser
 {
+public:
 	// parses tuples, literals, lambda expressions and (expressions)
 	constexpr auto simple_expression() noexcept -> std::optional<ast::Expression>
 	{
@@ -103,6 +104,9 @@ class SimpleExpressionParser
 		if(simple_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
 			return block_expression();
 		}
+
+		// return expectedn blablabla error
+		return std::nullopt;
 	}
 
 private:
@@ -441,6 +445,8 @@ private:
 			// TODO: return "expected ) error"
 			return std::nullopt;
 		}
+
+		return std::make_optional(std::move(params));
 	}
 
 	// given (<expr> we try to parse a tuple or a lambda parameter list here
@@ -565,37 +571,39 @@ private:
 		// if the next identifier is not a lambda arrow then the expression was realy a tuple expression
 		if(not simple_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return std::move(first);
-			// consume =>
-			simple_expr_lexer().pop();
+		}
 
-			auto body_opt = static_cast<T*>(this)->expression();
-			if(not body_opt.has_value()) {
-				return std::nullopt;
-			}
-			auto body = std::move(body_opt.value());
+		// consume =>
+		simple_expr_lexer().pop();
 
-			auto end = ast::getTextArea(body);
-			auto area = lexing::TextArea::combine(start, end);
+		auto body_opt = static_cast<T*>(this)->expression();
+		if(not body_opt.has_value()) {
+			return std::nullopt;
+		}
+		auto body = std::move(body_opt.value());
 
-			std::vector<ast::Expression> exprs;
-			exprs.emplace_back(std::move(first));
+		auto end = ast::getTextArea(body);
+		auto area = lexing::TextArea::combine(start, end);
 
-			auto param_opt = exprs_to_parameters(std::move(exprs));
-			if(not param_opt.has_value()) {
-				// TODO: propagate error
-				return std::nullopt;
-			}
-			auto parameters = std::move(param_opt.value());
+		std::vector<ast::Expression> exprs;
+		exprs.emplace_back(std::move(first));
 
-			return ast::Expression{
-				ast::forward<ast::LambdaExpr>(area,
-											  std::move(parameters),
-											  std::move(body))};
-		};
+		auto param_opt = exprs_to_parameters(std::move(exprs));
+		if(not param_opt.has_value()) {
+			// TODO: propagate error
+			return std::nullopt;
+		}
+		auto parameters = std::move(param_opt.value());
+
+		return ast::Expression{
+			ast::forward<ast::LambdaExpr>(area,
+										  std::move(parameters),
+										  std::move(body))};
 	}
 
 private:
-	constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
+	constexpr auto
+	simple_expr_lexer() noexcept -> lexing::Lexer&
 	{
 		return static_cast<T*>(this)->lexer_;
 	}

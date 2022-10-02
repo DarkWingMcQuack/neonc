@@ -28,6 +28,11 @@ public:
     constexpr auto operator=(const Parser&) noexcept -> Parser& = delete;
     constexpr virtual ~Parser() noexcept = default;
 
+    constexpr auto expression() noexcept -> std::optional<ast::Expression>
+    {
+        return simple_expression();
+    }
+
 
 private:
     friend class TypeParser<Parser>;

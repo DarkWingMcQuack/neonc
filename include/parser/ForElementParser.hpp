@@ -17,6 +17,7 @@ namespace parser {
 template<class T>
 class ForElementParser
 {
+public:
 	constexpr auto for_element() noexcept -> std::optional<ast::ForElement>
 	{
 		auto id_opt = static_cast<T*>(this)->identifier();

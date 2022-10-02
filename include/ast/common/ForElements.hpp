@@ -9,6 +9,7 @@ namespace ast {
 
 class ForLetElement : public AreaBase
 {
+public:
 	constexpr ForLetElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
 		: AreaBase(area),
 		  name_(std::move(name)),
@@ -39,6 +40,7 @@ private:
 
 class ForMonadicElement : public AreaBase
 {
+public:
 	constexpr ForMonadicElement(lexing::TextArea area, Identifier&& name, Expression&& rhs) noexcept
 		: AreaBase(area),
 		  name_(std::move(name)),

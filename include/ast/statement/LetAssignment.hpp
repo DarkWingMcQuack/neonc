@@ -10,6 +10,7 @@ namespace ast {
 
 class LetAssignment : public AreaBase
 {
+public:
     constexpr LetAssignment(lexing::TextArea area,
                             Identifier&& name,
                             std::optional<Type>&& type,

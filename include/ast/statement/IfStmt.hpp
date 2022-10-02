@@ -44,6 +44,7 @@ private:
 
 class ElseStmt : public AreaBase
 {
+public:
 	constexpr ElseStmt(lexing::TextArea area, std::vector<ast::Statement>&& body) noexcept
 		: AreaBase(std::move(area)),
 		  body_(std::move(body)) {}
