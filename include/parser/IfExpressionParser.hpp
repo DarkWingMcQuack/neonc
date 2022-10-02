@@ -10,7 +10,6 @@
 namespace parser {
 
 // crtp class for parsing if expressions
-// 1. tuple
 template<class T>
 class IfExpressionParser
 {
