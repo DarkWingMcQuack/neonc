@@ -79,6 +79,28 @@ TEST(LexerTest, SingleTokenTest)
 }
 
 
+TEST(LexerTest, LessThanUnaryMinusVSLARROWTest)
+{
+    auto lexer = lexing::Lexer{"< -"};
+    auto result = lexer.peek<2>();
+
+    ASSERT_TRUE(!!result);
+
+    auto [lt, m] = result.value();
+
+    EXPECT_EQ(lt.getType(), lexing::TokenTypes::LT);
+    EXPECT_EQ(m.getType(), lexing::TokenTypes::MINUS);
+
+	lexer = lexing::Lexer(" <- ");
+
+    auto result2 = lexer.peek();
+    ASSERT_TRUE(!!result2);
+
+    auto l_arrow = result2.value();
+
+    EXPECT_EQ(l_arrow.getType(), lexing::TokenTypes::L_ARROW);
+}
+
 TEST(LexerTest, IdentifierTest)
 {
     assertStringToLexedToken("_let", lexing::TokenTypes::IDENTIFIER);
@@ -135,8 +157,7 @@ auto nextShouldBe(Lexer& lexer, lexing::TokenTypes expectedToken)
 
     // clang-format off
     while(actualToken.has_value() and
-		  (actualToken.value().getType() == lexing::TokenTypes::WHITESPACE
-		   or actualToken.value().getType() == lexing::TokenTypes::NEWLINE)) {
+		   actualToken.value().getType() == lexing::TokenTypes::NEWLINE) {
         lexer.pop();
         actualToken = lexer.peek();
     }
