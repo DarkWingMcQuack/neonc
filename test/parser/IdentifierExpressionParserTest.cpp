@@ -15,7 +15,7 @@ auto identifier_test_positive(std::string_view text, std::string_view expct)
 	ASSERT_TRUE(!!result);
 	ASSERT_TRUE(std::holds_alternative<ast::Identifier>(result.value()));
 
-	EXPECT_EQ(std::get<ast::Identifier>(result.value()), expexted) << "expected: " << expexted.getValue() << " but got " << std::get<ast::Identifier>(result.value()).getValue();
+	EXPECT_EQ(std::get<ast::Identifier>(result.value()), expexted);
 }
 
 auto identifier_test_negative(std::string_view text)
