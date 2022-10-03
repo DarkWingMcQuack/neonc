@@ -30,50 +30,11 @@ find_package(Threads REQUIRED)
 ## library with all the logic which
 ## can later be easily linked against test
 #############################################
+file(GLOB NEONLIB_HEADER_FILES ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp)
+
 add_library(NeonLib INTERFACE) 
 
-target_sources(NeonLib
-  INTERFACE
-  ${CMAKE_CURRENT_LIST_DIR}/include/lexer/Tokens.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/lexer/Lexer.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/lexer/Regexes.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/lexer/TextArea.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/lexer/Tokens.hpp
-
-  
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/AreaBase.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/common/Identifier.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BinaryOperation.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/UnaryOperation.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/SelfExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/BlockExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Boolean.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Double.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/ForExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/FunctionCall.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/IfExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/Integer.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/LambdaExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/String.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/expression/TupleExpr.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/import/DirectImport.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/import/TypeclassImport.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/statement/LetAssignment.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/statement/ReturnStmt.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/statement/WhileStmt.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/toplevel/FunctionDefinition.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/toplevel/Namespace.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/LambdaType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/NamedType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/OptionalType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/TupleType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/UnionType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/type/SelfType.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/ast/Ast.hpp
-
-  ${CMAKE_CURRENT_LIST_DIR}/include/parser/Utils.hpp
-  ${CMAKE_CURRENT_LIST_DIR}/include/parser/Parser.hpp
-)
+target_sources(NeonLib INTERFACE ${NEONLIB_HEADER_FILES})
 
 # add the dependencies of the target to enforce
 # the right order of compiling
