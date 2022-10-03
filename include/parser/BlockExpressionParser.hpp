@@ -28,21 +28,27 @@ class BlockExpressionParser
 public:
 	constexpr auto block_expression() noexcept -> std::optional<ast::BlockExpr>
 	{
-		if(not block_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+		auto result = try_singe_expr_block();
+		if(std::holds_alternative<std::nullopt_t>(result)) {
+			// TODO: propagate error
 			return std::nullopt;
 		}
 
-		// pop the { and get its area
-		auto start = block_expr_lexer().peek_and_pop().value().getArea();
+		if(std::holds_alternative<ast::BlockExpr>(result)) {
+			return std::move(std::get<ast::BlockExpr>(result));
+		}
 
-		std::vector<ast::Statement> stmts;
+		auto [start, stmts] = std::move(std::get<std::pair<lexing::TextArea, std::vector<ast::Statement>>>(result));
+
 		while(not block_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			auto stmt_opt = static_cast<T*>(this)->statement();
 			if(not stmt_opt.has_value()) {
 				// TODO: propagate error
 				return std::nullopt;
 			}
-			stmts.emplace_back(std::move(stmt_opt.value()));
+			auto stmt = std::move(stmt_opt.value());
+
+			stmts.emplace_back(std::move(stmt));
 
 			// clang-format off
 			if(not(block_expr_lexer().pop_next_is(lexing::TokenTypes::SEMICOLON) or
@@ -75,6 +81,40 @@ public:
 		return ast::BlockExpr{area, std::move(stmts), std::move(expr)};
 	}
 
+private:
+	constexpr auto try_singe_expr_block() noexcept
+		-> std::variant<ast::BlockExpr,
+						std::pair<lexing::TextArea, std::vector<ast::Statement>>,
+						std::nullopt_t>
+	{
+		if(not block_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
+			return std::nullopt;
+		}
+
+		auto start = block_expr_lexer().peek_and_pop().value().getArea();
+
+		auto stmt_opt = static_cast<T*>(this)->statement();
+		if(not stmt_opt.has_value()) {
+			// TODO: propagate error
+			return std::nullopt;
+		}
+		auto stmt = std::move(stmt_opt.value());
+
+		if(block_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)
+		   and std::holds_alternative<ast::Expression>(stmt)) {
+
+			auto end = block_expr_lexer().peek_and_pop().value().getArea();
+			auto area = lexing::TextArea::combine(start, end);
+			auto ret_expr = std::move(std::get<ast::Expression>(stmt));
+			return ast::BlockExpr{std::move(area),
+								  {},
+								  std::move(ret_expr)};
+		}
+
+		std::vector stmts{std::move(stmt)};
+
+		return std::pair{start, std::move(stmts)};
+	}
 
 private:
 	constexpr auto block_expr_lexer() noexcept -> lexing::Lexer&
