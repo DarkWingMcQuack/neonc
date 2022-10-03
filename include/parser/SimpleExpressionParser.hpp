@@ -61,7 +61,7 @@ public:
 			return std::move(result.value());
 		}
 
-		if(auto result = static_cast<T*>(this)->lambda_or_tuple_or_grouped()) {
+		if(auto result = static_cast<T*>(this)->l_par_expression()) {
 			return std::move(result.value());
 		}
 

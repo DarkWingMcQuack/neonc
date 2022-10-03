@@ -16,7 +16,7 @@ template<class T>
 class LParExpressionParser
 {
 public:
-    constexpr auto lambda_or_tuple_or_grouped() noexcept -> std::optional<ast::Expression>
+    constexpr auto l_par_expression() noexcept -> std::optional<ast::Expression>
     {
         if(not lpar_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
             return std::nullopt;
