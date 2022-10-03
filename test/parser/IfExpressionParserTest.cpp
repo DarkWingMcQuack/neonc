@@ -39,7 +39,7 @@ auto if_test_negative(std::string_view text)
 	EXPECT_FALSE(std::holds_alternative<ast::Forward<ast::IfExpr>>(result.value()));
 }
 
-TEST(IdentifierExpressionParserTest, IdentifierExpressionParsingPositiveTest)
+TEST(IfExpressionParserTest, IfExpressionParsingPositiveTest)
 {
 	if_test_positive("if(a) b else c", if_(id("a"), id("b"), id("c")));
 	// clang-format off
@@ -59,7 +59,7 @@ TEST(IdentifierExpressionParserTest, IdentifierExpressionParsingPositiveTest)
 	// clang-format on
 }
 
-TEST(IdentifierExpressionParserTest, IdentifierExpressionParsingNegativeTest)
+TEST(IfExpressionParserTest, IfExpressionParsingNegativeTest)
 {
 	if_test_negative("hello=>a");
 	if_test_negative("(hello,hello)");
