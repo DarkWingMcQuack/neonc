@@ -19,6 +19,17 @@ public:
 		  elements_(std::move(elements)),
 		  body_(std::move(body)) {}
 
+	constexpr ForStmt() noexcept = delete;
+	constexpr ForStmt(const ForStmt&) noexcept = delete;
+	constexpr ForStmt(ForStmt&&) noexcept = default;
+	constexpr auto operator=(const ForStmt&) noexcept -> ForStmt& = delete;
+	constexpr auto operator=(ForStmt&&) noexcept -> ForStmt& = default;
+
+	constexpr auto operator==(const ForStmt& other) const noexcept -> bool
+	{
+		return elements_ == other.elements_ and body_ == other.body_;
+	}
+
 	constexpr auto getElements() const noexcept -> const std::vector<ForElement>&
 	{
 		return elements_;

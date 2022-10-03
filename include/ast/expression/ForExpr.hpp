@@ -17,6 +17,17 @@ public:
           elements_(std::move(elements)),
           ret_expr_(std::move(ret_expr)) {}
 
+    constexpr ForExpr() noexcept = delete;
+    constexpr ForExpr(const ForExpr&) noexcept = delete;
+    constexpr ForExpr(ForExpr&&) noexcept = default;
+    constexpr auto operator=(const ForExpr&) noexcept -> ForExpr& = delete;
+    constexpr auto operator=(ForExpr&&) noexcept -> ForExpr& = default;
+
+    constexpr auto operator==(const ForExpr& other) const noexcept -> bool
+    {
+        return elements_ == other.elements_ and ret_expr_ == other.ret_expr_;
+    }
+
     constexpr auto getElements() const noexcept -> const std::vector<ForElement>&
     {
         return elements_;

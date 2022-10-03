@@ -19,6 +19,17 @@ public:
         : AreaBase(name.getArea()),
           name_(std::move(name)) {}
 
+    constexpr LambdaParameter() noexcept = delete;
+    constexpr LambdaParameter(const LambdaParameter&) noexcept = delete;
+    constexpr LambdaParameter(LambdaParameter&&) noexcept = default;
+    constexpr auto operator=(const LambdaParameter&) noexcept -> LambdaParameter& = delete;
+    constexpr auto operator=(LambdaParameter&&) noexcept -> LambdaParameter& = default;
+
+    constexpr auto operator==(const LambdaParameter& other) const noexcept -> bool
+    {
+        return name_ == other.name_ and type_ == other.type_;
+    }
+
     constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;
@@ -70,6 +81,19 @@ public:
           parameters_(std::move(parameters)),
           ret_type_(std::nullopt),
           ret_expr_(std::move(ret_expr)) {}
+
+    constexpr LambdaExpr() noexcept = delete;
+    constexpr LambdaExpr(const LambdaExpr&) noexcept = delete;
+    constexpr LambdaExpr(LambdaExpr&&) noexcept = default;
+    constexpr auto operator=(const LambdaExpr&) noexcept -> LambdaExpr& = delete;
+    constexpr auto operator=(LambdaExpr&&) noexcept -> LambdaExpr& = default;
+
+    constexpr auto operator==(const LambdaExpr& other) const noexcept -> bool
+    {
+        return parameters_ == other.parameters_
+            and ret_type_ == other.ret_type_
+            and ret_expr_ == other.ret_expr_;
+    }
 
     constexpr auto getParameters() const noexcept -> const std::vector<LambdaParameter>&
     {

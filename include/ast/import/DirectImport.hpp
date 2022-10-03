@@ -16,8 +16,13 @@ public:
           namespce_(std::move(namespce)),
           imported_element_(element) {}
 
-    constexpr auto operator==(const DirectImport& other) const noexcept
-        -> bool
+    constexpr DirectImport() = delete;
+    constexpr DirectImport(const DirectImport&) noexcept = delete;
+    constexpr DirectImport(DirectImport&&) noexcept = default;
+    constexpr auto operator=(const DirectImport&) noexcept -> DirectImport& = delete;
+    constexpr auto operator=(DirectImport&&) noexcept -> DirectImport& = default;
+
+    constexpr auto operator==(const DirectImport& other) const noexcept -> bool
     {
         return namespce_ == other.namespce_ and imported_element_ == other.imported_element_;
     }

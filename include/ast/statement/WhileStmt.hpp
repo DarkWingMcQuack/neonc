@@ -13,6 +13,16 @@ public:
         : AreaBase(area),
           condition_(std::move(condition)),
           body_(std::move(body)) {}
+    constexpr WhileStmt() noexcept = delete;
+    constexpr WhileStmt(const WhileStmt&) noexcept = delete;
+    constexpr WhileStmt(WhileStmt&&) noexcept = default;
+    constexpr auto operator=(const WhileStmt&) noexcept -> WhileStmt& = delete;
+    constexpr auto operator=(WhileStmt&&) noexcept -> WhileStmt& = default;
+
+    constexpr auto operator==(const WhileStmt& other) const noexcept -> bool
+    {
+        return condition_ == other.condition_ and body_ == other.body_;
+    }
 
     constexpr auto getCondition() const noexcept -> const Expression&
     {

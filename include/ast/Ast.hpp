@@ -94,7 +94,6 @@ using Import = std::variant<DirectImport,
 
 class LetAssignment;
 class WhileStmt;
-class ReturnStmt;
 class ForStmt;
 class IfStmt;
 
@@ -108,8 +107,7 @@ using Statement = std::variant<Import,
 using FunctionStatement = std::variant<Expression,
                                        Import,
                                        Forward<LetAssignment>,
-                                       Forward<WhileStmt>,
-                                       Forward<ReturnStmt>>;
+                                       Forward<WhileStmt>>;
 
 class Namespace;
 class FunctionDefinition;
@@ -200,9 +198,9 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/expression/TupleExpr.hpp>
 #include <ast/expression/UnaryOperation.hpp>
 
-#include <ast/statement/LetAssignment.hpp>
-#include <ast/statement/WhileStmt.hpp>
 #include <ast/statement/ForStmt.hpp>
 #include <ast/statement/IfStmt.hpp>
+#include <ast/statement/LetAssignment.hpp>
+#include <ast/statement/WhileStmt.hpp>
 
 #include <ast/import/TypeclassImport.hpp>

@@ -17,7 +17,6 @@ public:
 	constexpr UnaryOperation(const UnaryOperation&) noexcept = delete;
 	constexpr auto operator=(UnaryOperation&&) noexcept -> UnaryOperation& = default;
 	constexpr auto operator=(const UnaryOperation&) noexcept -> UnaryOperation& = delete;
-
 	constexpr virtual ~UnaryOperation() noexcept = 0;
 
 	constexpr auto getRightHandSide() const noexcept -> const Expression&
@@ -27,6 +26,13 @@ public:
 	constexpr auto getRightHandSide() noexcept -> Expression&
 	{
 		return rhs_;
+	}
+
+	template<typename T>
+	requires std::is_base_of_v<UnaryOperation, T>
+	friend constexpr auto operator==(const T& lhs, const T& rhs) noexcept
+	{
+		return lhs.rhs_ == rhs.rhs_;
 	}
 
 private:

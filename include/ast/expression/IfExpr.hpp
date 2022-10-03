@@ -19,6 +19,18 @@ public:
           condition_(std::move(condition)),
           block_(std::move(block)) {}
 
+	constexpr ElifExpr() noexcept = delete;
+	constexpr ElifExpr(const ElifExpr&) noexcept = delete;
+	constexpr ElifExpr(ElifExpr&&) noexcept = default;
+	constexpr auto operator=(const ElifExpr&) noexcept -> ElifExpr& = delete;
+	constexpr auto operator=(ElifExpr&&) noexcept -> ElifExpr& = default;
+
+
+    constexpr auto operator==(const ElifExpr& other) const noexcept -> bool
+    {
+        return condition_ == other.condition_ and block_ == other.block_;
+    }
+
     constexpr auto getCondition() const noexcept -> const Expression&
     {
         return condition_;
@@ -55,6 +67,20 @@ public:
           body_(std::move(body)),
           elifs_(std::move(elifs)),
           else_body_(std::move(else_body)) {}
+
+	constexpr IfExpr() noexcept = delete;
+	constexpr IfExpr(const IfExpr&) noexcept = delete;
+	constexpr IfExpr(IfExpr&&) noexcept = default;
+	constexpr auto operator=(const IfExpr&) noexcept -> IfExpr& = delete;
+	constexpr auto operator=(IfExpr&&) noexcept -> IfExpr& = default;
+
+    constexpr auto operator==(const IfExpr& other) const noexcept -> bool
+    {
+        return condition_ == other.condition_
+            and body_ == other.body_
+            and elifs_ == other.elifs_
+            and else_body_ == other.else_body_;
+    }
 
     constexpr auto getCondition() const noexcept -> const Expression&
     {

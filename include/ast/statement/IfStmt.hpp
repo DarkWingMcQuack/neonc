@@ -19,6 +19,17 @@ public:
 		  condition_(std::move(condition)),
 		  body_(std::move(body)) {}
 
+	constexpr ElifStmt() noexcept = delete;
+	constexpr ElifStmt(const ElifStmt&) noexcept = delete;
+	constexpr ElifStmt(ElifStmt&&) noexcept = default;
+	constexpr auto operator=(const ElifStmt&) noexcept -> ElifStmt& = delete;
+	constexpr auto operator=(ElifStmt&&) noexcept -> ElifStmt& = default;
+
+	constexpr auto operator==(const ElifStmt& other) const noexcept -> bool
+	{
+		return condition_ == other.condition_ and body_ == other.body_;
+	}
+
 	constexpr auto getCondition() const noexcept -> const Expression&
 	{
 		return condition_;
@@ -49,6 +60,18 @@ public:
 		: AreaBase(std::move(area)),
 		  body_(std::move(body)) {}
 
+	constexpr ElseStmt() noexcept = delete;
+	constexpr ElseStmt(const ElseStmt&) noexcept = delete;
+	constexpr ElseStmt(ElseStmt&&) noexcept = default;
+	constexpr auto operator=(const ElseStmt&) noexcept -> ElseStmt& = delete;
+	constexpr auto operator=(ElseStmt&&) noexcept -> ElseStmt& = default;
+
+	constexpr auto operator==(const ElseStmt& other) const noexcept -> bool
+	{
+		return body_ == other.body_;
+	}
+
+
 	constexpr auto getBody() const noexcept -> const std::vector<ast::Statement>&
 	{
 		return body_;
@@ -75,6 +98,20 @@ public:
 		  body_(std::move(body)),
 		  elifs_(std::move(elifs)),
 		  else_(std::move(else_)) {}
+
+	constexpr IfStmt() noexcept = delete;
+	constexpr IfStmt(const IfStmt&) noexcept = delete;
+	constexpr IfStmt(IfStmt&&) noexcept = default;
+	constexpr auto operator=(const IfStmt&) noexcept -> IfStmt& = delete;
+	constexpr auto operator=(IfStmt&&) noexcept -> IfStmt& = default;
+
+	constexpr auto operator==(const IfStmt& other) const noexcept -> bool
+	{
+		return condition_ == other.condition_
+			and body_ == other.body_
+			and elifs_ == other.elifs_
+			and else_ == other.else_;
+	}
 
 	constexpr auto getCondition() const noexcept -> const Expression&
 	{

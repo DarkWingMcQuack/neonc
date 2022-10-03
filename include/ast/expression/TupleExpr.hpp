@@ -13,8 +13,16 @@ public:
         : AreaBase(area),
           expressions_(std::move(exprs)) {}
 
+    constexpr TupleExpr() noexcept = delete;
+    constexpr TupleExpr(const TupleExpr&) noexcept = delete;
     constexpr TupleExpr(TupleExpr&&) noexcept = default;
+    constexpr auto operator=(const TupleExpr&) noexcept -> TupleExpr& = delete;
     constexpr auto operator=(TupleExpr&&) noexcept -> TupleExpr& = default;
+
+    constexpr auto operator==(const TupleExpr& other) const noexcept -> bool
+    {
+        return expressions_ == other.expressions_;
+    }
 
     constexpr auto getExpressions() const noexcept -> const std::vector<Expression>&
     {

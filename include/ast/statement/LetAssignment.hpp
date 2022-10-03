@@ -20,6 +20,19 @@ public:
           type_(std::move(type)),
           rhs_(std::move(rhs)) {}
 
+    constexpr LetAssignment() noexcept = delete;
+    constexpr LetAssignment(const LetAssignment&) noexcept = delete;
+    constexpr LetAssignment(LetAssignment&&) noexcept = default;
+    constexpr auto operator=(const LetAssignment&) noexcept -> LetAssignment& = delete;
+    constexpr auto operator=(LetAssignment&&) noexcept -> LetAssignment& = default;
+
+    constexpr auto operator==(const LetAssignment& other) const noexcept -> bool
+    {
+        return name_ == other.name_
+            and type_ == other.type_
+            and rhs_ == other.rhs_;
+    }
+
     constexpr auto getName() const noexcept -> const Identifier&
     {
         return name_;

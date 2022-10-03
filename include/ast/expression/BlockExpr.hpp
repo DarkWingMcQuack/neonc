@@ -15,6 +15,17 @@ public:
           body_(std::move(body)),
           ret_expr_(std::move(ret_expr)) {}
 
+    constexpr BlockExpr() noexcept = delete;
+    constexpr BlockExpr(const BlockExpr&) noexcept = delete;
+    constexpr BlockExpr(BlockExpr&&) noexcept = default;
+    constexpr auto operator=(BlockExpr&&) noexcept -> BlockExpr& = default;
+    constexpr auto operator=(const BlockExpr&) noexcept -> BlockExpr& = delete;
+
+    constexpr auto operator==(const BlockExpr& other) const noexcept -> bool
+    {
+        return body_ == other.body_ and ret_expr_ == other.ret_expr_;
+    }
+
     constexpr auto getBody() const noexcept -> const std::vector<Statement>&
     {
         return body_;

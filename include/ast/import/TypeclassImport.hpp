@@ -11,13 +11,25 @@ class TypeclassImport : public AreaBase
 {
 public:
     constexpr TypeclassImport(lexing::TextArea area,
-                    std::vector<Identifier>&& namespce,
-                    Identifier&& typeclass,
-                    Type&& instance) noexcept
+                              std::vector<Identifier>&& namespce,
+                              Identifier&& typeclass,
+                              Type&& instance) noexcept
         : AreaBase(area),
           namespce_(std::move(namespce)),
           typeclass_(std::move(typeclass)),
           instance_(std::move(instance)) {}
+
+    constexpr TypeclassImport() noexcept = delete;
+    constexpr TypeclassImport(const TypeclassImport&) noexcept = delete;
+    constexpr TypeclassImport(TypeclassImport&&) noexcept = default;
+    constexpr auto operator=(const TypeclassImport&) noexcept -> TypeclassImport& = delete;
+    constexpr auto operator=(TypeclassImport&&) noexcept -> TypeclassImport& = default;
+    constexpr auto operator==(const TypeclassImport& other) const noexcept -> bool
+    {
+        return namespce_ == other.namespce_
+		  and typeclass_ == other.typeclass_
+		  and instance_ == other.instance_;
+    }
 
     constexpr auto getNamespace() const noexcept -> const std::vector<Identifier>&
     {
