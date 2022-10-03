@@ -32,13 +32,25 @@ private:
 	// if the identifier is followed by a => token it is a lambda expression and it parses the body and returns
 	// a lamdba exprssion
 	// if this is not the case it simply returns the already parsed parameter again
+	// if the identifier is followed by a : it is assumed that this shoud be a lambda expression and after
+	// the : comes the type annotation but a : b => c is not clear since it could be (a : b) => c or a: (b => c)
+	// therefore this is forbitten and an error should be returned that lambda parameters with type annotations
+	// need to be enclosed by ()
 	constexpr auto simple_lambda(ast::Identifier&& parameter) noexcept -> std::optional<ast::Expression>
 	{
+
+		if(simple_lambda_or_id_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
+			// TODO: return "lambda parameters with type annotations need to be enclosed by ()"
+			return std::nullopt;
+		}
+
 		if(not simple_lambda_or_id_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return std::move(parameter);
 		}
 
+		// pop =>
 		simple_lambda_or_id_expr_lexer().pop();
+
 
 		auto expr_opt = static_cast<T*>(this)->expression();
 		if(not expr_opt) {
@@ -53,7 +65,6 @@ private:
 
 		std::vector<ast::LambdaParameter> parameters;
 		parameters.emplace_back(std::move(parameter));
-
 
 		return ast::Expression{
 			ast::forward<ast::LambdaExpr>(area,
