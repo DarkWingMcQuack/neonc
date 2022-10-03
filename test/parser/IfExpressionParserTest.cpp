@@ -11,14 +11,14 @@ auto id(std::string_view text) -> ast::Identifier
 	return ast::Identifier{{0, 0}, text};
 }
 
-auto if_(auto condition, auto then, auto else_)
+auto if_(auto condition, auto then, auto else_) -> ast::Expression
 {
-  std::vector<ast::ElifExpr> v;
-  return ast::forward<ast::IfExpr>(lexing::TextArea{0, 0},
-								   std::move(condition),
-								   std::move(then),
-								   std::move(v),
-								   std::move(else_));
+	std::vector<ast::ElifExpr> v;
+	return ast::forward<ast::IfExpr>(lexing::TextArea{0, 0},
+									 std::move(condition),
+									 std::move(then),
+									 std::move(v),
+									 std::move(else_));
 }
 
 auto if_test_positive(std::string_view text, auto expected)
@@ -28,7 +28,7 @@ auto if_test_positive(std::string_view text, auto expected)
 	ASSERT_TRUE(!!result);
 	ASSERT_TRUE(std::holds_alternative<ast::Forward<ast::IfExpr>>(result.value()));
 
-	EXPECT_EQ(std::get<ast::Forward<ast::IfExpr>>(result.value()), expected);
+	EXPECT_EQ((result.value()), expected);
 }
 
 auto if_test_negative(std::string_view text)
@@ -42,6 +42,21 @@ auto if_test_negative(std::string_view text)
 TEST(IdentifierExpressionParserTest, IdentifierExpressionParsingPositiveTest)
 {
 	if_test_positive("if(a) b else c", if_(id("a"), id("b"), id("c")));
+	// clang-format off
+	if_test_positive("if(a) if(b) c else d else c", if_(id("a"),
+														if_(id("b"),
+															id("c"),
+															id("d")),
+														id("c")));
+
+	if_test_positive("if(a) if(b) c else d else if(x) y else z", if_(id("a"),
+																	 if_(id("b"),
+																		 id("c"),
+																		 id("d")),
+																	 if_(id("x"),
+																		 id("y"),
+																		 id("z"))));
+	// clang-format on
 }
 
 TEST(IdentifierExpressionParserTest, IdentifierExpressionParsingNegativeTest)
