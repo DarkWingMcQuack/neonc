@@ -38,7 +38,7 @@ public:
 			return std::move(std::get<ast::BlockExpr>(result));
 		}
 
-		auto [start, stmts] = std::move(std::get<std::pair<lexing::TextArea, std::vector<ast::Statement>>>(result));
+		auto [start, stmts] = std::move(std::get<1>(result));
 
 		while(not block_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			auto stmt_opt = static_cast<T*>(this)->statement();
