@@ -9,19 +9,6 @@
 
 namespace parser {
 
-// crtp class for block expressions which are:
-// 1. tuple
-// 2. lambda expressions
-// 3. integers
-// 4. doubles
-// 5. booleans
-// 6. strings
-// 7. identifiers
-// 8. if-else expressions
-// 9. grouped expressions which are expresions surrounded by ()
-// 10. block expressions
-// 11. TODO: list comprehensions
-// 12. TODO: for expressions
 template<class T>
 class BlockExpressionParser
 {
