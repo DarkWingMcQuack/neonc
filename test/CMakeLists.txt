@@ -41,5 +41,6 @@ new_test(parser/IntegerExpressionParserTest.cpp IntegerExpressionParserTest)
 new_test(parser/StringExpressionParserTest.cpp StringExpressionParserTest)
 new_test(parser/BooleanExpressionParserTest.cpp BooleanExpressionParserTest)
 new_test(parser/SelfExpressionParserTest.cpp SelfExpressionParserTest)
+new_test(parser/IfExpressionParserTest.cpp IfExpressionParserTest)
 
 
