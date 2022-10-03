@@ -48,7 +48,7 @@ public:
 			t = std::move(type_opt.value());
 		}
 
-		if(not let_stmt_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+		if(not let_stmt_lexer().pop_next_is(lexing::TokenTypes::ASSIGN)) {
 			// TODO: return error "expected ="
 			return std::nullopt;
 		}
