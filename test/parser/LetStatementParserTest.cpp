@@ -6,12 +6,12 @@
 
 using parser::Parser;
 
-auto id(std::string_view text) -> ast::Identifier
+inline auto id(std::string_view text) -> ast::Identifier
 {
     return ast::Identifier{{0, 0}, text};
 }
 
-auto if_(auto condition, auto then, auto else_) -> ast::Expression
+inline auto if_(auto condition, auto then, auto else_) -> ast::Expression
 {
     std::vector<ast::ElifExpr> v;
     return ast::forward<ast::IfExpr>(lexing::TextArea{0, 0},
@@ -21,12 +21,76 @@ auto if_(auto condition, auto then, auto else_) -> ast::Expression
                                      std::move(else_));
 }
 
-auto let(auto name, auto rhs) -> ast::Statement
+inline auto let(auto name, auto rhs) -> ast::Statement
 {
     return ast::forward<ast::LetAssignment>(lexing::TextArea{0, 0},
                                             std::move(name),
                                             std::nullopt,
                                             std::move(rhs));
+}
+
+inline auto let(auto name, auto type, auto rhs) -> ast::Statement
+{
+    return ast::forward<ast::LetAssignment>(lexing::TextArea{0, 0},
+                                            std::move(name),
+                                            std::move(type),
+                                            std::move(rhs));
+}
+
+inline auto optOf(auto type) -> ast::Type
+{
+    return ast::Type{
+        ast::forward<ast::OptionalType>(lexing::TextArea{0, 0},
+                                        ast::Type{std::move(type)})};
+}
+
+inline auto tupleT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) > 0);
+
+    std::vector<ast::Type> types;
+    (types.emplace_back(std::move(elems)), ...);
+
+    return ast::forward<ast::TupleType>(lexing::TextArea{0, 0}, std::move(types));
+}
+
+inline auto unionT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) > 0);
+
+    std::vector<ast::Type> types;
+    (types.emplace_back(std::move(elems)), ...);
+
+    return ast::forward<ast::UnionType>(lexing::TextArea{0, 0}, std::move(types));
+}
+
+inline auto namedT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) > 0);
+
+    auto ns = std::vector<ast::Identifier>{ast::Identifier{{0, 0}, elems}...};
+    auto last = ns.back();
+    ns.pop_back();
+
+    return ast::NamedType{{0, 0}, std::move(ns), std::move(last)};
+}
+
+inline auto selfT() -> ast::Type
+{
+    return ast::SelfType{{0, 0}};
+}
+
+inline auto lambdaT(auto... elems) -> ast::Type
+{
+    static_assert(sizeof...(elems) >= 2);
+
+    std::vector<ast::Type> params;
+    (params.emplace_back(std::move(elems)), ...);
+
+    auto last = std::move(params.back());
+    params.pop_back();
+
+    return ast::Type{ast::forward<ast::LambdaType>(lexing::TextArea{0, 0}, std::move(params), std::move(last))};
 }
 
 auto let_test_positive(std::string_view text, auto expected)
@@ -71,6 +135,32 @@ TEST(LetStatementParserTest, LetStatementParsingWithoutTypePositiveTest)
 																					  id("y"),
 																					  id("z")))));
     // clang-format on
+}
+
+TEST(LetStatementParserTest, LetStatementParsingWithTypePositiveTest)
+{
+    let_test_positive("let a: Int = b", let(id("a"), namedT("Int"), id("b")));
+
+    let_test_positive("let a: Int => Int = if(a) b else c",
+                      let(id("a"),
+                          lambdaT(namedT("Int"), namedT("Int")),
+                          if_(id("a"), id("b"), id("c"))));
+
+    let_test_positive("let a: (Int | Double) = b",
+                      let(id("a"),
+                          unionT(namedT("Int"), namedT("Double")),
+                          id("b")));
+
+    let_test_positive("let a: (Int | Double) => String = b",
+                      let(id("a"),
+                          lambdaT(unionT(namedT("Int"), namedT("Double")),
+                                  namedT("String")),
+                          id("b")));
+
+    let_test_positive("let aasd : (Int & Double & String) = if(a) b else c",
+                      let(id("aasd"),
+                          tupleT(namedT("Int"), namedT("Double"), namedT("String")),
+                          if_(id("a"), id("b"), id("c"))));
 }
 
 TEST(LetStatementParserTest, LetStatementiParsingNegativeTest)
