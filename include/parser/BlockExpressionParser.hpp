@@ -45,20 +45,18 @@ public:
 			stmts.emplace_back(std::move(stmt_opt.value()));
 
 			// clang-format off
-			if(not(block_expr_lexer().next_is(lexing::TokenTypes::SEMICOLON) or
-				   block_expr_lexer().next_is(lexing::TokenTypes::NEWLINE))) {
+			if(not(block_expr_lexer().pop_next_is(lexing::TokenTypes::SEMICOLON) or
+				   block_expr_lexer().pop_next_is(lexing::TokenTypes::NEWLINE))) {
 				// TODO: return error "expected newline or ;"
 				return std::nullopt;
 			}
 			// clang-format on
-			block_expr_lexer().pop();
 		}
 
-		if(not block_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not block_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			// TODO: return error "a block expression needs to return an expression with =>expr"
 			return std::nullopt;
 		}
-		block_expr_lexer().pop();
 
 		auto expr_opt = static_cast<T*>(this)->expression();
 		if(not expr_opt.has_value()) {

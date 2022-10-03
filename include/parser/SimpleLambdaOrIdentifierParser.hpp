@@ -44,13 +44,9 @@ private:
 			return std::nullopt;
 		}
 
-		if(not simple_lambda_or_id_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+		if(not simple_lambda_or_id_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			return std::move(parameter);
 		}
-
-		// pop =>
-		simple_lambda_or_id_expr_lexer().pop();
-
 
 		auto expr_opt = static_cast<T*>(this)->expression();
 		if(not expr_opt) {

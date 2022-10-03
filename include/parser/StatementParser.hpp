@@ -160,11 +160,10 @@ private:
 		}
 		// clang-format on
 
-		if(not stmt_lexer().next_is(enclosing_type)) {
+		if(not stmt_lexer().pop_next_is(enclosing_type)) {
 			// TODO: return "expected $enclosing_type" error
 			return std::nullopt;
 		}
-		stmt_lexer().pop();
 
 		auto block_opt = block();
 		if(not block_opt.has_value()) {

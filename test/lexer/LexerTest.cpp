@@ -54,6 +54,8 @@ TEST(LexerTest, SingleTokenTest)
     assertStringToLexedToken("!", lexing::TokenTypes::LOGICAL_NOT);
     assertStringToLexedToken("=", lexing::TokenTypes::ASSIGN);
     assertStringToLexedToken("if", lexing::TokenTypes::IF);
+    assertStringToLexedToken("if(", lexing::TokenTypes::IF);
+    assertStringToLexedToken("if(a)", lexing::TokenTypes::IF);
     assertStringToLexedToken("else", lexing::TokenTypes::ELSE);
     assertStringToLexedToken("elif", lexing::TokenTypes::ELIF);
     assertStringToLexedToken("while", lexing::TokenTypes::WHILE);

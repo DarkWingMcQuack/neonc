@@ -73,11 +73,24 @@ public:
         return array_from_lexed<N>();
     }
 
+    // checks if the next token is of the given type
     constexpr auto next_is(TokenTypes type) noexcept -> bool
     {
         if(auto result = peek()) {
             return result.value().getType() == type;
         }
+        return false;
+    }
+
+    // checks if the next token is of the given type and pops it if so
+    // if not return false
+    constexpr auto pop_next_is(TokenTypes type) noexcept -> bool
+    {
+        if(next_is(type)) {
+            pop();
+            return true;
+        }
+
         return false;
     }
 

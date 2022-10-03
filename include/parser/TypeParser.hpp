@@ -87,9 +87,7 @@ private:
 
         names.emplace_back(std::move(first_identifier_opt.value()));
 
-        while(type_lexer().next_is(lexing::TokenTypes::COLON_COLON)) {
-            type_lexer().pop();
-
+        while(type_lexer().pop_next_is(lexing::TokenTypes::COLON_COLON)) {
             auto identifier_opt = static_cast<T*>(this)->identifier();
             if(not identifier_opt) {
                 // TODO: return expexted Identifier error
@@ -117,10 +115,7 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(type_lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
-            // pop the comma
-            type_lexer().pop();
-
+        while(type_lexer().pop_next_is(lexing::TokenTypes::BITWISE_AND)) {
             // parse the next type
             auto next_type = type();
 
@@ -137,10 +132,8 @@ private:
             return std::nullopt;
         }
 
-        auto closing_area = type_lexer().next_area().value();
-        type_lexer().pop();
-
-        auto area = lexing::TextArea::combine(start, closing_area);
+        auto end = type_lexer().peek_and_pop().value().getArea();
+        auto area = lexing::TextArea::combine(start, end);
 
         return ast::Type{
             forward<ast::TupleType>(std::move(area),
@@ -154,10 +147,7 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(type_lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
-            // pop the comma
-            type_lexer().pop();
-
+        while(type_lexer().pop_next_is(lexing::TokenTypes::BITWISE_OR)) {
             // parse the next type
             auto next_type = type();
 
@@ -174,10 +164,8 @@ private:
             return std::nullopt;
         }
 
-        auto closing_area = type_lexer().next_area().value();
-        type_lexer().pop();
-
-        auto area = lexing::TextArea::combine(start, closing_area);
+        auto end = type_lexer().peek_and_pop().value().getArea();
+        auto area = lexing::TextArea::combine(start, end);
 
         return ast::Type{
             forward<ast::UnionType>(std::move(area),
@@ -190,10 +178,7 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
-        while(type_lexer().next_is(lexing::TokenTypes::COMMA)) {
-            // pop the comma
-            type_lexer().pop();
-
+        while(type_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
             // parse the next type
             auto next_type = type();
 

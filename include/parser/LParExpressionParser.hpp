@@ -103,8 +103,7 @@ private:
         }
         auto id = std::move(id_opt.value());
 
-        if(lpar_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
-            lpar_expr_lexer().pop();
+        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
             auto type_opt = static_cast<T*>(this)->type();
             if(not type_opt.has_value()) {
                 // TODO: propagte error
@@ -121,8 +120,7 @@ private:
     // and the start is at the colon right before the type
     constexpr auto lambda_parameter(ast::Identifier&& id) noexcept -> std::optional<ast::LambdaParameter>
     {
-        if(lpar_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
-            lpar_expr_lexer().pop();
+        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
             auto type_opt = static_cast<T*>(this)->type();
             if(not type_opt.has_value()) {
                 // TODO: propagte error
@@ -145,13 +143,10 @@ private:
         -> std::optional<std::vector<ast::LambdaParameter>>
     {
         // sanity check
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
             // TODO: log something
             return std::nullopt;
         }
-
-
-        lpar_expr_lexer().pop();
 
         auto type_opt = static_cast<T*>(this)->type();
         if(not type_opt.has_value()) {
@@ -169,8 +164,7 @@ private:
 
         params.back().setType(std::move(type));
 
-        while(lpar_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
-            lpar_expr_lexer().pop();
+        while(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
             auto param_opt = lambda_parameter();
             if(not param_opt.has_value()) {
                 return std::nullopt;
@@ -179,7 +173,7 @@ private:
             params.emplace_back(std::move(param_opt.value()));
         }
 
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // TODO: return "expected ) error"
             return std::nullopt;
         }
@@ -198,9 +192,7 @@ private:
         std::vector<ast::Expression> expressions;
         expressions.emplace_back(std::move(first));
 
-        while(lpar_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
-            lpar_expr_lexer().pop();
-
+        while(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
             auto expr_opt = static_cast<T*>(this)->expression();
             if(not expr_opt) {
                 // TODO: propagate error
@@ -210,6 +202,7 @@ private:
             expressions.emplace_back(std::move(expr));
         }
 
+        // do not pop the colon
         if(lpar_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
             auto params_opt = lambda_parameters_from_starting_tuple(std::move(expressions));
             if(not params_opt.has_value()) {
@@ -223,7 +216,7 @@ private:
             return std::nullopt;
         }
 
-        auto end = ast::getTextArea(expressions.back());
+        auto end = lpar_expr_lexer().peek_and_pop().value().getArea();
         auto area = lexing::TextArea::combine(start, end);
 
         return ast::TupleExpr{area, std::move(expressions)};
@@ -235,13 +228,11 @@ private:
     constexpr auto try_lambda(lexing::TextArea start, std::vector<ast::LambdaParameter>&& parameters) noexcept
         -> std::optional<ast::Expression>
     {
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
             // TODO: return error "expected =>"
             return std::nullopt;
         }
 
-        // consume =>
-        lpar_expr_lexer().pop();
         auto body_opt = static_cast<T*>(this)->expression();
         if(not body_opt.has_value()) {
             return std::nullopt;
@@ -264,12 +255,10 @@ private:
         -> std::optional<ast::Expression>
     {
         // if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
             return ast::Expression{
                 ast::forward<ast::TupleExpr>(std::move(tuple))};
         }
-        // consume =>
-        lpar_expr_lexer().pop();
 
         // parse the body of the lambda expression
         auto body_opt = static_cast<T*>(this)->expression();
@@ -306,12 +295,9 @@ private:
         -> std::optional<ast::Expression>
     {
         // if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
             return std::move(first);
         }
-
-        // consume =>
-        lpar_expr_lexer().pop();
 
         auto body_opt = static_cast<T*>(this)->expression();
         if(not body_opt.has_value()) {

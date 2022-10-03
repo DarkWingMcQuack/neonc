@@ -43,10 +43,9 @@ public:
 		-> std::optional<ast::ForMonadicElement>
 	{
 		// sanity check
-		if(not for_element_lexer().next_is(lexing::TokenTypes::L_ARROW)) {
+		if(not for_element_lexer().pop_next_is(lexing::TokenTypes::L_ARROW)) {
 			return std::nullopt;
 		}
-		for_element_lexer().pop();
 
 		auto rhs_opt = static_cast<T*>(this)->expression();
 		if(not rhs_opt.has_value()) {
@@ -68,10 +67,9 @@ public:
 		-> std::optional<ast::ForLetElement>
 	{
 		// sanity check
-		if(not for_element_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+		if(not for_element_lexer().pop_next_is(lexing::TokenTypes::ASSIGN)) {
 			return std::nullopt;
 		}
-		for_element_lexer().pop();
 
 		auto rhs_opt = static_cast<T*>(this)->expression();
 		if(not rhs_opt.has_value()) {
