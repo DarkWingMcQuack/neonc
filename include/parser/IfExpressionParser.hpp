@@ -22,12 +22,25 @@ public:
 
 		auto start = if_expr_lexer().peek_and_pop().value().getArea();
 
+		if(not if_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)){
+		  //TODO: return error "expected ("
+		  return std::nullopt;
+		}
+		if_expr_lexer().pop();
+
 		auto if_condition_opt = static_cast<T*>(this)->expression();
 		if(not if_condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
 		}
 		auto if_condition = std::move(if_condition_opt.value());
+
+
+		if(not if_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)){
+		  //TODO: return error "expected )"
+		  return std::nullopt;
+		}
+		if_expr_lexer().pop();
 
 		auto if_block_expr_opt = static_cast<T*>(this)->expression();
 		if(not if_block_expr_opt) {
@@ -79,12 +92,24 @@ private:
 
 		auto start = if_expr_lexer().peek_and_pop().value().getArea();
 
+		if(not if_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)){
+		  //TODO: return error "expected ("
+		  return std::nullopt;
+		}
+		if_expr_lexer().pop();
+
 		auto elif_condition_opt = static_cast<T*>(this)->expression();
 		if(not elif_condition_opt) {
 			// TODO: propagate error
 			return std::nullopt;
 		}
 		auto elif_condition = std::move(elif_condition_opt.value());
+
+		if(not if_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)){
+		  //TODO: return error "expected )"
+		  return std::nullopt;
+		}
+		if_expr_lexer().pop();
 
 		auto block_expr_opt = static_cast<T*>(this)->expression();
 		if(not block_expr_opt) {
