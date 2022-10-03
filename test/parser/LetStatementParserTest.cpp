@@ -118,23 +118,24 @@ TEST(LetStatementParserTest, LetStatementParsingWithoutTypePositiveTest)
     let_test_positive("let aasd = if(a) b else c", let(id("aasd"), if_(id("a"), id("b"), id("c"))));
     let_test_positive("let _aasd3 = if(a) b else c", let(id("_aasd3"), if_(id("a"), id("b"), id("c"))));
     let_test_positive("let __aasd3_ = if(a) b else c", let(id("__aasd3_"), if_(id("a"), id("b"), id("c"))));
-    // clang-format off
-	let_test_positive("let a = if(a) if(b) c else d else c", let(id("a"),
-																 if_(id("a"),
-																	 if_(id("b"),
-																		 id("c"),
-																		 id("d")),
-																	 id("c"))));
 
-	let_test_positive("let b = if(a) if(b) c else d else if(x) y else z", let(id("b"),
-																			  if_(id("a"),
-																				  if_(id("b"),
-																					  id("c"),
-																					  id("d")),
-																				  if_(id("x"),
-																					  id("y"),
-																					  id("z")))));
-    // clang-format on
+    let_test_positive("let a = if(a) if(b) c else d else c",
+                      let(id("a"),
+                          if_(id("a"),
+                              if_(id("b"),
+                                  id("c"),
+                                  id("d")),
+                              id("c"))));
+
+    let_test_positive("let b = if(a) if(b) c else d else if(x) y else z",
+                      let(id("b"),
+                          if_(id("a"),
+                              if_(id("b"),
+                                  id("c"),
+                                  id("d")),
+                              if_(id("x"),
+                                  id("y"),
+                                  id("z")))));
 }
 
 TEST(LetStatementParserTest, LetStatementParsingWithTypePositiveTest)
