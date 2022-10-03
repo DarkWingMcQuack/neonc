@@ -19,6 +19,10 @@ include(cmake/tbb.cmake)
 include(cmake/ctre.cmake)
 include(cmake/namedtype.cmake)
 include(cmake/expected.cmake)
+
+######################################################################
+###include the commands needed for setting linker and compiler flags
+######################################################################
 include(cmake/flags.cmake)
 
 
