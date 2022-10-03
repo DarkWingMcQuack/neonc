@@ -111,7 +111,8 @@ private:
 								  std::move(ret_expr)};
 		}
 
-		std::vector stmts{std::move(stmt)};
+		std::vector<ast::Statement> stmts;
+		stmts.emplace_back(std::move(stmt));
 
 		return std::pair{start, std::move(stmts)};
 	}
