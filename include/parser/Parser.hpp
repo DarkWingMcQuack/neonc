@@ -6,6 +6,7 @@
 #include <parser/ForElementParser.hpp>
 #include <parser/IfExpressionParser.hpp>
 #include <parser/LParExpressionParser.hpp>
+#include <parser/LetStmtParser.hpp>
 #include <parser/SimpleExpressionParser.hpp>
 #include <parser/SimpleLambdaOrIdentifierParser.hpp>
 #include <parser/StatementParser.hpp>
@@ -22,6 +23,7 @@ class Parser final : public TypeParser<Parser>,
                      public SimpleLambdaOrIdentifierParser<Parser>,
                      public LParExpressionParser<Parser>,
                      public ForElementParser<Parser>,
+                     public LetStmtParser<Parser>,
                      public IdentifierParser<Parser>
 {
 public:
@@ -52,6 +54,7 @@ private:
     friend class BlockExpressionParser<Parser>;
     friend class LParExpressionParser<Parser>;
     friend class SimpleLambdaOrIdentifierParser<Parser>;
+    friend class LetStmtParser<Parser>;
 
     std::string_view content_;
     lexing::Lexer lexer_;

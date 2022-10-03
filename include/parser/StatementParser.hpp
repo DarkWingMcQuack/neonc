@@ -21,7 +21,7 @@ public:
 	constexpr auto statement() noexcept -> std::optional<ast::Statement>
 	{
 		if(stmt_lexer().next_is(lexing::TokenTypes::LET)) {
-			return let();
+			return static_cast<T*>(this)->let();
 		}
 
 		if(stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {
@@ -40,59 +40,6 @@ public:
 	}
 
 private:
-	// parses tuples, literals, lambda expressions and (expressions)
-	constexpr auto let() noexcept -> std::optional<ast::Statement>
-	{
-		// sanity check
-		if(not stmt_lexer().next_is(lexing::TokenTypes::LET)) {
-			return std::nullopt;
-		}
-
-		// pop the let token and get the area of it as start
-		auto start = stmt_lexer().peek_and_pop().value().getArea();
-
-		auto id_opt = stmt_identifier();
-		if(not id_opt.has_value()) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto id = std::move(id_opt.value());
-
-		// parse optional type annotation
-		std::optional<ast::Type> t;
-		if(stmt_lexer().next_is(lexing::TokenTypes::COLON)) {
-			stmt_lexer().pop();
-
-			auto type_opt = stmt_type();
-			if(not type_opt.has_value()) {
-				// TODO: propagate error
-				return std::nullopt;
-			}
-			t = std::move(type_opt.value());
-		}
-
-		if(not stmt_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
-			// TODO: return error "expected ="
-			return std::nullopt;
-		}
-
-		auto rhs_opt = static_cast<T*>(this)->expression();
-		if(not rhs_opt.has_value()) {
-			// TODO: propagate error
-			return std::nullopt;
-		}
-		auto rhs = std::move(rhs_opt.value());
-
-		auto end = ast::getTextArea(rhs);
-		auto area = lexing::TextArea::combine(start, end);
-
-		return ast::Statement{
-			ast::forward<ast::LetAssignment>(area,
-											 std::move(id),
-											 std::move(t),
-											 std::move(rhs))};
-	}
-
 	constexpr auto stmt_list() noexcept -> std::optional<std::vector<ast::Statement>>
 	{
 		std::vector<ast::Statement> stmts;
@@ -346,8 +293,6 @@ private:
 	{
 		return static_cast<T*>(this)->identifier();
 	}
-
-
 
 	constexpr auto stmt_for_element() noexcept -> std::optional<ast::ForElement>
 	{
