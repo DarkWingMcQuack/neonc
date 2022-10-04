@@ -33,8 +33,9 @@ find_package(Threads REQUIRED)
 #############################################
 ## library with all the logic which
 ## can later be easily linked against test
+## https://stackoverflow.com/a/55290546/4735801
 #############################################
-file(GLOB NEONLIB_HEADER_FILES ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp)
+file(GLOB NEONLIB_HEADER_FILES CONFIGURE_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/include/*.hpp)
 
 add_library(NeonLib INTERFACE) 
 
