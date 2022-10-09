@@ -3,6 +3,7 @@
 #include <ast/Ast.hpp>
 #include <lexer/Lexer.hpp>
 #include <parser/BlockExpressionParser.hpp>
+#include <parser/ExpressionPrattParser.hpp>
 #include <parser/ForElementParser.hpp>
 #include <parser/IfExpressionParser.hpp>
 #include <parser/LParExpressionParser.hpp>
@@ -23,6 +24,7 @@ class Parser final : public TypeParser<Parser>,
                      public SimpleLambdaOrIdentifierParser<Parser>,
                      public LParExpressionParser<Parser>,
                      public ForElementParser<Parser>,
+                     public ExpressionPrattParser<Parser>,
                      public LetStmtParser<Parser>,
                      public IdentifierParser<Parser>
 {
@@ -38,11 +40,6 @@ public:
     constexpr auto operator=(const Parser&) noexcept -> Parser& = delete;
     constexpr virtual ~Parser() noexcept = default;
 
-    constexpr auto expression() noexcept -> std::optional<ast::Expression>
-    {
-        return simple_expression();
-    }
-
 
 private:
     friend class TypeParser<Parser>;
@@ -51,6 +48,7 @@ private:
     friend class ForElementParser<Parser>;
     friend class IdentifierParser<Parser>;
     friend class IfExpressionParser<Parser>;
+    friend class ExpressionPrattParser<Parser>;
     friend class BlockExpressionParser<Parser>;
     friend class LParExpressionParser<Parser>;
     friend class SimpleLambdaOrIdentifierParser<Parser>;
