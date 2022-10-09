@@ -39,8 +39,19 @@ auto expr_test_positive(std::string_view text, auto expected)
 TEST(ExpressionParserTest, AdditionExpressionParsingTest)
 {
 
-  expr_test_positive("i + j", add(id("i"), id("j")));
-  expr_test_positive("i + j + k", add(add(id("i"), id("j")), id("k")));
+	expr_test_positive("i + j", add(id("i"), id("j")));
+	expr_test_positive("i + j + k",
+					   add(
+						   add(id("i"), id("j")),
+						   id("k")));
+	expr_test_positive("i + j + k + l + m",
+					   add(
+						   add(
+							   add(
+								   add(id("i"), id("j")),
+								   id("k")),
+							   id("l")),
+						   id("m")));
 
 	// expr_test_positive("i + j * k", add(id("i"), mul(id("j"), id("k"))));
 
