@@ -50,6 +50,8 @@ new_test(parser/MultiplicationExprParserTest.cpp MultiplicationExprParserTest)
 new_test(parser/DivisionExprParserTest.cpp DivisionExprParserTest)
 new_test(parser/RemainderExprParserTest.cpp RemainderExprParserTest)
 new_test(parser/UnaryMinusExprParserTest.cpp UnaryMinusExprParserTest)
+new_test(parser/UnaryPlusExprParserTest.cpp UnaryPlusExprParserTest)
+new_test(parser/LogicalNotExprParserTest.cpp LogicalNotExprParserTest)
 new_test(parser/LambdaExprParserTest.cpp LambdaExprParserTest)
 
 
