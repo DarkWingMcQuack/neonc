@@ -21,6 +21,22 @@ auto if_(auto condition, auto then, auto else_) -> ast::Expression
 									 std::move(else_));
 }
 
+inline auto add(auto lhs, auto rhs) -> ast::Expression
+{
+	return ast::Expression{
+		ast::forward<ast::Addition>(lexing::TextArea{0, 0},
+									std::move(lhs),
+									std::move(rhs))};
+}
+
+inline auto sub(auto lhs, auto rhs) -> ast::Expression
+{
+	return ast::Expression{
+		ast::forward<ast::Substraction>(lexing::TextArea{0, 0},
+										std::move(lhs),
+										std::move(rhs))};
+}
+
 auto if_test_positive(std::string_view text, auto expected)
 {
 	auto result = Parser{text}.simple_expression();
@@ -41,22 +57,36 @@ auto if_test_negative(std::string_view text)
 
 TEST(IfExpressionParserTest, IfExpressionParsingPositiveTest)
 {
-	if_test_positive("if(a) b else c", if_(id("a"), id("b"), id("c")));
-	// clang-format off
-	if_test_positive("if(a) if(b) c else d else c", if_(id("a"),
-														if_(id("b"),
-															id("c"),
-															id("d")),
-														id("c")));
+	if_test_positive("if(a) b else c",
+					 if_(id("a"), id("b"), id("c")));
 
-	if_test_positive("if(a) if(b) c else d else if(x) y else z", if_(id("a"),
-																	 if_(id("b"),
-																		 id("c"),
-																		 id("d")),
-																	 if_(id("x"),
-																		 id("y"),
-																		 id("z"))));
-	// clang-format on
+	if_test_positive("if(a + b) c - d else c",
+					 if_(add(id("a"), id("b")),
+						 sub(id("c"), id("d")),
+						 id("c")));
+
+	if_test_positive("if(a) if(b) c else d else c",
+					 if_(id("a"),
+						 if_(id("b"),
+							 id("c"),
+							 id("d")),
+						 id("c")));
+
+	if_test_positive("if(a) if(b) c else d else c",
+					 if_(id("a"),
+						 if_(id("b"),
+							 id("c"),
+							 id("d")),
+						 id("c")));
+
+	if_test_positive("if(a) if(b) c else d else if(x) y else z",
+					 if_(id("a"),
+						 if_(id("b"),
+							 id("c"),
+							 id("d")),
+						 if_(id("x"),
+							 id("y"),
+							 id("z"))));
 }
 
 TEST(IfExpressionParserTest, IfExpressionParsingNegativeTest)

@@ -138,6 +138,9 @@ private:
 		case lexing::TokenTypes::PERCENT:
 			return std::pair{15, 16};
 
+		case lexing::TokenTypes::DOT:
+			return std::pair{18, 19};
+
 		default:
 			return std::nullopt;
 		}
