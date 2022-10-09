@@ -28,19 +28,20 @@ auto integer_test_negative(std::string_view text)
 
 TEST(IntegerExpressionParserTest, IntegerExpressionParsingPositiveTest)
 {
-	for(std::int64_t i = 0; i < 99999; i++) {
+	for(std::int64_t i = 0; i < 10000; i++) {
+		std::int64_t n = rand();
 		for(std::size_t j = 0; j < 10; j++) {
 			std::string s;
 
 			for(std::size_t k = 0; k < j; k++)
 				s += "(";
 
-			s += std::to_string(i);
+			s += std::to_string(n);
 
 			for(std::size_t k = 0; k < j; k++)
 				s += ")";
 
-			integer_test_positive(s, i);
+			integer_test_positive(s, n);
 		}
 	}
 }
@@ -48,7 +49,7 @@ TEST(IntegerExpressionParserTest, IntegerExpressionParsingPositiveTest)
 TEST(IntegerExpressionParserTest, IntegerExpressionParsingZeroTest)
 {
 	std::string s;
-	for(int i = 1; i < 10000; i++) {
+	for(int i = 1; i < 1000; i++) {
 		s += "0";
 		integer_test_positive(s, 0);
 	}
