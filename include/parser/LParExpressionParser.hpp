@@ -34,7 +34,7 @@ public:
         auto expr = std::move(expr_opt.value());
 
         // if the next token is ) then it was a grouped expression or a lambda
-        if(lpar_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::R_PARANTHESIS)) {
             // check if it could be a lambda otherwise return the expr itself
             return try_lambda(start, std::move(expr));
         }
