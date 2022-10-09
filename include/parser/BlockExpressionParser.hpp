@@ -27,6 +27,14 @@ public:
 
 		auto [start, stmts] = std::move(std::get<1>(result));
 
+		// clang-format off
+		if(not(block_expr_lexer().pop_next_is(lexing::TokenTypes::SEMICOLON) or
+			   block_expr_lexer().pop_next_is(lexing::TokenTypes::NEWLINE))) {
+		  // TODO: return error "expected newline or ;"
+		  return std::nullopt;
+		}
+		// clang-format on
+
 		while(not block_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			auto stmt_opt = static_cast<T*>(this)->statement();
 			if(not stmt_opt.has_value()) {
@@ -80,7 +88,7 @@ private:
 
 		auto start = block_expr_lexer().peek_and_pop().value().getArea();
 
-		//handle the case of a expr block which only contains a
+		// handle the case of a expr block which only contains a
 		//{=> <expr>} without any statements pre the return statement
 		if(block_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
 			auto ret_expr_opt = static_cast<T*>(this)->expression();
@@ -120,6 +128,8 @@ private:
 								  {},
 								  std::move(ret_expr)};
 		}
+
+
 
 		std::vector<ast::Statement> stmts;
 		stmts.emplace_back(std::move(stmt));
