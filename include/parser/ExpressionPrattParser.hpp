@@ -22,8 +22,9 @@ public:
 private:
 	constexpr auto expression_bp(std::uint32_t min_bp) noexcept -> std::optional<ast::Expression>
 	{
-		auto lhs_opt = simple_expr();
+		auto lhs_opt = lhs();
 		if(not lhs_opt.has_value()) {
+			// TODO: propagate error
 			return std::nullopt;
 		}
 		auto lhs = std::move(lhs_opt.value());
@@ -33,6 +34,7 @@ private:
 
 			auto bp_opt = infix_binding_power(op.getType());
 			if(not bp_opt.has_value()) {
+				// TODO: propagate error
 				return std::nullopt;
 			}
 			const auto [l_bp, r_bp] = std::move(bp_opt.value());
@@ -51,12 +53,37 @@ private:
 
 			lhs_opt = build_expr(std::move(lhs), op, std::move(rhs));
 			if(not lhs_opt.has_value()) {
+				// TODO: propagate error
 				return std::nullopt;
 			}
 			lhs = std::move(lhs_opt.value());
 		}
 
 		return std::move(lhs);
+	}
+
+	constexpr auto lhs() noexcept -> std::optional<ast::Expression>
+	{
+		if(expr_lexer().next_is_operator()) {
+			auto op = expr_lexer().peek_and_pop().value();
+
+			auto r_bp_opt = prefix_binding_power(op.getType());
+			if(not r_bp_opt.has_value()) {
+				// TODO: return unknown prefix operator op
+				return std::nullopt;
+			}
+			auto r_bp = r_bp_opt.value();
+
+			auto rhs_opt = expression_bp(r_bp);
+			if(not rhs_opt.has_value()) {
+				// TODO: propagate error
+				return std::nullopt;
+			}
+
+			return build_expr(op, std::move(rhs_opt.value()));
+		}
+
+		return simple_expr();
 	}
 
 	constexpr auto build_expr(ast::Expression&& lhs, lexing::Token op, ast::Expression&& rhs) noexcept
@@ -98,6 +125,24 @@ private:
 			return ast::Expression{ast::forward<ast::NotEqual>(area, std::move(lhs), std::move(rhs))};
 		case lexing::TokenTypes::DOT:
 			return ast::Expression{ast::forward<ast::MemberAccess>(area, std::move(lhs), std::move(rhs))};
+		default:
+			return std::nullopt;
+		}
+	}
+
+	constexpr auto build_expr(lexing::Token op, ast::Expression&& rhs) noexcept
+		-> std::optional<ast::Expression>
+	{
+		auto area = lexing::TextArea::combine(op.getArea(),
+											  ast::getTextArea(rhs));
+
+		switch(op.getType()) {
+		case lexing::TokenTypes::PLUS:
+			return ast::Expression{ast::forward<ast::UnaryPlus>(area, std::move(rhs))};
+		case lexing::TokenTypes::MINUS:
+			return ast::Expression{ast::forward<ast::UnaryMinus>(area, std::move(rhs))};
+		case lexing::TokenTypes::LOGICAL_NOT:
+			return ast::Expression{ast::forward<ast::LogicalNot>(area, std::move(rhs))};
 		default:
 			return std::nullopt;
 		}
