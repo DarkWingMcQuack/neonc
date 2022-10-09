@@ -28,7 +28,7 @@ private:
 		}
 		auto lhs = std::move(lhs_opt.value());
 
-		  while(expr_lexer().next_is_operator()){
+		while(expr_lexer().next_is_operator()) {
 			const auto op = expr_lexer().peek().value();
 
 			auto bp_opt = infix_binding_power(op.getType());
@@ -107,15 +107,50 @@ private:
 		-> std::optional<std::pair<std::uint32_t, std::uint32_t>>
 	{
 		switch(t) {
-		case lexing::TokenTypes::PLUS:
-		case lexing::TokenTypes::MINUS:
+		case lexing::TokenTypes::LOGICAL_OR:
 			return std::pair{1, 2};
+
+		case lexing::TokenTypes::LOGICAL_AND:
+			return std::pair{3, 4};
+
+		case lexing::TokenTypes::BITWISE_OR:
+			return std::pair{5, 6};
+
+		case lexing::TokenTypes::BITWISE_AND:
+			return std::pair{7, 8};
+
+		case lexing::TokenTypes::EQ:
+		case lexing::TokenTypes::NEQ:
+			return std::pair{9, 10};
+
+		case lexing::TokenTypes::LT:
+		case lexing::TokenTypes::LE:
+		case lexing::TokenTypes::GT:
+		case lexing::TokenTypes::GE:
+			return std::pair{11, 12};
+
+		case lexing::TokenTypes::MINUS:
+		case lexing::TokenTypes::PLUS:
+			return std::pair{13, 14};
 
 		case lexing::TokenTypes::ASTERIX:
 		case lexing::TokenTypes::DIVISION:
 		case lexing::TokenTypes::PERCENT:
-			return std::pair{3, 4};
+			return std::pair{15, 16};
 
+		default:
+			return std::nullopt;
+		}
+	}
+
+	constexpr static auto prefix_binding_power(lexing::TokenTypes t) noexcept
+		-> std::optional<std::uint32_t>
+	{
+		switch(t) {
+		case lexing::TokenTypes::PLUS:
+		case lexing::TokenTypes::MINUS:
+		case lexing::TokenTypes::LOGICAL_NOT:
+			return 17;
 		default:
 			return std::nullopt;
 		}
