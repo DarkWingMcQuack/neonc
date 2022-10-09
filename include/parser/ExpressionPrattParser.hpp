@@ -76,6 +76,28 @@ private:
 			return ast::Expression{ast::forward<ast::Division>(area, std::move(lhs), std::move(rhs))};
 		case lexing::TokenTypes::PERCENT:
 			return ast::Expression{ast::forward<ast::Remainder>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::LOGICAL_OR:
+			return ast::Expression{ast::forward<ast::LogicalOr>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::LOGICAL_AND:
+			return ast::Expression{ast::forward<ast::LogicalAnd>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::BITWISE_OR:
+			return ast::Expression{ast::forward<ast::BitwiseOr>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::BITWISE_AND:
+			return ast::Expression{ast::forward<ast::BitwiseAnd>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::LT:
+			return ast::Expression{ast::forward<ast::LessThen>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::LE:
+			return ast::Expression{ast::forward<ast::LessEqThen>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::GT:
+			return ast::Expression{ast::forward<ast::GreaterThen>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::GE:
+			return ast::Expression{ast::forward<ast::GreaterEqThen>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::EQ:
+			return ast::Expression{ast::forward<ast::Equal>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::NEQ:
+			return ast::Expression{ast::forward<ast::NotEqual>(area, std::move(lhs), std::move(rhs))};
+		case lexing::TokenTypes::DOT:
+			return ast::Expression{ast::forward<ast::MemberAccess>(area, std::move(lhs), std::move(rhs))};
 		default:
 			return std::nullopt;
 		}
