@@ -47,6 +47,8 @@ new_test(parser/LetStatementParserTest.cpp LetStatementParserTest)
 new_test(parser/AdditionExprParserTest.cpp AdditionExprParserTest)
 new_test(parser/SubstractionExprParserTest.cpp SubstractionExprParserTest)
 new_test(parser/MultiplicationExprParserTest.cpp MultiplicationExprParserTest)
+new_test(parser/DivisionExprParserTest.cpp DivisionExprParserTest)
+new_test(parser/RemainderExprParserTest.cpp RemainderExprParserTest)
 new_test(parser/LambdaExprParserTest.cpp LambdaExprParserTest)
 
 
