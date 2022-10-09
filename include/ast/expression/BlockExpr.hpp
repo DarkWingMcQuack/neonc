@@ -10,7 +10,9 @@ namespace ast {
 class BlockExpr : public AreaBase
 {
 public:
-    constexpr BlockExpr(lexing::TextArea area, std::vector<Statement>&& body, Expression&& ret_expr) noexcept
+    constexpr BlockExpr(lexing::TextArea area,
+						std::vector<Statement>&& body,
+						Expression&& ret_expr) noexcept
         : AreaBase(area),
           body_(std::move(body)),
           ret_expr_(std::move(ret_expr)) {}

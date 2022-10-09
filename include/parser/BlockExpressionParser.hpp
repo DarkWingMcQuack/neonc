@@ -80,6 +80,29 @@ private:
 
 		auto start = block_expr_lexer().peek_and_pop().value().getArea();
 
+		//handle the case of a expr block which only contains a
+		//{=> <expr>} without any statements pre the return statement
+		if(block_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+			auto ret_expr_opt = static_cast<T*>(this)->expression();
+			if(not ret_expr_opt.has_value()) {
+				// TODO: propagate error
+				return std::nullopt;
+			}
+			auto ret_expr = std::move(ret_expr_opt.value());
+
+			if(not block_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
+				// TODO: return "expected }" error
+				return std::nullopt;
+			}
+
+			auto end = block_expr_lexer().peek_and_pop().value().getArea();
+			auto area = lexing::TextArea::combine(start, end);
+
+			return ast::BlockExpr{std::move(area),
+								  {},
+								  std::move(ret_expr)};
+		}
+
 		auto stmt_opt = static_cast<T*>(this)->statement();
 		if(not stmt_opt.has_value()) {
 			// TODO: propagate error
