@@ -25,6 +25,8 @@ enum class TokenTypes : std::int64_t {
     R_PARANTHESIS,
     L_BRACKET,
     R_BRACKET,
+
+    // operators
     PLUS,
     MINUS,
     ASTERIX,
@@ -35,6 +37,14 @@ enum class TokenTypes : std::int64_t {
     BITWISE_OR,
     BITWISE_AND,
     LOGICAL_NOT,
+    LT,
+    LE,
+    GT,
+    GE,
+    EQ,
+    NEQ,
+    DOT,
+
     ASSIGN,
     IF,
     ELSE,
@@ -46,16 +56,9 @@ enum class TokenTypes : std::int64_t {
     R_ARROW,
     SELF_VALUE,
     SELF_TYPE,
-    DOT,
     COMMA,
     COLON,
     COLON_COLON,
-    LT,
-    LE,
-    GT,
-    GE,
-    EQ,
-    NEQ,
     IDENTIFIER,
     TRUE,
     FALSE,
@@ -208,6 +211,28 @@ public:
     {
         return type_ == TokenTypes::SEMICOLON or type_ == TokenTypes::NEWLINE;
     }
+
+    constexpr auto isOperator() const noexcept -> bool
+    {
+        return type_ == TokenTypes::PLUS
+            or type_ == TokenTypes::MINUS
+            or type_ == TokenTypes::ASTERIX
+            or type_ == TokenTypes::DIVISION
+            or type_ == TokenTypes::PERCENT
+            or type_ == TokenTypes::LOGICAL_OR
+            or type_ == TokenTypes::LOGICAL_AND
+            or type_ == TokenTypes::LOGICAL_NOT
+            or type_ == TokenTypes::BITWISE_OR
+            or type_ == TokenTypes::BITWISE_AND
+            or type_ == TokenTypes::LT
+            or type_ == TokenTypes::LE
+            or type_ == TokenTypes::GT
+            or type_ == TokenTypes::GE
+            or type_ == TokenTypes::EQ
+            or type_ == TokenTypes::NEQ
+            or type_ == TokenTypes::DOT;
+    }
+
 
 private:
     TokenTypes type_;

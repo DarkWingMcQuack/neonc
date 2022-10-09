@@ -82,6 +82,15 @@ public:
         return false;
     }
 
+    // checks if the next token is of the given type
+    constexpr auto next_is_operator() noexcept -> bool
+    {
+        if(auto result = peek()) {
+            return result.value().isOperator();
+        }
+        return false;
+    }
+
     // checks if the next token is of the given type and pops it if so
     // if not return false
     constexpr auto pop_next_is(TokenTypes type) noexcept -> bool
