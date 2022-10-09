@@ -96,4 +96,38 @@ TEST(BlockExprParserTest, BlockExprWithLetParserTest)
 		block(add(id("a"), id("b")),
 			  let(id("a"), id("c")),
 			  let(id("b"), id("d"))));
+
+	expr_test_positive(
+		"{"
+		"let a = c\n"
+		"let b = d\n"
+		"=> a+b"
+		"}",
+		block(add(id("a"), id("b")),
+			  let(id("a"), id("c")),
+			  let(id("b"), id("d"))));
+
+	expr_test_positive(
+		"{"
+		"let a = c\n"
+		"let b = d;"
+		"let b = d\n"
+		"=> a+b"
+		"}",
+		block(add(id("a"), id("b")),
+			  let(id("a"), id("c")),
+			  let(id("b"), id("d")),
+			  let(id("b"), id("d"))));
+
+	expr_test_positive(
+		"{"
+		"let a = c;"
+		"let b = d\n"
+		"let b = d;"
+		"=> a+b"
+		"}",
+		block(add(id("a"), id("b")),
+			  let(id("a"), id("c")),
+			  let(id("b"), id("d")),
+			  let(id("b"), id("d"))));
 }
