@@ -75,6 +75,12 @@ auto expr_test_positive(std::string_view text, auto expected)
 	EXPECT_EQ((result.value()), expected);
 }
 
+auto expr_test_negative(std::string_view text)
+{
+	auto result = Parser{text}.expression();
+	EXPECT_FALSE(result.has_value());
+}
+
 
 TEST(FunctionCallExprParserTest, SimpleFunctionCallExprParsingTest)
 {
@@ -98,6 +104,7 @@ TEST(FunctionCallExprParserTest, ComplexArgumentFunctionCallExprParsingTest)
 TEST(FunctionCallExprParserTest, AccessFunctionCallExprParsingTest)
 {
 	expr_test_positive("i.j()", call(access(id("i"), id("j"))));
+	expr_test_positive("i.j(i.j)", call(access(id("i"), id("j")), access(id("i"), id("j"))));
 	expr_test_positive("i.j.k()", call(access(access(id("i"), id("j")), id("k"))));
 	expr_test_positive("-i.j.k()", neg(call(access(access(id("i"), id("j")), id("k")))));
 }
@@ -108,4 +115,17 @@ TEST(FunctionCallExprParserTest, LambdaFunctionCallExprParsingTest)
 	expr_test_positive("a => i()", lambda("a", call(id("i"))));
 	expr_test_positive("a => i(j)", lambda("a", call(id("i"), id("j"))));
 	expr_test_positive("(a => i)()", call(lambda("a", id("i"))));
+}
+
+TEST(FunctionCallExprParserTest, NegativeFunctionCallExprParsingTest)
+{
+	expr_test_negative("i(");
+	expr_test_negative("i(}");
+	expr_test_negative("i(})");
+	expr_test_negative("i{)");
+	expr_test_negative("i{)}");
+	expr_test_negative("i{i)");
+	expr_test_negative("i{i, j)");
+	expr_test_negative("i(i}");
+	expr_test_negative("i(i, j}");
 }
