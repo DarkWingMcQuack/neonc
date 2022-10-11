@@ -54,6 +54,7 @@ new_test(parser/UnaryPlusExprParserTest.cpp UnaryPlusExprParserTest)
 new_test(parser/LogicalNotExprParserTest.cpp LogicalNotExprParserTest)
 new_test(parser/LambdaExprParserTest.cpp LambdaExprParserTest)
 new_test(parser/BlockExprParserTest.cpp BlockExprParserTest)
+new_test(parser/FunctionCallExprParserTest.cpp FunctionCallExprParserTest)
 
 
 

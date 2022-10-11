@@ -20,8 +20,35 @@ public:
 	}
 
 private:
+	constexpr auto function_params(lexing::TokenTypes end_token) noexcept -> std::optional<std::vector<ast::Expression>>
+	{
+		std::vector<ast::Expression> params;
+		while(not expr_lexer().next_is(end_token)) {
+			fmt::print("{}\n", expr_lexer().peek().value().getValue());
+			auto opt = expression_bp(0);
+			if(not opt.has_value()) {
+				// TODO: propagate error
+				fmt::print("B22222222222222\n");
+				return std::nullopt;
+			}
+			params.emplace_back(std::move(opt.value()));
+
+			if(expr_lexer().next_is(end_token)) {
+				break;
+			}
+
+			if(not expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
+				// TODO: return error expexted comma or start token
+				return std::nullopt;
+			}
+		}
+
+		return params;
+	}
+
 	constexpr auto expression_bp(std::uint32_t min_bp) noexcept -> std::optional<ast::Expression>
 	{
+		// lhs() parses prefix operators
 		auto lhs_opt = lhs();
 		if(not lhs_opt.has_value()) {
 			// TODO: propagate error
@@ -32,6 +59,38 @@ private:
 		while(expr_lexer().next_is_operator()) {
 			const auto op = expr_lexer().peek().value();
 
+			// parse postfix operators such as function calls
+			if(auto bp_opt = postfix_binding_power(op.getType())) {
+				auto bp = std::move(bp_opt.value());
+
+				if(bp < min_bp) {
+					break;
+				}
+
+				expr_lexer().pop();
+
+				auto end_token = op.getType() == lexing::TokenTypes::L_BRACKET
+					? lexing::TokenTypes::R_BRACKET
+					: lexing::TokenTypes::R_PARANTHESIS;
+
+				auto params_opt = function_params(end_token);
+				if(not params_opt.has_value()) {
+					// TODO: propagate error
+					return std::nullopt;
+				}
+				auto params = std::move(params_opt.value());
+
+				if(not expr_lexer().next_is(end_token)) {
+					// TODO: return error "expected op but got ..."
+					return std::nullopt;
+				}
+				auto end = expr_lexer().peek_and_pop().value().getArea();
+
+				lhs = build_expr(std::move(lhs), std::move(params), std::move(end));
+				continue;
+			}
+
+			// parse infix operators
 			auto bp_opt = infix_binding_power(op.getType());
 			if(not bp_opt.has_value()) {
 				// TODO: propagate error
@@ -64,7 +123,7 @@ private:
 
 	constexpr auto lhs() noexcept -> std::optional<ast::Expression>
 	{
-		if(expr_lexer().next_is_operator()) {
+		if(expr_lexer().next_is_prefix_operator()) {
 			auto op = expr_lexer().peek_and_pop().value();
 
 			auto r_bp_opt = prefix_binding_power(op.getType());
@@ -148,6 +207,19 @@ private:
 		}
 	}
 
+	constexpr auto build_expr(ast::Expression&& lhs,
+							  std::vector<ast::Expression>&& params,
+							  lexing::TextArea end) noexcept
+		-> ast::Expression
+	{
+		auto area = lexing::TextArea::combine(ast::getTextArea(lhs),
+											  end);
+		return ast::Expression{
+			ast::forward<ast::FunctionCall>(area,
+											std::move(lhs),
+											std::move(params))};
+	}
+
 	constexpr static auto infix_binding_power(lexing::TokenTypes t) noexcept
 		-> std::optional<std::pair<std::uint32_t, std::uint32_t>>
 	{
@@ -199,6 +271,18 @@ private:
 		case lexing::TokenTypes::MINUS:
 		case lexing::TokenTypes::LOGICAL_NOT:
 			return 17;
+		default:
+			return std::nullopt;
+		}
+	}
+
+	constexpr static auto postfix_binding_power(lexing::TokenTypes t) noexcept
+		-> std::optional<std::uint32_t>
+	{
+		switch(t) {
+		case lexing::TokenTypes::L_BRACKET:
+		case lexing::TokenTypes::L_PARANTHESIS:
+			return 18;
 		default:
 			return std::nullopt;
 		}

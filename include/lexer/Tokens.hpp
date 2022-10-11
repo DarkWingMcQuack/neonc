@@ -214,6 +214,11 @@ public:
 
     constexpr auto isOperator() const noexcept -> bool
     {
+        return isInfixOperator() or isPostfixOperator() or isPrefixOperator();
+    }
+
+    constexpr auto isInfixOperator() const noexcept -> bool
+    {
         return type_ == TokenTypes::PLUS
             or type_ == TokenTypes::MINUS
             or type_ == TokenTypes::ASTERIX
@@ -221,7 +226,6 @@ public:
             or type_ == TokenTypes::PERCENT
             or type_ == TokenTypes::LOGICAL_OR
             or type_ == TokenTypes::LOGICAL_AND
-            or type_ == TokenTypes::LOGICAL_NOT
             or type_ == TokenTypes::BITWISE_OR
             or type_ == TokenTypes::BITWISE_AND
             or type_ == TokenTypes::LT
@@ -231,6 +235,19 @@ public:
             or type_ == TokenTypes::EQ
             or type_ == TokenTypes::NEQ
             or type_ == TokenTypes::DOT;
+    }
+
+    constexpr auto isPrefixOperator() const noexcept -> bool
+    {
+        return type_ == TokenTypes::PLUS
+            or type_ == TokenTypes::MINUS
+            or type_ == TokenTypes::LOGICAL_NOT;
+    }
+
+    constexpr auto isPostfixOperator() const noexcept -> bool
+    {
+        return type_ == TokenTypes::L_BRACKET
+            or type_ == TokenTypes::L_PARANTHESIS;
     }
 
 
