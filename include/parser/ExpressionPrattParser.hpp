@@ -24,11 +24,9 @@ private:
 	{
 		std::vector<ast::Expression> params;
 		while(not expr_lexer().next_is(end_token)) {
-			fmt::print("{}\n", expr_lexer().peek().value().getValue());
-			auto opt = expression_bp(0);
+			auto opt = expression();
 			if(not opt.has_value()) {
 				// TODO: propagate error
-				fmt::print("B22222222222222\n");
 				return std::nullopt;
 			}
 			params.emplace_back(std::move(opt.value()));
