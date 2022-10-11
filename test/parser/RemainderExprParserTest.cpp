@@ -28,8 +28,7 @@ inline auto sub(auto lhs, auto rhs) -> ast::Expression
 }
 
 inline auto div(auto lhs, auto rhs) -> ast::Expression
-{
-	return ast::Expression{
+{return ast::Expression{
 		ast::forward<ast::Division>(lexing::TextArea{0, 0},
 									std::move(lhs),
 									std::move(rhs))};
