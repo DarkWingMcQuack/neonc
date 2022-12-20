@@ -1,7 +1,12 @@
 #pragma once
 
+#include <ast/common/Identifier.hpp>
 #include <ast/Ast.hpp>
+#include <common/Error.hpp>
+#include <exception>
+#include <expected>
 #include <lexer/Lexer.hpp>
+#include <lexer/Tokens.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
@@ -12,14 +17,27 @@ class IdentifierParser
 {
 public:
     constexpr auto identifier() noexcept
-        -> std::optional<ast::Identifier>
+        -> std::expected<ast::Identifier, common::error::Error>
     {
-        if(identifier_lexer().next_is(lexing::TokenTypes::IDENTIFIER)) {
-            auto token = identifier_lexer().peek_and_pop().value();
-            return ast::Identifier{token.getArea(), token.getValue()};
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+        using ast::Identifier;
+
+        auto result = identifier_lexer().peek_and_pop();
+        if(not result.has_value()) {
+            return std::unexpected(result.error());
         }
 
-        return std::nullopt;
+        auto token = std::move(result.value());
+
+        if(token.getType() == TokenTypes::IDENTIFIER) {
+            return Identifier{token.getArea(), token.getValue()};
+        }
+
+        UnexpectedToken error{token.getType(),
+                              token.getArea(),
+                              TokenTypes::IDENTIFIER};
+        return std::unexpected(std::move(error));
     }
 
 private:
