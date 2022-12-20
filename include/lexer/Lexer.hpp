@@ -40,7 +40,7 @@ public:
 
     template<auto N = 1>
     constexpr auto peek() noexcept -> std::optional<Token>
-    requires(N == 1)
+        requires(N == 1)
     {
         if(lexed_.empty()) {
             auto next = lexNext();
@@ -56,7 +56,7 @@ public:
 
     template<auto N>
     constexpr auto peek() noexcept -> std::optional<std::array<Token, N>>
-    requires(N > 1)
+        requires(N > 1)
     {
         while(lexed_.size() < N) {
 

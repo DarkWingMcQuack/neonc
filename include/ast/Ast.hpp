@@ -128,7 +128,7 @@ constexpr auto getTextArea(const T& ast_element) noexcept
 {
     // clang-format off
     constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
-	constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
+        constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
     // clang-format on
 
     if constexpr(is_forward) {
@@ -157,7 +157,7 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 {
     // clang-format off
     constexpr bool is_variant = common::is_specialization_of<std::variant, T>::value;
-	constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
+        constexpr bool is_forward = common::is_specialization_of<Forward, T>::value;
     // clang-format on
 
     if constexpr(is_forward) {

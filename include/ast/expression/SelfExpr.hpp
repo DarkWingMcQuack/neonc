@@ -27,7 +27,6 @@ public:
     {
         return false;
     }
-
 };
 
 } // namespace ast

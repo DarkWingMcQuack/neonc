@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <lexer/TextArea.hpp>
+#include <memory>
 
 namespace ast {
 

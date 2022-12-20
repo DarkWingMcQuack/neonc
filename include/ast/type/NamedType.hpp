@@ -12,7 +12,9 @@ namespace ast {
 class NamedType : public AreaBase
 {
 public:
-    constexpr NamedType(lexing::TextArea area, std::vector<Identifier>&& namespce, Identifier&& type) noexcept
+    constexpr NamedType(lexing::TextArea area,
+                        std::vector<Identifier>&& namespce,
+                        Identifier&& type) noexcept
         : AreaBase(area),
           namespce_(std::move(namespce)),
           type_(std::move(type)) {}

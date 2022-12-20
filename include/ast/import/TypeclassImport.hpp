@@ -27,8 +27,8 @@ public:
     constexpr auto operator==(const TypeclassImport& other) const noexcept -> bool
     {
         return namespce_ == other.namespce_
-		  and typeclass_ == other.typeclass_
-		  and instance_ == other.instance_;
+            and typeclass_ == other.typeclass_
+            and instance_ == other.instance_;
     }
 
     constexpr auto getNamespace() const noexcept -> const std::vector<Identifier>&

@@ -10,12 +10,16 @@ namespace ast {
 class LambdaType : public AreaBase
 {
 public:
-    constexpr LambdaType(lexing::TextArea area, std::vector<Type>&& arguments, Type&& return_type) noexcept
+    constexpr LambdaType(lexing::TextArea area,
+                         std::vector<Type>&& arguments,
+                         Type&& return_type) noexcept
         : AreaBase(area),
           arguments_(std::move(arguments)),
           return_(std::move(return_type)) {}
 
-    constexpr LambdaType(lexing::TextArea area, Type&& argument, Type&& return_type) noexcept
+    constexpr LambdaType(lexing::TextArea area,
+                         Type&& argument,
+                         Type&& return_type) noexcept
         : AreaBase(area),
           return_(std::move(return_type))
     {

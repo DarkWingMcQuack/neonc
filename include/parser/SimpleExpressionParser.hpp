@@ -26,113 +26,113 @@ template<class T>
 class SimpleExpressionParser
 {
 public:
-	// parses tuples, literals, lambda expressions and (expressions)
-	constexpr auto simple_expression() noexcept -> std::optional<ast::Expression>
-	{
-		if(auto result = integer()) {
-			return result.value();
-		}
+    // parses tuples, literals, lambda expressions and (expressions)
+    constexpr auto simple_expression() noexcept -> std::optional<ast::Expression>
+    {
+        if(auto result = integer()) {
+            return result.value();
+        }
 
-		if(auto result = duoble()) {
-			return result.value();
-		}
+        if(auto result = duoble()) {
+            return result.value();
+        }
 
-		if(auto result = boolean()) {
-			return result.value();
-		}
+        if(auto result = boolean()) {
+            return result.value();
+        }
 
-		if(auto result = self_value()) {
-			return result.value();
-		}
+        if(auto result = self_value()) {
+            return result.value();
+        }
 
-		if(auto result = string()) {
-			return result.value();
-		}
+        if(auto result = string()) {
+            return result.value();
+        }
 
-		if(auto result = static_cast<T*>(this)->identifier_or_simple_lambda()) {
-		  return std::move(result.value());
-		}
+        if(auto result = static_cast<T*>(this)->identifier_or_simple_lambda()) {
+            return std::move(result.value());
+        }
 
-		if(auto result = static_cast<T*>(this)->if_expression()) {
-			return std::move(result.value());
-		}
+        if(auto result = static_cast<T*>(this)->if_expression()) {
+            return std::move(result.value());
+        }
 
-		if(auto result = static_cast<T*>(this)->block_expression()) {
-			return std::move(result.value());
-		}
+        if(auto result = static_cast<T*>(this)->block_expression()) {
+            return std::move(result.value());
+        }
 
-		if(auto result = static_cast<T*>(this)->l_par_expression()) {
-			return std::move(result.value());
-		}
+        if(auto result = static_cast<T*>(this)->l_par_expression()) {
+            return std::move(result.value());
+        }
 
-		// return expectedn blablabla error
-		return std::nullopt;
-	}
-
-private:
-	constexpr auto integer() noexcept -> std::optional<ast::Integer>
-	{
-		if(not simple_expr_lexer().next_is(lexing::TokenTypes::INTEGER)) {
-			return std::nullopt;
-		}
-
-		auto token = simple_expr_lexer().peek_and_pop().value();
-		auto value = parse_int_unsafe(token.getValue());
-		return ast::Integer{token.getArea(), value};
-	}
-
-	constexpr auto duoble() noexcept -> std::optional<ast::Double>
-	{
-		if(not simple_expr_lexer().next_is(lexing::TokenTypes::DOUBLE)) {
-			return std::nullopt;
-		}
-
-		auto token = simple_expr_lexer().peek_and_pop().value();
-		auto value = parse_double_unsafe(token.getValue());
-		return ast::Double{token.getArea(), value};
-	}
-
-	constexpr auto boolean() noexcept -> std::optional<ast::Boolean>
-	{
-		if(simple_expr_lexer().next_is(lexing::TokenTypes::TRUE)) {
-			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
-			return ast::Boolean(area, true);
-		}
-
-		if(simple_expr_lexer().next_is(lexing::TokenTypes::FALSE)) {
-			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
-			return ast::Boolean(area, false);
-		}
-
-		return std::nullopt;
-	}
-
-	constexpr auto self_value() noexcept -> std::optional<ast::SelfExpr>
-	{
-		if(simple_expr_lexer().next_is(lexing::TokenTypes::SELF_VALUE)) {
-			auto area = simple_expr_lexer().peek_and_pop().value().getArea();
-			return ast::SelfExpr{area};
-		}
-
-		return std::nullopt;
-	}
-
-	constexpr auto string() noexcept -> std::optional<ast::String>
-	{
-		if(simple_expr_lexer().next_is(lexing::TokenTypes::STANDARD_STRING)) {
-			auto token = simple_expr_lexer().peek_and_pop().value();
-			return ast::String{token.getArea(), token.getValue()};
-		}
-
-		return std::nullopt;
-	}
-
+        // return expectedn blablabla error
+        return std::nullopt;
+    }
 
 private:
-	constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
-	{
-		return static_cast<T*>(this)->lexer_;
-	}
+    constexpr auto integer() noexcept -> std::optional<ast::Integer>
+    {
+        if(not simple_expr_lexer().next_is(lexing::TokenTypes::INTEGER)) {
+            return std::nullopt;
+        }
+
+        auto token = simple_expr_lexer().peek_and_pop().value();
+        auto value = parse_int_unsafe(token.getValue());
+        return ast::Integer{token.getArea(), value};
+    }
+
+    constexpr auto duoble() noexcept -> std::optional<ast::Double>
+    {
+        if(not simple_expr_lexer().next_is(lexing::TokenTypes::DOUBLE)) {
+            return std::nullopt;
+        }
+
+        auto token = simple_expr_lexer().peek_and_pop().value();
+        auto value = parse_double_unsafe(token.getValue());
+        return ast::Double{token.getArea(), value};
+    }
+
+    constexpr auto boolean() noexcept -> std::optional<ast::Boolean>
+    {
+        if(simple_expr_lexer().next_is(lexing::TokenTypes::TRUE)) {
+            auto area = simple_expr_lexer().peek_and_pop().value().getArea();
+            return ast::Boolean(area, true);
+        }
+
+        if(simple_expr_lexer().next_is(lexing::TokenTypes::FALSE)) {
+            auto area = simple_expr_lexer().peek_and_pop().value().getArea();
+            return ast::Boolean(area, false);
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr auto self_value() noexcept -> std::optional<ast::SelfExpr>
+    {
+        if(simple_expr_lexer().next_is(lexing::TokenTypes::SELF_VALUE)) {
+            auto area = simple_expr_lexer().peek_and_pop().value().getArea();
+            return ast::SelfExpr{area};
+        }
+
+        return std::nullopt;
+    }
+
+    constexpr auto string() noexcept -> std::optional<ast::String>
+    {
+        if(simple_expr_lexer().next_is(lexing::TokenTypes::STANDARD_STRING)) {
+            auto token = simple_expr_lexer().peek_and_pop().value();
+            return ast::String{token.getArea(), token.getValue()};
+        }
+
+        return std::nullopt;
+    }
+
+
+private:
+    constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
+    {
+        return static_cast<T*>(this)->lexer_;
+    }
 };
 
 } // namespace parser
