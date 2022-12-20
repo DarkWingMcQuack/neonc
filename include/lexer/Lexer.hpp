@@ -1,8 +1,10 @@
 #pragma once
 
+#include <common/Error.hpp>
 #include <compare>
 #include <cstdint>
 #include <ctre/ctre.hpp>
+#include <expected>
 #include <fmt/core.h>
 #include <lexer/Regexes.hpp>
 #include <lexer/TextArea.hpp>
@@ -10,6 +12,7 @@
 #include <optional>
 #include <queue>
 #include <string_view>
+#include <expected>
 #include <vector>
 
 namespace lexing {
@@ -39,13 +42,13 @@ public:
     constexpr auto operator=(const Lexer&) noexcept -> Lexer& = delete;
 
     template<auto N = 1>
-    constexpr auto peek() noexcept -> std::optional<Token>
+    constexpr auto peek() noexcept -> std::expected<Token, common::error::Error>
         requires(N == 1)
     {
         if(lexed_.empty()) {
             auto next = lexNext();
             if(not next.has_value()) {
-                return std::nullopt;
+                return next;
             }
 
             lexed_.emplace_back(std::move(next.value()));
@@ -173,7 +176,7 @@ public:
     }
 
 private:
-    constexpr auto lexNext() noexcept -> std::optional<Token>
+    constexpr auto lexNext() noexcept -> std::expected<Token, common::error::Error>
     {
         const auto start = position_;
 
@@ -437,7 +440,14 @@ private:
             return Token{TokenTypes::SEMICOLON, start, value};
         }
 
-        return std::nullopt;
+        return std::unexpected(make_unknown_token_error());
+    }
+
+    constexpr auto make_unknown_token_error() noexcept
+        -> common::error::Error
+    {
+        TextArea area{position_, position_};
+        return common::error::UnknownToken{std::move(area)};
     }
 
     constexpr auto moveForward(std::size_t n) noexcept -> std::string_view
@@ -463,7 +473,7 @@ private:
     }
 
     // TODO: implement f-strings
-    constexpr auto lexStandardString() noexcept -> std::optional<Token>
+    constexpr auto lexStandardString() noexcept -> std::expected<Token, common::error::Error>
     {
         // start at i = to skip first "
         bool last_was_slash = false;
@@ -478,7 +488,9 @@ private:
 
         // TODO: here there should be a 'missing closing "'-error be reported somehow
         if(content_[i] != '\"') [[unlikely]] {
-            return std::nullopt;
+            TextArea area{position_, position_};
+            common::error::Error error = common::error::UnclosedString{std::move(area)};
+            return std::unexpected(std::move(error));
         }
 
         const auto start = position_;
