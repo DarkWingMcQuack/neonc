@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
