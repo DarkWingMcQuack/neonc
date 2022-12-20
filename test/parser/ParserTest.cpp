@@ -9,5 +9,4 @@ using parser::Parser;
 
 TEST(ParserTest, SimplePositiveParserTest)
 {
-    
 }

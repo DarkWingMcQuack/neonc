@@ -93,7 +93,7 @@ TEST(LexerTest, LessThanUnaryMinusVSLARROWTest)
     EXPECT_EQ(lt.getType(), lexing::TokenTypes::LT);
     EXPECT_EQ(m.getType(), lexing::TokenTypes::MINUS);
 
-	lexer = lexing::Lexer(" <- ");
+        lexer = lexing::Lexer(" <- ");
 
     auto result2 = lexer.peek();
     ASSERT_TRUE(!!result2);
@@ -159,7 +159,7 @@ auto nextShouldBe(Lexer& lexer, lexing::TokenTypes expectedToken)
 
     // clang-format off
     while(actualToken.has_value() and
-		   actualToken.value().getType() == lexing::TokenTypes::NEWLINE) {
+                   actualToken.value().getType() == lexing::TokenTypes::NEWLINE) {
         lexer.pop();
         actualToken = lexer.peek();
     }
