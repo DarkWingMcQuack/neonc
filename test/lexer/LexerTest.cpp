@@ -93,7 +93,7 @@ TEST(LexerTest, LessThanUnaryMinusVSLARROWTest)
     EXPECT_EQ(lt.getType(), lexing::TokenTypes::LT);
     EXPECT_EQ(m.getType(), lexing::TokenTypes::MINUS);
 
-        lexer = lexing::Lexer(" <- ");
+    lexer = lexing::Lexer(" <- ");
 
     auto result2 = lexer.peek();
     ASSERT_TRUE(!!result2);
