@@ -29,6 +29,7 @@ private:
 
 class UnexpectedToken
 {
+public:
     template<class... Exp>
         requires(sizeof...(Exp) >= 1) and (std::same_as<Exp, lexing::TokenTypes> and ...)
     constexpr UnexpectedToken(lexing::TokenTypes actual,
