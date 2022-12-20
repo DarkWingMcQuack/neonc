@@ -10,12 +10,12 @@ function (new_test source name)
   add_executable(${name} ${source})
   target_link_libraries(${name} LINK_PUBLIC gtest gtest_main fmt)
   target_include_directories(${name} PUBLIC
-	gtest
-	${FMT_INCLUDE_DIR}
-	${NAMEDTYPE_INCLUDE_DIR}
-	${EXPECTED_LITE_INCLUDE_DIR}
-	${CTRE_INCLUDE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/../include
+    gtest
+    ${FMT_INCLUDE_DIR}
+    ${NAMEDTYPE_INCLUDE_DIR}
+    ${EXPECTED_INCLUDE_DIR}
+    ${CTRE_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
   )
 
   set_flags(${name})
