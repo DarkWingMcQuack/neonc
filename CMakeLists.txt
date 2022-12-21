@@ -18,7 +18,6 @@ include(cmake/fmt.cmake)
 include(cmake/tbb.cmake)
 include(cmake/ctre.cmake)
 include(cmake/namedtype.cmake)
-include(cmake/expected.cmake)
 
 ######################################################################
 ###include the commands needed for setting linker and compiler flags
@@ -46,7 +45,6 @@ target_sources(NeonLib INTERFACE ${NEONLIB_HEADER_FILES})
 add_dependencies(NeonLib fmt-project)
 add_dependencies(NeonLib tbb-project)
 add_dependencies(NeonLib namedtype-project)
-add_dependencies(NeonLib expected-project)
 add_dependencies(NeonLib ctre-project)
 
 # make headers available
@@ -54,7 +52,6 @@ target_include_directories(NeonLib INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${FMT_INCLUDE_DIR}
   ${NAMEDTYPE_INCLUDE_DIR}
-  ${EXPECTED_INCLUDE_DIR}
   ${CTRE_INCLUDE_DIR}
   tbb
 )
@@ -79,7 +76,6 @@ target_include_directories(neonc PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${FMT_INCLUDE_DIR}
   ${NAMEDTYPE_INCLUDE_DIR}
-  ${EXPECTED_INCLUDE_DIR}
   ${CTRE_INCLUDE_DIR}
   tbb
 )
