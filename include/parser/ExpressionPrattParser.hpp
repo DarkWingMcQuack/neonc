@@ -2,7 +2,10 @@
 
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <common/Error.hpp>
+#include <expected>
 #include <lexer/Lexer.hpp>
+#include <optional>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -140,7 +143,12 @@ private:
             return build_expr(op, std::move(rhs_opt.value()));
         }
 
-        return simple_expr();
+        // just return simple_expr() here once we use std::expected everywhere
+        if(auto res = simple_expr()) {
+            return std::move(res.value());
+        }
+
+        return std::nullopt;
     }
 
     constexpr auto build_expr(ast::Expression&& lhs, lexing::Token op, ast::Expression&& rhs) noexcept
@@ -292,7 +300,8 @@ private:
         return static_cast<T*>(this)->lexer_;
     }
 
-    constexpr auto simple_expr() noexcept -> std::optional<ast::Expression>
+    constexpr auto simple_expr() noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
         return static_cast<T*>(this)->simple_expression();
     }

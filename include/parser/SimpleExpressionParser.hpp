@@ -1,7 +1,10 @@
 #pragma once
 
+#include "common/Error.hpp"
+#include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <expected>
 #include <lexer/Lexer.hpp>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
@@ -27,8 +30,12 @@ class SimpleExpressionParser
 {
 public:
     // parses tuples, literals, lambda expressions and (expressions)
-    constexpr auto simple_expression() noexcept -> std::optional<ast::Expression>
+    constexpr auto simple_expression() noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
         if(auto result = integer()) {
             return result.value();
         }
@@ -65,8 +72,25 @@ public:
             return std::move(result.value());
         }
 
-        // return expectedn blablabla error
-        return std::nullopt;
+        auto token_res = simple_expr_lexer().peek();
+        if(not token_res.has_value()) {
+            return std::unexpected(token_res.error());
+        }
+        auto token = std::move(token_res.value());
+
+
+        UnexpectedToken error{token.getType(),
+                              token.getArea(),
+                              TokenTypes::IDENTIFIER,
+                              TokenTypes::DOUBLE,
+                              TokenTypes::TRUE,
+                              TokenTypes::FALSE,
+                              TokenTypes::SELF_VALUE,
+                              TokenTypes::IF,
+                              TokenTypes::L_BRACKET,
+                              TokenTypes::L_PARANTHESIS};
+
+        return std::unexpected(std::move(error));
     }
 
 private:
