@@ -1,7 +1,10 @@
 #pragma once
 
+#include "common/Error.hpp"
+#include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <exception>
 #include <lexer/Lexer.hpp>
 #include <optional>
 #include <parser/TypeParser.hpp>
@@ -19,79 +22,126 @@ template<class T>
 class StatmentParser
 {
 public:
-    constexpr auto statement() noexcept -> std::optional<ast::Statement>
+    constexpr auto statement() noexcept
+        -> std::expected<ast::Statement, common::error::Error>
     {
-        if(stmt_lexer().next_is(lexing::TokenTypes::LET)) {
-            // TODO: change once we return std::expected
-            if(auto result = static_cast<T*>(this)->let()) {
-                return std::move(result.value());
-            }
-            return std::nullopt;
+        using lexing::TokenTypes;
+        using common::error::UnexpectedToken;
+
+        auto token_res = stmt_lexer().peek();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
+        }
+        auto token = std::move(token_res.value());
+
+        if(token.getType() == TokenTypes::LET) {
+            return static_cast<T*>(this)->let();
         }
 
-        if(stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {
+        if(token.getType() == TokenTypes::WHILE) {
             return wile();
         }
 
-        if(stmt_lexer().next_is(lexing::TokenTypes::IF)) {
+        if(token.getType() == TokenTypes::IF) {
             return ifStmt();
         }
 
-        if(stmt_lexer().next_is(lexing::TokenTypes::FOR)) {
+        if(token.getType() == TokenTypes::FOR) {
             return forStmt();
         }
 
-        // TODO: just return static_cast<T*>(this)->expression();
         if(auto res = static_cast<T*>(this)->expression()) {
             return std::move(res.value());
         }
 
-        return std::nullopt;
+        UnexpectedToken error{
+            token.getType(),
+            token.getArea(),
+            TokenTypes::WHILE,
+            TokenTypes::LET,
+            TokenTypes::FOR,
+            TokenTypes::IF,
+            TokenTypes::IDENTIFIER,
+            TokenTypes::DOUBLE,
+            TokenTypes::INTEGER,
+            TokenTypes::STANDARD_STRING,
+            TokenTypes::TRUE,
+            TokenTypes::FALSE,
+            TokenTypes::SELF_VALUE,
+            TokenTypes::PLUS,
+            TokenTypes::MINUS,
+            TokenTypes::LOGICAL_NOT,
+            TokenTypes::L_BRACKET,
+            TokenTypes::L_PARANTHESIS};
+
+
+        return std::unexpected(std::move(error));
     }
 
 private:
-    constexpr auto stmt_list() noexcept -> std::optional<std::vector<ast::Statement>>
+    constexpr auto stmt_list() noexcept
+        -> std::expected<std::vector<ast::Statement>, common::error::Error>
     {
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
         std::vector<ast::Statement> stmts;
 
         while(true) {
-            auto stmt_opt = statement();
-            if(not stmt_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto stmt_res = statement();
+            if(not stmt_res.has_value()) {
+                return stmt_res;
             }
-            stmts.emplace_back(std::move(stmt_opt.value()));
+            stmts.emplace_back(std::move(stmt_res.value()));
 
-            auto next_token_opt = stmt_lexer().peek_and_pop();
-            if(not next_token_opt.has_value()) {
-                // TODO: return expected a token from the lexer, got none this seems to be a lexer bug
-                return std::nullopt;
+            auto next_token_res = stmt_lexer().peek_and_pop();
+            if(not next_token_res.has_value()) {
+                return std::unexpected(std::move(next_token_res.error()));
             }
-            auto next_token = std::move(next_token_opt.value());
+            auto next_token = std::move(next_token_res.value());
 
             if(not next_token.isSeparator()) {
-                // TODO: return error next token expected to be a ; or \n
-                return std::nullopt;
+                UnexpectedToken error{
+                    token.getType(),
+                    token.getArea(),
+                    TokenTypes::NEWLINE,
+                    TokenTypes::SEMICOLON};
+
+                return std::unexpected(std::move(error));
             }
         }
 
         return stmts;
     }
 
-    constexpr auto block() noexcept -> std::optional<std::pair<std::vector<ast::Statement>, lexing::TextArea>>
+    constexpr auto block() noexcept
+        -> std::expected<std::pair<std::vector<ast::Statement>, lexing::TextArea>,
+                         common::error::Error>
     {
-        if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
-            // TODO: return expected {
-            return std::nullopt;
-        }
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
 
-        auto body_opt = stmt_list();
-        if(not body_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
         }
-        auto body = std::move(body_opt.value());
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::L_BRACKET) {
+            UnexpectedToken error{
+                token.getType(),
+                token.getArea(),
+                TokenTypes::L_BRACKET};
+
+            return std::unexpected(std::move(error));
+        }
+
+        auto body_res = stmt_list();
+        if(not body_res) {
+            return body_res;
+        }
+        auto body = std::move(body_res.value());
 
 
         if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
@@ -99,7 +149,22 @@ private:
             return std::nullopt;
         }
 
-        auto end = stmt_lexer().peek_and_pop().value().getArea();
+        auto end_token_res = stmt_lexer().peek_and_pop();
+        if(not end_token_res.has_value()) {
+            return std::unexpected(std::move(end_token_res.error()));
+        }
+        auto end_token = std::move(end_token_res.value());
+        auto end = end_token.getArea();
+
+        if(end_token.getType() != TokenTypes::R_BRACKET) {
+            UnexpectedToken error{
+                token.getType(),
+                token.getArea(),
+                TokenTypes::R_BRACKET};
+
+            return std::unexpected(std::move(error));
+        }
+
         auto area = lexing::TextArea::combine(start, end);
 
         return std::pair{std::move(body), std::move(area)};
@@ -145,11 +210,11 @@ private:
         auto start = stmt_lexer().peek_and_pop().value().getArea();
 
         // clang-format off
-                if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-                   not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
-                        // TODO: return error "expected ( or {"
-                        return std::nullopt;
-                }
+        if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+           not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+            // TODO: return error "expected ( or {"
+            return std::nullopt;
+        }
         // clang-format on
 
         auto enclosing_type = stmt_lexer().peek_and_pop().value().getType();
@@ -157,17 +222,17 @@ private:
         std::vector<ast::ForElement> elems;
 
         // clang-format off
-                while(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-                          not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+        while(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
+              not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
 
-                        auto elem_opt = stmt_for_element();
-                        if(not elem_opt.has_value()) {
-                                // TODO: propagate error
-                                return std::nullopt;
-                        }
+            auto elem_opt = stmt_for_element();
+            if(not elem_opt.has_value()) {
+                // TODO: propagate error
+                return std::nullopt;
+            }
 
-                        elems.emplace_back(std::move(elem_opt.value()));
-                }
+            elems.emplace_back(std::move(elem_opt.value()));
+        }
         // clang-format on
 
         if(not stmt_lexer().pop_next_is(enclosing_type)) {
