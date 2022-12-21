@@ -5,6 +5,7 @@
 #include <common/Error.hpp>
 #include <exception>
 #include <expected>
+#include <functional>
 #include <lexer/Lexer.hpp>
 #include <lexer/Tokens.hpp>
 #include <parser/Utils.hpp>
@@ -23,7 +24,7 @@ public:
         using lexing::TokenTypes;
         using ast::Identifier;
 
-        auto result = identifier_lexer().peek_and_pop();
+        auto result = identifier_lexer().peek();
         if(not result.has_value()) {
             return std::unexpected(result.error());
         }
@@ -31,6 +32,7 @@ public:
         auto token = std::move(result.value());
 
         if(token.getType() == TokenTypes::IDENTIFIER) {
+            identifier_lexer().pop();
             return Identifier{token.getArea(), token.getValue()};
         }
 
