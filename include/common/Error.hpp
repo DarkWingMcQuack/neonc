@@ -2,6 +2,7 @@
 
 #include <lexer/TextArea.hpp>
 #include <lexer/Tokens.hpp>
+#include <source_location>
 #include <variant>
 #include <vector>
 
@@ -46,6 +47,16 @@ private:
     std::vector<lexing::TokenTypes> expected_;
 };
 
-using Error = std::variant<UnknownToken, UnclosedString, UnexpectedToken>;
+class InternalCompilerError
+{
+public:
+    constexpr InternalCompilerError(std::source_location location = std::source_location::current()) noexcept
+        : location_(std::move(location)) {}
+
+private:
+    std::source_location location_;
+};
+
+using Error = std::variant<UnknownToken, UnclosedString, UnexpectedToken, InternalCompilerError>;
 
 } // namespace common::error
