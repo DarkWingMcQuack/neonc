@@ -16,10 +16,12 @@ public:
     constexpr auto operator==(const Double& other) const noexcept
         -> bool
     {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+        // clang-format off
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wfloat-equal"
         return value_ == other.value_;
-#pragma GCC diagnostic pop
+        #pragma GCC diagnostic pop
+        // clang-format on
     }
 
     constexpr auto getValue() const noexcept -> double
