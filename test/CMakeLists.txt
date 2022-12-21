@@ -13,7 +13,6 @@ function (new_test source name)
     gtest
     ${FMT_INCLUDE_DIR}
     ${NAMEDTYPE_INCLUDE_DIR}
-    ${EXPECTED_INCLUDE_DIR}
     ${CTRE_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
   )
