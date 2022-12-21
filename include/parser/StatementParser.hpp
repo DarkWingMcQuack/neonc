@@ -90,7 +90,7 @@ private:
         while(true) {
             auto stmt_res = statement();
             if(not stmt_res.has_value()) {
-                return stmt_res;
+                return std::unexpected(std::move(stmt_res.error()));
             }
             stmts.emplace_back(std::move(stmt_res.value()));
 
@@ -102,8 +102,8 @@ private:
 
             if(not next_token.isSeparator()) {
                 UnexpectedToken error{
-                    token.getType(),
-                    token.getArea(),
+                    next_token.getType(),
+                    next_token.getArea(),
                     TokenTypes::NEWLINE,
                     TokenTypes::SEMICOLON};
 
@@ -130,8 +130,8 @@ private:
 
         if(start_token.getType() != TokenTypes::L_BRACKET) {
             UnexpectedToken error{
-                token.getType(),
-                token.getArea(),
+                start_token.getType(),
+                start_token.getArea(),
                 TokenTypes::L_BRACKET};
 
             return std::unexpected(std::move(error));
@@ -139,15 +139,10 @@ private:
 
         auto body_res = stmt_list();
         if(not body_res) {
-            return body_res;
+            return std::unexpected(std::move(body_res.error()));
         }
         auto body = std::move(body_res.value());
 
-
-        if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
-            // TODO: return expected }
-            return std::nullopt;
-        }
 
         auto end_token_res = stmt_lexer().peek_and_pop();
         if(not end_token_res.has_value()) {
@@ -158,8 +153,8 @@ private:
 
         if(end_token.getType() != TokenTypes::R_BRACKET) {
             UnexpectedToken error{
-                token.getType(),
-                token.getArea(),
+                end_token.getType(),
+                end_token.getArea(),
                 TokenTypes::R_BRACKET};
 
             return std::unexpected(std::move(error));
@@ -170,29 +165,39 @@ private:
         return std::pair{std::move(body), std::move(area)};
     }
 
-    constexpr auto wile() noexcept -> std::optional<ast::Statement>
+    constexpr auto wile() noexcept
+        -> std::expected<ast::Statement, common::error::Error>
     {
-        // sanity check
-        if(not stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {
-            // TODO: return expexted "while" token
-            return std::nullopt;
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
+        }
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::WHILE) {
+            UnexpectedToken error{
+                start_token.getType(),
+                start_token.getArea(),
+                TokenTypes::WHILE};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
-
-        auto condition_opt = static_cast<T*>(this)->expression();
-        if(not condition_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto condition_res = static_cast<T*>(this)->expression();
+        if(not condition_res.has_value()) {
+            return std::unexpected(std::move(condition_res.error()));
         }
-        auto condition = std::move(condition_opt.value());
+        auto condition = std::move(condition_res.value());
 
-        auto body_opt = block();
-        if(not body_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto body_res = block();
+        if(not body_res.has_value()) {
+            return std::unexpected(std::move(body_res.error()));
         }
-        auto [body, end] = std::move(body_opt.value());
+        auto [body, end] = std::move(body_res.value());
         auto area = lexing::TextArea::combine(start, end);
 
         return ast::Statement{
@@ -201,51 +206,89 @@ private:
                                          std::move(body))};
     }
 
-    constexpr auto forStmt() noexcept -> std::optional<ast::Statement>
+    constexpr auto forStmt() noexcept
+        -> std::expected<ast::Statement, common::error::Error>
     {
-        // sanity check
-        if(not stmt_lexer().next_is(lexing::TokenTypes::FOR)) {
-            return std::nullopt;
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
         }
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::FOR) {
+            UnexpectedToken error{
+                start_token.getType(),
+                start_token.getArea(),
+                TokenTypes::FOR};
+
+            return std::unexpected(std::move(error));
+        }
+
+        auto open_token_res = stmt_lexer().peek_and_pop();
+        if(not open_token_res.has_value()) {
+            return std::unexpected(std::move(open_token_res.error()));
+        }
+        auto open_token = std::move(open_token_res.value());
+        auto open_type = open_token.getType();
 
         // clang-format off
-        if(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-           not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
-            // TODO: return error "expected ( or {"
-            return std::nullopt;
+        if(open_type != TokenTypes::L_PARANTHESIS and
+           open_type != TokenTypes::L_BRACKET) {
+            UnexpectedToken error{
+                open_token.getType(),
+                open_token.getArea(),
+                TokenTypes::L_PARANTHESIS,
+                TokenTypes::L_BRACKET};
+
+            return std::unexpected(std::move(error));
         }
         // clang-format on
 
-        auto enclosing_type = stmt_lexer().peek_and_pop().value().getType();
 
         std::vector<ast::ForElement> elems;
 
         // clang-format off
-        while(not stmt_lexer().next_is(lexing::TokenTypes::L_BRACKET) and
-              not stmt_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
+        while(not stmt_lexer().next_is(lexing::TokenTypes::R_BRACKET) and
+              not stmt_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
 
-            auto elem_opt = stmt_for_element();
-            if(not elem_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto elem_res = stmt_for_element();
+            if(not elem_res.has_value()) {
+                return std::unexpected(std::move(elem_res.error()));
             }
 
-            elems.emplace_back(std::move(elem_opt.value()));
+            elems.emplace_back(std::move(elem_res.value()));
         }
         // clang-format on
 
-        if(not stmt_lexer().pop_next_is(enclosing_type)) {
-            // TODO: return "expected $enclosing_type" error
-            return std::nullopt;
+        auto close_token_res = stmt_lexer().peek_and_pop();
+        if(not close_token_res.has_value()) {
+            return std::unexpected(std::move(close_token_res.error()));
+        }
+        auto close_token = std::move(close_token_res.value());
+
+        auto expected_close_type = open_type == TokenTypes::L_BRACKET
+            ? TokenTypes::R_BRACKET
+            : TokenTypes::R_PARANTHESIS;
+
+
+        if(close_token.getType() != expected_close_type) {
+            UnexpectedToken error{
+                close_token.getType(),
+                close_token.getArea(),
+                expected_close_type};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto block_opt = block();
-        if(not block_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto block_res = block();
+        if(not block_res.has_value()) {
+            return std::unexpected(std::move(block_res.error()));
         }
-        auto [block, end] = std::move(block_opt.value());
+        auto [block, end] = std::move(block_res.value());
 
         auto area = lexing::TextArea::combine(start, end);
 
@@ -255,48 +298,72 @@ private:
                                        std::move(block))};
     }
 
-    constexpr auto elseStmt() noexcept -> std::optional<ast::ElseStmt>
+    constexpr auto elseStmt() noexcept
+        -> std::expected<ast::ElseStmt, common::error::Error>
     {
-        if(not stmt_lexer().next_is(lexing::TokenTypes::ELSE)) {
-            // TODO: return error "expected else kexword"
-            return std::nullopt;
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
+        }
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::ELSE) {
+            UnexpectedToken error{
+                start_token.getType(),
+                start_token.getArea(),
+                TokenTypes::ELSE};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
-
-        auto body_opt = block();
-        if(not body_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto block_res = block();
+        if(not block_res.has_value()) {
+            return std::unexpected(std::move(block_res.error()));
         }
-        auto [body, end] = std::move(body_opt.value());
+        auto [body, end] = std::move(block_res.value());
 
         auto area = lexing::TextArea::combine(start, end);
 
         return ast::ElseStmt{area, std::move(body)};
     }
 
-    constexpr auto elifStmt() noexcept -> std::optional<ast::ElifStmt>
+    constexpr auto elifStmt() noexcept
+        -> std::expected<ast::ElifStmt, common::error::Error>
     {
-        if(not stmt_lexer().next_is(lexing::TokenTypes::ELIF)) {
-            return std::nullopt;
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
+        }
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::ELIF) {
+            UnexpectedToken error{
+                start_token.getType(),
+                start_token.getArea(),
+                TokenTypes::ELIF};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
-
-        auto elif_condition_opt = static_cast<T*>(this)->expression();
-        if(not elif_condition_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto elif_condition_res = static_cast<T*>(this)->expression();
+        if(not elif_condition_res) {
+            return std::unexpected(std::move(elif_condition_res.error()));
         }
-        auto elif_condition = std::move(elif_condition_opt.value());
+        auto elif_condition = std::move(elif_condition_res.value());
 
-        auto body_opt = block();
-        if(not body_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto block_res = block();
+        if(not block_res.has_value()) {
+            return std::unexpected(std::move(block_res.error()));
         }
-        auto [body, end] = std::move(body_opt.value());
+        auto [body, end] = std::move(block_res.value());
 
         auto area = lexing::TextArea::combine(start, end);
 
@@ -305,50 +372,60 @@ private:
                              std::move(body)};
     }
 
-    constexpr auto ifStmt() noexcept -> std::optional<ast::Statement>
+    constexpr auto ifStmt() noexcept
+        -> std::expected<ast::Statement, common::error::Error>
     {
-        if(not stmt_lexer().next_is(lexing::TokenTypes::IF)) {
-            return std::nullopt;
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
+        auto start_token_res = stmt_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
+        }
+        auto start_token = std::move(start_token_res.value());
+        auto start = start_token.getArea();
+
+        if(start_token.getType() != TokenTypes::ELIF) {
+            UnexpectedToken error{
+                start_token.getType(),
+                start_token.getArea(),
+                TokenTypes::ELIF};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto start = stmt_lexer().peek_and_pop().value().getArea();
-
-        auto condition_opt = static_cast<T*>(this)->expression();
-        if(not condition_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto condition_res = static_cast<T*>(this)->expression();
+        if(not condition_res) {
+            return std::unexpected(std::move(condition_res.error()));
         }
-        auto condition = std::move(condition_opt.value());
+        auto condition = std::move(condition_res.value());
 
-        auto body_opt = block();
-        if(not body_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto block_res = block();
+        if(not block_res.has_value()) {
+            return std::unexpected(std::move(block_res.error()));
         }
-        auto [body, end] = std::move(body_opt.value());
+        auto [body, end] = std::move(block_res.value());
 
         auto area = lexing::TextArea::combine(start, end);
 
         std::vector<ast::ElifStmt> elifs;
         while(stmt_lexer().next_is(lexing::TokenTypes::ELIF)) {
-            auto elif_opt = elifStmt();
-            if(not elif_opt) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto elif_res = elifStmt();
+            if(not elif_res) {
+                return std::unexpected(std::move(elif_res.error()));
             }
-            elifs.emplace_back(std::move(elif_opt.value()));
+            elifs.emplace_back(std::move(elif_res.value()));
             area = lexing::TextArea::combine(start, elifs.back().getArea());
         }
 
         std::optional<ast::ElseStmt> else_;
         if(stmt_lexer().next_is(lexing::TokenTypes::ELSE)) {
-            auto else_opt = elseStmt();
-            if(not else_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto else_res = elseStmt();
+            if(not else_res.has_value()) {
+                return std::unexpected(std::move(else_res.error()));
             }
-            area = lexing::TextArea::combine(start, else_opt.value().getArea());
-            else_ = std::move(else_opt.value());
+            area = lexing::TextArea::combine(start, else_res.value().getArea());
+            else_ = std::move(else_res.value());
         }
 
         return ast::Statement{
@@ -363,17 +440,17 @@ private:
 
 private:
     constexpr auto stmt_identifier() noexcept
-        -> std::optional<ast::Identifier>
+        -> std::expected<ast::Identifier, common::error::Error>
     {
         return static_cast<T*>(this)->identifier();
     }
 
-    constexpr auto stmt_for_element() noexcept -> std::optional<ast::ForElement>
+    constexpr auto stmt_for_element() noexcept -> std::expected<ast::ForElement, common::error::Error>
     {
         return static_cast<T*>(this)->for_element();
     }
 
-    constexpr auto stmt_type() noexcept -> std::optional<ast::Type>
+    constexpr auto stmt_type() noexcept -> std::expected<ast::Type, common::error::Error>
     {
         return static_cast<T*>(this)->type();
     }
