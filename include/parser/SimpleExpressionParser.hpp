@@ -85,6 +85,8 @@ public:
                               TokenTypes::DOUBLE,
                               TokenTypes::TRUE,
                               TokenTypes::FALSE,
+                              TokenTypes::INTEGER,
+                              TokenTypes::STANDARD_STRING,
                               TokenTypes::SELF_VALUE,
                               TokenTypes::IF,
                               TokenTypes::L_BRACKET,
