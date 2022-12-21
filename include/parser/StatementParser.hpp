@@ -22,7 +22,11 @@ public:
     constexpr auto statement() noexcept -> std::optional<ast::Statement>
     {
         if(stmt_lexer().next_is(lexing::TokenTypes::LET)) {
-            return static_cast<T*>(this)->let();
+            // TODO: change once we return std::expected
+            if(auto result = static_cast<T*>(this)->let()) {
+                return std::move(result.value());
+            }
+            return std::nullopt;
         }
 
         if(stmt_lexer().next_is(lexing::TokenTypes::WHILE)) {

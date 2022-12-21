@@ -1,7 +1,10 @@
 #pragma once
 
+#include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <common/Error.hpp>
+#include <exception>
 #include <lexer/Lexer.hpp>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
@@ -9,56 +12,71 @@
 
 namespace parser {
 
-// crtp class for statements,
-// 1. while loop
-// 2. let statment
-// 3. any expression
-// 8. if-else statement
+// crtp class for let statements
 template<class T>
 class LetStmtParser
 {
 public:
-    // parses tuples, literals, lambda expressions and (expressions)
-    constexpr auto let() noexcept -> std::optional<ast::Statement>
+    constexpr auto let() noexcept -> std::expected<ast::Statement, common::error::Error>
     {
-        if(not let_stmt_lexer().next_is(lexing::TokenTypes::LET)) {
-            return std::nullopt;
-        }
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
 
-        // pop the let token and get the area of it as start
-        auto start = let_stmt_lexer().peek_and_pop().value().getArea();
-
-        auto id_opt = static_cast<T*>(this)->identifier();
-        if(not id_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto token_res = let_stmt_lexer().peek();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
         }
-        auto id = std::move(id_opt.value());
+        auto token = std::move(token_res.value());
+
+        if(token.getType() != TokenTypes::LET) {
+            UnexpectedToken error{token.getType(),
+                                  token.getArea(),
+                                  TokenTypes::LET};
+
+            return std::unexpected(std::move(error));
+        }
+        let_stmt_lexer().pop();
+
+        // get the area of the let token as start
+        auto start = token.getArea();
+
+        auto id_res = static_cast<T*>(this)->identifier();
+        if(not id_res.has_value()) {
+            return std::unexpected(std::move(id_res.error()));
+        }
+        auto id = std::move(id_res.value());
 
         // parse optional type annotation
         std::optional<ast::Type> t;
         if(let_stmt_lexer().next_is(lexing::TokenTypes::COLON)) {
             let_stmt_lexer().pop();
 
-            auto type_opt = static_cast<T*>(this)->type();
-            if(not type_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto type_res = static_cast<T*>(this)->type();
+            if(not type_res.has_value()) {
+                return std::unexpected(std::move(type_res.error()));
             }
-            t = std::move(type_opt.value());
+            t = std::move(type_res.value());
         }
 
-        if(not let_stmt_lexer().pop_next_is(lexing::TokenTypes::ASSIGN)) {
-            // TODO: return error "expected ="
-            return std::nullopt;
+        auto assign_token_res = let_stmt_lexer().peek_and_pop();
+        if(not assign_token_res.has_value()) {
+            return std::unexpected(std::move(assign_token_res.error()));
+        }
+        auto assign_token = std::move(assign_token_res.value());
+
+        if(assign_token.getType() != TokenTypes::ASSIGN) {
+            UnexpectedToken error{token.getType(),
+                                  token.getArea(),
+                                  TokenTypes::ASSIGN};
+
+            return std::unexpected(std::move(error));
         }
 
-        auto rhs_opt = static_cast<T*>(this)->expression();
-        if(not rhs_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto rhs_res = static_cast<T*>(this)->expression();
+        if(not rhs_res.has_value()) {
+            return rhs_res;
         }
-        auto rhs = std::move(rhs_opt.value());
+        auto rhs = std::move(rhs_res.value());
 
         auto end = ast::getTextArea(rhs);
         auto area = lexing::TextArea::combine(start, end);
