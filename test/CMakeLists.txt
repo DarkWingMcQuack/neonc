@@ -20,6 +20,8 @@ function (new_test source name)
 
   set_flags(${name})
   setup_linker(${name})
+  set_sanitizers(${name})
+
 
   include(GoogleTest)
   gtest_discover_tests(${name})
