@@ -3,8 +3,10 @@
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <common/Error.hpp>
+#include <exception>
 #include <expected>
 #include <lexer/Lexer.hpp>
+#include <lexer/Tokens.hpp>
 #include <optional>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
@@ -17,45 +19,62 @@ template<class T>
 class ExpressionPrattParser
 {
 public:
-    constexpr auto expression() noexcept -> std::optional<ast::Expression>
+    constexpr auto expression() noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
         return expression_bp(0);
     }
 
 private:
-    constexpr auto function_params(lexing::TokenTypes end_token) noexcept -> std::optional<std::vector<ast::Expression>>
+    constexpr auto function_params(lexing::TokenTypes end_token) noexcept
+        -> std::expected<std::vector<ast::Expression>, common::error::Error>
     {
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
+
         std::vector<ast::Expression> params;
         while(not expr_lexer().next_is(end_token)) {
-            auto opt = expression();
-            if(not opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto res = expression();
+            if(not res.has_value()) {
+                return std::unexpected(std::move(res.error()));
             }
-            params.emplace_back(std::move(opt.value()));
+            params.emplace_back(std::move(res.value()));
 
             if(expr_lexer().next_is(end_token)) {
                 break;
             }
 
-            if(not expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
-                // TODO: return error expexted comma or start token
-                return std::nullopt;
+            auto token_res = expr_lexer().peek_and_pop();
+            if(not token_res.has_value()) {
+                return std::unexpected(std::move(token_res.error()));
+            }
+            auto token = std::move(token_res.value());
+            if(token.getType() != TokenTypes::COMMA) {
+                UnexpectedToken error{token.getType(),
+                                      token.getArea(),
+                                      TokenTypes::COMMA};
+
+                return std::unexpected(std::move(error));
             }
         }
 
         return params;
     }
 
-    constexpr auto expression_bp(std::uint32_t min_bp) noexcept -> std::optional<ast::Expression>
+    constexpr auto expression_bp(std::uint32_t min_bp) noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
+        using common::error::UnexpectedToken;
+        using common::error::Error;
+        using common::error::InternalCompilerError;
+        using lexing::TokenTypes;
+
         // lhs() parses prefix operators
-        auto lhs_opt = lhs();
-        if(not lhs_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto lhs_res = lhs();
+        if(not lhs_res.has_value()) {
+            return lhs_res;
         }
-        auto lhs = std::move(lhs_opt.value());
+        auto lhs = std::move(lhs_res.value());
 
         while(expr_lexer().next_is_operator()) {
             const auto op = expr_lexer().peek().value();
@@ -70,22 +89,33 @@ private:
 
                 expr_lexer().pop();
 
-                auto end_token = op.getType() == lexing::TokenTypes::L_BRACKET
-                    ? lexing::TokenTypes::R_BRACKET
-                    : lexing::TokenTypes::R_PARANTHESIS;
+                auto end_token = op.getType() == TokenTypes::L_BRACKET
+                    ? TokenTypes::R_BRACKET
+                    : TokenTypes::R_PARANTHESIS;
 
-                auto params_opt = function_params(end_token);
-                if(not params_opt.has_value()) {
-                    // TODO: propagate error
-                    return std::nullopt;
+                auto params_res = function_params(end_token);
+                if(not params_res.has_value()) {
+                    return std::unexpected(std::move(params_res.error()));
                 }
-                auto params = std::move(params_opt.value());
+                auto params = std::move(params_res.value());
+
+                auto end_token_res = expr_lexer().peek_and_pop();
+                if(not end_token_res.has_value()) {
+                    return std::unexpected(std::move(end_token_res.error()));
+                }
+                auto actual_end_token = std::move(end_token_res.value());
+
+                if(actual_end_token.getType() != end_token) {
+                }
 
                 if(not expr_lexer().next_is(end_token)) {
-                    // TODO: return error "expected op but got ..."
-                    return std::nullopt;
+                    UnexpectedToken error{actual_end_token.getType(),
+                                          actual_end_token.getArea(),
+                                          end_token};
+
+                    return std::unexpected(std::move(error));
                 }
-                auto end = expr_lexer().peek_and_pop().value().getArea();
+                auto end = actual_end_token.getArea();
 
                 lhs = build_expr(std::move(lhs), std::move(params), std::move(end));
                 continue;
@@ -94,8 +124,8 @@ private:
             // parse infix operators
             auto bp_opt = infix_binding_power(op.getType());
             if(not bp_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+                Error error = InternalCompilerError{};
+                return std::unexpected(std::move(error));
             }
             const auto [l_bp, r_bp] = std::move(bp_opt.value());
 
@@ -105,16 +135,16 @@ private:
 
             expr_lexer().pop();
 
-            auto rhs_opt = expression_bp(r_bp);
-            if(not rhs_opt.has_value()) {
-                return std::nullopt;
+            auto rhs_res = expression_bp(r_bp);
+            if(not rhs_res.has_value()) {
+                return rhs_res;
             }
-            auto rhs = std::move(rhs_opt.value());
+            auto rhs = std::move(rhs_res.value());
 
-            lhs_opt = build_expr(std::move(lhs), op, std::move(rhs));
+            auto lhs_opt = build_expr(std::move(lhs), op, std::move(rhs));
             if(not lhs_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+                Error error = InternalCompilerError{};
+                return std::unexpected(std::move(error));
             }
             lhs = std::move(lhs_opt.value());
         }
@@ -122,33 +152,38 @@ private:
         return std::move(lhs);
     }
 
-    constexpr auto lhs() noexcept -> std::optional<ast::Expression>
+    constexpr auto lhs() noexcept -> std::expected<ast::Expression, common::error::Error>
     {
+        using common::error::Error;
+        using common::error::InternalCompilerError;
+
         if(expr_lexer().next_is_prefix_operator()) {
             auto op = expr_lexer().peek_and_pop().value();
 
             auto r_bp_opt = prefix_binding_power(op.getType());
             if(not r_bp_opt.has_value()) {
-                // TODO: return unknown prefix operator op
-                return std::nullopt;
+                Error error = InternalCompilerError{};
+                return std::unexpected(std::move(error));
             }
             auto r_bp = r_bp_opt.value();
 
-            auto rhs_opt = expression_bp(r_bp);
-            if(not rhs_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto rhs_res = expression_bp(r_bp);
+            if(not rhs_res.has_value()) {
+                return rhs_res;
+            }
+            auto rhs = std::move(rhs_res.value());
+
+            auto expr_opt = build_expr(op, std::move(rhs));
+
+            if(not expr_opt.has_value()) {
+                Error error = InternalCompilerError{};
+                return std::unexpected(std::move(error));
             }
 
-            return build_expr(op, std::move(rhs_opt.value()));
+            return std::move(expr_opt.value());
         }
 
-        // just return simple_expr() here once we use std::expected everywhere
-        if(auto res = simple_expr()) {
-            return std::move(res.value());
-        }
-
-        return std::nullopt;
+        return simple_expr();
     }
 
     constexpr auto build_expr(ast::Expression&& lhs, lexing::Token op, ast::Expression&& rhs) noexcept

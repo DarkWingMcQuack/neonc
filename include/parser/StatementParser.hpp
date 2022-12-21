@@ -3,6 +3,7 @@
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
+#include <optional>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -36,7 +37,12 @@ public:
             return forStmt();
         }
 
-        return static_cast<T*>(this)->expression();
+        // TODO: just return static_cast<T*>(this)->expression();
+        if(auto res = static_cast<T*>(this)->expression()) {
+            return std::move(res.value());
+        }
+
+        return std::nullopt;
     }
 
 private:
