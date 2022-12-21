@@ -106,15 +106,13 @@ private:
                 auto actual_end_token = std::move(end_token_res.value());
 
                 if(actual_end_token.getType() != end_token) {
-                }
-
-                if(not expr_lexer().next_is(end_token)) {
                     UnexpectedToken error{actual_end_token.getType(),
                                           actual_end_token.getArea(),
                                           end_token};
 
                     return std::unexpected(std::move(error));
                 }
+
                 auto end = actual_end_token.getArea();
 
                 lhs = build_expr(std::move(lhs), std::move(params), std::move(end));
