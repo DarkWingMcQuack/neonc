@@ -1,9 +1,16 @@
 #pragma once
 
+#include "ast/common/Identifier.hpp"
+#include "common/Error.hpp"
+#include "lexer/Tokens.hpp"
 #include <algorithm>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <ast/expression/LambdaExpr.hpp>
+#include <exception>
+#include <fmt/core.h>
 #include <lexer/Lexer.hpp>
+#include <optional>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -17,6 +24,30 @@ template<class T>
 class LParExpressionParser
 {
 public:
+    //leftmost is used to parse the first expression after a (
+    //if it is a typed lambda like (a: b) => c
+    //after removing (
+    //it will be a typed lambda without ( and therefor not parseable
+    //this is why we check if the first two tokens after ( are an identifier followed by a :
+    //if so we return the identifier as expression and keep the colon
+    //if not we just call expression() and parse the expression
+    constexpr auto leftmost() noexcept -> std::expected<ast::Expression, common::error::Error>
+    {
+        auto peek_res = lpar_expr_lexer().template peek<2>();
+        if(not peek_res.has_value()) {
+            return std::unexpected(std::move(peek_res.error()));
+        }
+        auto [first, second] = std::move(peek_res.value());
+
+        if(first.getType() == lexing::TokenTypes::IDENTIFIER
+           and second.getType() == lexing::TokenTypes::COLON) {
+            lpar_expr_lexer().pop();
+            return ast::Identifier{first.getArea(), first.getValue()};
+        }
+
+        return static_cast<T*>(this)->expression();
+    }
+
     constexpr auto l_par_expression() noexcept -> std::optional<ast::Expression>
     {
         if(not lpar_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
@@ -27,7 +58,7 @@ public:
 
         // parse the first expression after the ( because thats what all the three options
         // what it could be have in common
-        auto expr_opt = static_cast<T*>(this)->expression();
+        auto expr_opt = leftmost();
         if(not expr_opt) {
             // TODO: propagate error
             return std::nullopt;
@@ -40,7 +71,11 @@ public:
             return try_lambda(start, std::move(expr));
         }
 
-        // TODO: if next token is a : then it is a lambda expression
+        // if next token is a : then it is a lambda expression
+        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
+            return try_typed_lambda(start, std::move(expr));
+        }
+
 
         // if next token is a , then we have (<expr>, which coule be a lambda expression "(a, b) => c" or a tuple (a, b)
         if(lpar_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
@@ -318,6 +353,55 @@ private:
             return std::nullopt;
         }
         auto parameters = std::move(param_opt.value());
+
+        return ast::Expression{
+            ast::forward<ast::LambdaExpr>(area,
+                                          std::move(parameters),
+                                          std::move(body))};
+    }
+
+    constexpr auto try_typed_lambda(lexing::TextArea start, ast::Expression&& first) noexcept
+        -> std::optional<ast::Expression>
+    {
+        std::vector<ast::Expression> tmp;
+        tmp.emplace_back(std::move(first));
+        auto param_opt = exprs_to_parameters(std::move(tmp));
+        if(not param_opt.has_value()) {
+            fmt::print("0\n");
+            return std::nullopt;
+        }
+        auto parameters = std::move(param_opt.value());
+
+        auto type_res = static_cast<T*>(this)->type();
+        if(not type_res.has_value()) {
+            fmt::print("1\n");
+            return std::nullopt;
+        }
+        auto type = std::move(type_res.value());
+
+        parameters.back().setType(std::move(type));
+
+        // expected )
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::R_PARANTHESIS)) {
+            fmt::print("2\n");
+            return std::nullopt;
+        }
+
+        // if the next identifier is not a lambda arrow then the expression was realy a tuple expression
+        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+            fmt::print("3\n");
+            return std::nullopt;
+        }
+
+        auto body_opt = static_cast<T*>(this)->expression();
+        if(not body_opt.has_value()) {
+            fmt::print("4\n");
+            return std::nullopt;
+        }
+        auto body = std::move(body_opt.value());
+
+        auto end = ast::getTextArea(body);
+        auto area = lexing::TextArea::combine(start, end);
 
         return ast::Expression{
             ast::forward<ast::LambdaExpr>(area,
