@@ -141,8 +141,7 @@ private:
 
             auto lhs_opt = build_expr(std::move(lhs), op, std::move(rhs));
             if(not lhs_opt.has_value()) {
-                Error error = InternalCompilerError{};
-                return std::unexpected(std::move(error));
+                return std::unexpected(InternalCompilerError{});
             }
             lhs = std::move(lhs_opt.value());
         }
