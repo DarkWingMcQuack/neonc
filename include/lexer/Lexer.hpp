@@ -4,6 +4,7 @@
 #include <compare>
 #include <cstdint>
 #include <ctre/ctre.hpp>
+#include <exception>
 #include <expected>
 #include <fmt/core.h>
 #include <lexer/Regexes.hpp>
@@ -12,7 +13,6 @@
 #include <optional>
 #include <queue>
 #include <string_view>
-#include <expected>
 #include <vector>
 
 namespace lexing {
@@ -54,11 +54,11 @@ public:
             lexed_.emplace_back(std::move(next.value()));
         }
 
-        return lexed_.back();
+        return lexed_.front();
     }
 
     template<auto N>
-    constexpr auto peek() noexcept -> std::optional<std::array<Token, N>>
+    constexpr auto peek() noexcept -> std::expected<std::array<Token, N>, common::error::Error>
         requires(N > 1)
     {
         while(lexed_.size() < N) {
@@ -66,7 +66,7 @@ public:
             auto next = lexNext();
 
             if(not next.has_value()) {
-                return std::nullopt;
+                return std::unexpected(std::move(next.error()));
             }
 
             lexed_.emplace_back(std::move(next.value()));
@@ -143,9 +143,9 @@ public:
     template<auto N = 1ul>
     constexpr auto pop() noexcept -> void
     {
-        for(std::size_t i = 0; i < N; i++) {
-            lexed_.pop_back();
-        }
+        lexed_.erase(std::begin(lexed_),
+                     lexed_.size() > N ? std::begin(lexed_) + N
+                                       : std::end(lexed_));
     }
 
     constexpr auto pop_token(TokenTypes type) noexcept -> void
