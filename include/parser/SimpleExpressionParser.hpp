@@ -56,25 +56,23 @@ public:
             return result.value();
         }
 
-        if(simple_expr_lexer().next_is(TokenTypes::IDENTIFIER)){
+        if(simple_expr_lexer().next_is(TokenTypes::IDENTIFIER)) {
             return static_cast<T*>(this)->identifier_or_simple_lambda();
         }
 
-        // if(auto result = static_cast<T*>(this)->identifier_or_simple_lambda()) {
-        //     return std::move(result.value());
-        // }
-
-        if(simple_expr_lexer().next_is(TokenTypes::IF)){
+        if(simple_expr_lexer().next_is(TokenTypes::IF)) {
             return static_cast<T*>(this)->if_expression();
+        }
+
+        if(simple_expr_lexer().next_is(TokenTypes::L_PARANTHESIS)) {
+            return static_cast<T*>(this)->l_par_expression();
         }
 
         if(auto result = static_cast<T*>(this)->block_expression()) {
             return std::move(result.value());
         }
 
-        if(auto result = static_cast<T*>(this)->l_par_expression()) {
-            return std::move(result.value());
-        }
+
 
         auto token_res = simple_expr_lexer().peek();
         if(not token_res.has_value()) {
