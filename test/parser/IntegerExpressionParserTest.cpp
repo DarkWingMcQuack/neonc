@@ -28,7 +28,7 @@ auto integer_test_negative(std::string_view text)
 
 TEST(IntegerExpressionParserTest, IntegerExpressionParsingPositiveTest)
 {
-    for(std::int64_t i = 0; i < 10000; i++) {
+    for(std::int64_t i = 0; i < 100; i++) {
         std::int64_t n = rand();
         for(std::size_t j = 0; j < 10; j++) {
             std::string s;

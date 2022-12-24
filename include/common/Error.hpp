@@ -47,6 +47,16 @@ private:
     std::vector<lexing::TokenTypes> expected_;
 };
 
+class LambdaAnotationsInParameterNotEnclosed
+{
+public:
+    constexpr LambdaAnotationsInParameterNotEnclosed(lexing::TextArea area) noexcept
+        : area_(std::move(area)) {}
+
+private:
+    lexing::TextArea area_;
+};
+
 class InternalCompilerError
 {
 public:
@@ -57,6 +67,10 @@ private:
     std::source_location location_;
 };
 
-using Error = std::variant<UnknownToken, UnclosedString, UnexpectedToken, InternalCompilerError>;
+using Error = std::variant<UnknownToken,
+                           UnclosedString,
+                           UnexpectedToken,
+                           LambdaAnotationsInParameterNotEnclosed,
+                           InternalCompilerError>;
 
 } // namespace common::error

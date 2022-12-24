@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ast/type/SelfType.hpp"
-#include "common/Error.hpp"
-#include "lexer/Tokens.hpp"
+#include <ast/type/SelfType.hpp>
+#include <common/Error.hpp>
+#include <lexer/Tokens.hpp>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <exception>

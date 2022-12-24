@@ -39,7 +39,7 @@ inline auto sub(auto lhs, auto rhs) -> ast::Expression
 
 auto if_test_positive(std::string_view text, auto expected)
 {
-    auto result = Parser{text}.simple_expression();
+    auto result = Parser{text}.expression();
 
     ASSERT_TRUE(!!result);
     ASSERT_TRUE(std::holds_alternative<ast::Forward<ast::IfExpr>>(result.value()));
@@ -49,7 +49,7 @@ auto if_test_positive(std::string_view text, auto expected)
 
 auto if_test_negative(std::string_view text)
 {
-    auto result = Parser{text}.simple_expression();
+    auto result = Parser{text}.expression();
 
     ASSERT_TRUE(!!result);
     EXPECT_FALSE(std::holds_alternative<ast::Forward<ast::IfExpr>>(result.value()));

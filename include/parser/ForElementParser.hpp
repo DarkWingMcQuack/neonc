@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/Error.hpp"
+#include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
@@ -18,42 +20,63 @@ template<class T>
 class ForElementParser
 {
 public:
-    constexpr auto for_element() noexcept -> std::optional<ast::ForElement>
+    constexpr auto for_element() noexcept
+        -> std::expected<ast::ForElement, common::error::Error>
     {
-        auto id_opt = static_cast<T*>(this)->identifier();
-        if(not id_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
-        }
-        auto id = std::move(id_opt.value());
+        using common::error::UnexpectedToken;
+        using lexing::TokenTypes;
 
-        if(for_element_lexer().next_is(lexing::TokenTypes::L_ARROW)) {
+        auto id_res = static_cast<T*>(this)->identifier();
+        if(not id_res.has_value()) {
+            return std::unexpected(std::move(id_res.error()));
+        }
+        auto id = std::move(id_res.value());
+
+        auto token_res = for_element_lexer().peek();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
+        }
+        auto token = std::move(token_res.value());
+
+        if(token.getType() == TokenTypes::L_ARROW) {
             return monadic_for_element(std::move(id));
         }
 
-        if(for_element_lexer().next_is(lexing::TokenTypes::ASSIGN)) {
+        if(token.getType() == TokenTypes::ASSIGN) {
             return let_for_element(std::move(id));
         }
 
-        // return "expected <- or =" error
-        return std::nullopt;
+
+        UnexpectedToken error{
+            token.getType(),
+            token.getArea(),
+            TokenTypes::L_ARROW,
+            TokenTypes::ASSIGN};
+
+        return std::unexpected(std::move(error));
     }
 
     constexpr auto monadic_for_element(ast::Identifier&& id) noexcept
-        -> std::optional<ast::ForMonadicElement>
+        -> std::expected<ast::ForElement, common::error::Error>
     {
-        // sanity check
-        if(not for_element_lexer().pop_next_is(lexing::TokenTypes::L_ARROW)) {
-            return std::nullopt;
+        using common::error::InternalCompilerError;
+        using lexing::TokenTypes;
+
+        auto token_res = for_element_lexer().peek_and_pop();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
+        }
+        auto token = std::move(token_res.value());
+
+        if(token.getType() != TokenTypes::L_ARROW) {
+            return std::unexpected(InternalCompilerError{});
         }
 
-        auto rhs_opt = static_cast<T*>(this)->expression();
-        if(not rhs_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto rhs_res = static_cast<T*>(this)->expression();
+        if(not rhs_res.has_value()) {
+            return std::unexpected(std::move(rhs_res.error()));
         }
-
-        auto rhs = std::move(rhs_opt.value());
+        auto rhs = std::move(rhs_res.value());
         auto start = id.getArea();
         auto end = ast::getTextArea(rhs);
         auto area = lexing::TextArea::combine(start, end);
@@ -64,20 +87,27 @@ public:
     }
 
     constexpr auto let_for_element(ast::Identifier&& id) noexcept
-        -> std::optional<ast::ForLetElement>
+        -> std::expected<ast::ForElement, common::error::Error>
     {
-        // sanity check
-        if(not for_element_lexer().pop_next_is(lexing::TokenTypes::ASSIGN)) {
-            return std::nullopt;
+        using common::error::InternalCompilerError;
+        using lexing::TokenTypes;
+
+        auto token_res = for_element_lexer().peek_and_pop();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
+        }
+        auto token = std::move(token_res.value());
+
+        if(token.getType() != TokenTypes::ASSIGN) {
+            return std::unexpected(common::error::InternalCompilerError{});
         }
 
-        auto rhs_opt = static_cast<T*>(this)->expression();
-        if(not rhs_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto rhs_res = static_cast<T*>(this)->expression();
+        if(not rhs_res.has_value()) {
+            return std::unexpected(std::move(rhs_res.error()));
         }
 
-        auto rhs = std::move(rhs_opt.value());
+        auto rhs = std::move(rhs_res.value());
         auto start = id.getArea();
         auto end = ast::getTextArea(rhs);
         auto area = lexing::TextArea::combine(start, end);

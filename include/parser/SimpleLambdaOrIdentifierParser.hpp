@@ -1,7 +1,11 @@
 #pragma once
 
+#include "common/Error.hpp"
+#include "lexer/TextArea.hpp"
+#include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <exception>
 #include <lexer/Lexer.hpp>
 #include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
@@ -17,14 +21,16 @@ template<class T>
 class SimpleLambdaOrIdentifierParser
 {
 public:
-    constexpr auto identifier_or_simple_lambda() noexcept -> std::optional<ast::Expression>
+    constexpr auto identifier_or_simple_lambda() noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
+        auto id_res = static_cast<T*>(this)->identifier();
 
-        if(auto result = static_cast<T*>(this)->identifier()) {
-            return simple_lambda(std::move(result.value()));
+        if(not id_res.has_value()) {
+            return std::unexpected(std::move(id_res.error()));
         }
 
-        return std::nullopt;
+        return simple_lambda(std::move(id_res.value()));
     }
 
 private:
@@ -36,24 +42,36 @@ private:
     // the : comes the type annotation but a : b => c is not clear since it could be (a : b) => c or a: (b => c)
     // therefore this is forbitten and an error should be returned that lambda parameters with type annotations
     // need to be enclosed by ()
-    constexpr auto simple_lambda(ast::Identifier&& parameter) noexcept -> std::optional<ast::Expression>
+    constexpr auto simple_lambda(ast::Identifier&& parameter) noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
+        using lexing::TokenTypes;
+        using common::error::LambdaAnotationsInParameterNotEnclosed;
 
-        if(simple_lambda_or_id_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
-            // TODO: return "lambda parameters with type annotations need to be enclosed by ()"
-            return std::nullopt;
+        auto token_res = simple_lambda_or_id_expr_lexer().peek();
+        if(not token_res.has_value()) {
+            return std::unexpected(std::move(token_res.error()));
+        }
+        auto token = std::move(token_res.value());
+
+        if(token.getType() == TokenTypes::COLON) {
+            auto error_area = lexing::TextArea::combine(parameter.getArea(), token.getArea());
+            LambdaAnotationsInParameterNotEnclosed error{std::move(error_area)};
+            return std::unexpected(std::move(error));
         }
 
-        if(not simple_lambda_or_id_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
+        if(token.getType() != TokenTypes::LAMBDA_ARROW) {
             return std::move(parameter);
         }
 
-        auto expr_opt = static_cast<T*>(this)->expression();
-        if(not expr_opt) {
-            // TODO: propagate error
-            return std::nullopt;
+        simple_lambda_or_id_expr_lexer().pop();
+
+
+        auto expr_res = static_cast<T*>(this)->expression();
+        if(not expr_res) {
+            return expr_res;
         }
-        auto expr = std::move(expr_opt.value());
+        auto expr = std::move(expr_res.value());
 
         auto start = parameter.getArea();
         auto end = ast::getTextArea(expr);

@@ -85,59 +85,61 @@ inline auto lambda_type_test_negative(std::string_view text)
 
 TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
 {
-    // clang-format off
-    lambda_type_test_positive("hello=>hello", lambdaT(namedT("hello"),
-                                                                                                          namedT("hello")));
+    lambda_type_test_positive("hello=>hello", lambdaT(namedT("hello"), namedT("hello")));
 
-    lambda_type_test_positive("(hello=>hello)", lambdaT(namedT("hello"),
-                                                                                                                namedT("hello")));
+    lambda_type_test_positive("(hello=>hello)", lambdaT(namedT("hello"), namedT("hello")));
 
-    lambda_type_test_positive("((hello=>hello))", lambdaT(namedT("hello"),
-                                                                                                                  namedT("hello")));
+    lambda_type_test_positive("((hello=>hello))", lambdaT(namedT("hello"), namedT("hello")));
 
-    lambda_type_test_positive("hello?=>hello", lambdaT(optOf(namedT("hello")),
-                                                                                                           namedT("hello")));
+    lambda_type_test_positive("hello?=>hello", lambdaT(optOf(namedT("hello")), namedT("hello")));
 
-    lambda_type_test_positive("hello?=>hello?", lambdaT(optOf(namedT("hello")),
-                                                                                                                optOf(namedT("hello"))));
+    lambda_type_test_positive("hello?=>hello?", lambdaT(optOf(namedT("hello")), optOf(namedT("hello"))));
 
-        lambda_type_test_positive("Self=>Self", lambdaT(selfT(),
-                                                                                                        selfT()));
+    lambda_type_test_positive("Self=>Self", lambdaT(selfT(), selfT()));
 
-        lambda_type_test_positive("Self?=>Self?", lambdaT(optOf(selfT()),
-                                                                                                          optOf(selfT())));
+    lambda_type_test_positive("Self?=>Self?", lambdaT(optOf(selfT()), optOf(selfT())));
 
-    lambda_type_test_positive("a=>b=>c", lambdaT(namedT("a"),
-                                                                                                 lambdaT(namedT("b"),
-                                                                                                                 namedT("c"))));
+    lambda_type_test_positive("a=>b=>c",
+                              lambdaT(
+                                  namedT("a"),
+                                  lambdaT(namedT("b"), namedT("c"))));
 
-    lambda_type_test_positive("(a=>b)=>c", lambdaT(lambdaT(namedT("a"),
-                                                                                                                   namedT("b")),
-                                                                                                   namedT("c")));
+    lambda_type_test_positive("(a=>b)=>c",
+                              lambdaT(
+                                  lambdaT(namedT("a"), namedT("b")),
+                                  namedT("c")));
 
-    lambda_type_test_positive("a?=>b?=>c?", lambdaT(optOf(namedT("a")),
-                                                                                                        lambdaT(optOf(namedT("b")),
-                                                                                                                        optOf(namedT("c")))));
+    lambda_type_test_positive("a?=>b?=>c?",
+                              lambdaT(
+                                  optOf(namedT("a")),
+                                  lambdaT(optOf(namedT("b")),
+                                          optOf(namedT("c")))));
 
-    lambda_type_test_positive("(a,b)=>c", lambdaT(namedT("a"), namedT("b"),
-                                                                                                  namedT("c")));
+    lambda_type_test_positive("(a,b)=>c", lambdaT(namedT("a"), namedT("b"), namedT("c")));
 
-    lambda_type_test_positive("(a|b)=>c", lambdaT(unionT(namedT("a"), namedT("b")),
-                                                                                                  namedT("c")));
+    lambda_type_test_positive("(a|b)=>c",
+                              lambdaT(
+                                  unionT(namedT("a"), namedT("b")),
+                                  namedT("c")));
 
-    lambda_type_test_positive("(a&b)=>c", lambdaT(tupleT(namedT("a"), namedT("b")),
-                                                                                                  namedT("c")));
+    lambda_type_test_positive("(a&b)=>c",
+                              lambdaT(
+                                  tupleT(namedT("a"), namedT("b")),
+                                  namedT("c")));
 
-    lambda_type_test_positive("(a&b)=>(c|d)", lambdaT(tupleT(namedT("a"), namedT("b")),
-                                                                                                          unionT(namedT("c"), namedT("d"))));
+    lambda_type_test_positive("(a&b)=>(c|d)",
+                              lambdaT(
+                                  tupleT(namedT("a"), namedT("b")),
+                                  unionT(namedT("c"), namedT("d"))));
 
-    lambda_type_test_positive("((a,b)=>c)=>(a=>b=>c)", lambdaT(
-                                                                                                                           lambdaT(namedT("a"), namedT("b"),
-                                                                                                                                           namedT("c")),
-                                                                                                                           lambdaT(namedT("a"),
-                                                                                                                                           lambdaT(namedT("b"),
-                                                                                                                                                                                        namedT("c")))));
-    // clang-format on
+    lambda_type_test_positive("((a,b)=>c)=>(a=>b=>c)",
+                              lambdaT(
+                                  lambdaT(
+                                      namedT("a"), namedT("b"), namedT("c")),
+                                  lambdaT(
+                                      namedT("a"),
+                                      lambdaT(
+                                          namedT("b"), namedT("c")))));
 }
 
 TEST(LambdaTypeParsingTest, OptionalTypeParsingNegativeTest)
