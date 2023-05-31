@@ -1,12 +1,12 @@
 #pragma once
 
-#include <ast/type/SelfType.hpp>
-#include <common/Error.hpp>
-#include <lexer/Tokens.hpp>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <ast/type/SelfType.hpp>
+#include <common/Error.hpp>
 #include <exception>
 #include <lexer/Lexer.hpp>
+#include <lexer/Tokens.hpp>
 #include <parser/IdentifierParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
@@ -174,31 +174,56 @@ private:
                                     std::move(types))};
     }
 
-    // only invoke if the next token is |
+    /**
+     * @brief This method is a part of the TypeParser class in the Neon programming language and is responsible for parsing union types.
+     *
+     * The Neon programming language allows a variable to be declared as a union type. A union type in Neon is a type that can hold values of
+     * different types. Union types are specified using the syntax (Type1 | Type2 | ...), where Type1, Type2, etc. are the types that the union can hold.
+     * For instance, a union type (Integer | String) can hold either an Integer or a String value.
+     *
+     * The method expects the type lexer to be positioned at a token representing the bitwise OR operator '|', which in Neon syntax indicates a
+     * union type. If the token is not a '|', an error is returned.
+     *
+     * The method then combines the parsed types to form a new 'UnionType' abstract syntax tree node, which represents a union type in Neon's
+     * internal representation of a program.
+     *
+     * @param[in] start The TextArea representing the starting location of the already parsed ( token in the source code.
+     * @param[in] first_type The first type parsed inside the union's parentheses.
+     *
+     * @returns If parsing is successful, the method returns an expected type in the form of ast::Type holding the parsed union type.
+     *          If an error occurs, such as when the next token is not a '|', it returns an UnexpectedToken error.
+     *
+     * @note This method should only be called if the next token in the lexer's token stream is a '|'.
+     */
     constexpr auto union_type(lexing::TextArea start, ast::Type&& first_type) noexcept
         -> std::expected<ast::Type, common::error::Error>
     {
-        using common::error::UnexpectedToken;
         using lexing::TokenTypes;
+        using common::error::UnexpectedToken;
 
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type));
 
+        // Continue parsing the union type until no more '|' is encountered
         while(type_lexer().pop_next_is(lexing::TokenTypes::BITWISE_OR)) {
             auto next_type = type();
             if(not next_type) {
+                // If parsing the next type failed, propagate the error
                 return next_type;
             }
             types.emplace_back(std::move(next_type.value()));
         }
 
+        // After parsing all types, the next token should be a right parenthesis ')'
         auto end_res = type_lexer().peek_and_pop();
         if(not end_res.has_value()) {
+            // If peeking at the next token failed, propagate the error
             return std::unexpected(std::move(end_res.error()));
         }
 
         auto end_token = std::move(end_res.value());
         if(end_token.getType() != TokenTypes::R_PARANTHESIS) {
+            // If the token is not a ')', create an error indicating that a ')' was expected
             UnexpectedToken error{end_token.getType(),
                                   end_token.getArea(),
                                   TokenTypes::R_PARANTHESIS};
@@ -207,10 +232,12 @@ private:
 
         auto area = lexing::TextArea::combine(start, end_token.getArea());
 
+        // Return a new ast::Type that represents the parsed union type
         return ast::Type{
             forward<ast::UnionType>(std::move(area),
                                     std::move(types))};
     }
+
 
     constexpr auto lambda_type_with_multiple(lexing::TextArea start, ast::Type&& first_type) noexcept
         -> std::expected<ast::Type, common::error::Error>
@@ -356,32 +383,59 @@ private:
         return std::unexpected(std::move(error));
     }
 
-    // only call if the next token is a ?
+    /**
+     * @brief This method is a part of the TypeParser class in the Neon programming language and is responsible for parsing optional types.
+     *
+     * The Neon programming language allows a variable to be declared as an optional type. This optional typing mechanism means a variable can hold
+     * either a value of a specific type or a special value called 'None'. This introduces a level of safety, allowing developers to handle potential
+     * null values in a structured way. For example, an optional integer type in Neon can hold an integer value or None, making it clear that the
+     * variable might not always hold a valid integer.
+     *
+     * The method expects the type lexer to be positioned at a token representing the question mark symbol '?', which in Neon syntax indicates that
+     * a type is optional. If the token is not a question mark, an error is returned.
+     *
+     * The method then combines the text area of the question mark and the preceding type to form a new 'OptionalType' abstract syntax tree node,
+     * which represents an optional type in the Neon programming language's internal representation of a program.
+     *
+     * @param[in] first_type The type to be parsed as optional. This type precedes the question mark in Neon's optional type syntax.
+     *
+     * @returns If parsing is successful, the function returns an expected type in the form of ast::Type holding the parsed optional type.
+     *          If an error occurs, such as when the next token is not a question mark, it returns an UnexpectedToken error.
+     *
+     * @note This method should only be called if the next token in the lexer's token stream is a question mark.
+     */
     constexpr auto optional_type(ast::Type&& first_type) noexcept
         -> std::expected<ast::Type, common::error::Error>
     {
         using lexing::TokenTypes;
         using common::error::UnexpectedToken;
 
+        // Attempt to peek at the next token without removing it from the lexer
         auto token_res = type_lexer().peek();
         if(not token_res.has_value()) {
+            // If peeking at the next token failed, propagate the error
             return std::unexpected(std::move(token_res.error()));
         }
         auto token = std::move(token_res.value());
 
+        // Check that the token is a '?', as expected for an optional type
         if(token.getType() != TokenTypes::QUESTIONMARK) {
+            // If the token is not a '?', create an error indicating that a '?' was expected
             UnexpectedToken error{token.getType(),
                                   token.getArea(),
                                   TokenTypes::QUESTIONMARK};
             return std::unexpected(std::move(error));
         }
 
+        // Consume the '?' token now that we have confirmed it is the correct type
         type_lexer().pop();
 
+        // The text area of the optional type spans from the start of the first_type to the end of the '?'
         auto start = ast::getTextArea(first_type);
         auto end = token.getArea();
         auto area = lexing::TextArea::combine(start, end);
 
+        // Return a new ast::Type that represents the optional type
         return ast::Type{
             forward<ast::OptionalType>(std::move(area),
                                        std::move(first_type))};
