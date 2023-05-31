@@ -45,6 +45,8 @@ new_test(parser/SelfExpressionParserTest.cpp SelfExpressionParserTest)
 new_test(parser/IfExpressionParserTest.cpp IfExpressionParserTest)
 new_test(parser/LetStatementParserTest.cpp LetStatementParserTest)
 
+new_test(parser/DoubleExprParserTest.cpp DoubleExprParserTest)
+
 new_test(parser/AdditionExprParserTest.cpp AdditionExprParserTest)
 new_test(parser/SubstractionExprParserTest.cpp SubstractionExprParserTest)
 new_test(parser/MultiplicationExprParserTest.cpp MultiplicationExprParserTest)
