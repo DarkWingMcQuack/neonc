@@ -57,18 +57,18 @@ public:
         }
 
         if(simple_expr_lexer().next_is(TokenTypes::IDENTIFIER)) {
-            return static_cast<T*>(this)->identifier_or_simple_lambda();
+            return static_cast<T *>(this)->identifier_or_simple_lambda();
         }
 
         if(simple_expr_lexer().next_is(TokenTypes::IF)) {
-            return static_cast<T*>(this)->if_expression();
+            return static_cast<T *>(this)->if_expression();
         }
 
         if(simple_expr_lexer().next_is(TokenTypes::L_PARANTHESIS)) {
-            return static_cast<T*>(this)->l_par_expression();
+            return static_cast<T *>(this)->l_par_expression();
         }
 
-        if(auto result = static_cast<T*>(this)->block_expression()) {
+        if(auto result = static_cast<T *>(this)->block_expression()) {
             return std::move(result.value());
         }
 
@@ -157,9 +157,9 @@ private:
 
 
 private:
-    constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
+    constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer &
     {
-        return static_cast<T*>(this)->lexer_;
+        return static_cast<T *>(this)->lexer_;
     }
 };
 

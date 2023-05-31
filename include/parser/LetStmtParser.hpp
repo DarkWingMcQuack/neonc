@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lexer/Tokens.hpp"
+#include <lexer/Tokens.hpp>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <common/Error.hpp>
@@ -40,7 +40,7 @@ public:
         // get the area of the let token as start
         auto start = token.getArea();
 
-        auto id_res = static_cast<T*>(this)->identifier();
+        auto id_res = static_cast<T *>(this)->identifier();
         if(not id_res.has_value()) {
             return std::unexpected(std::move(id_res.error()));
         }
@@ -51,7 +51,7 @@ public:
         if(let_stmt_lexer().next_is(lexing::TokenTypes::COLON)) {
             let_stmt_lexer().pop();
 
-            auto type_res = static_cast<T*>(this)->type();
+            auto type_res = static_cast<T *>(this)->type();
             if(not type_res.has_value()) {
                 return std::unexpected(std::move(type_res.error()));
             }
@@ -72,7 +72,7 @@ public:
             return std::unexpected(std::move(error));
         }
 
-        auto rhs_res = static_cast<T*>(this)->expression();
+        auto rhs_res = static_cast<T *>(this)->expression();
         if(not rhs_res.has_value()) {
             return rhs_res;
         }
@@ -89,9 +89,9 @@ public:
     }
 
 private:
-    constexpr auto let_stmt_lexer() noexcept -> lexing::Lexer&
+    constexpr auto let_stmt_lexer() noexcept -> lexing::Lexer &
     {
-        return static_cast<T*>(this)->lexer_;
+        return static_cast<T *>(this)->lexer_;
     }
 };
 

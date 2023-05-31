@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/Error.hpp"
-#include "lexer/Tokens.hpp"
+#include <common/Error.hpp>
+#include <lexer/Tokens.hpp>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
