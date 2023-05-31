@@ -7,26 +7,33 @@ set(CMAKE_ARGS
   # TBB does not seem to support clang
   # -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DBUILD_SHARED_LIBS=OFF
-  -DTBB_BUILD_STATIC=ON
-  -DTBB_BUILD_SHARED=OFF
-  -DTBB_BUILD_TESTS=OFF)
+  -DTBB_TEST=OFF)
 
 ExternalProject_Add(tbb-project
   PREFIX deps/tbb
-  GIT_REPOSITORY https://github.com/wjakob/tbb.git
+  DOWNLOAD_NAME tbb-2021.5.0.tar.gz
+  DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
+  URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.5.0.tar.gz
   PATCH_COMMAND cmake -E make_directory <SOURCE_DIR>/win32-deps/include
   UPDATE_COMMAND ""
   CMAKE_ARGS ${CMAKE_ARGS}
   # Overwtire build and install commands to force Release build on MSVC.
   BUILD_COMMAND cmake --build <BINARY_DIR> --config Release -- -j ${HOST_PROC_COUNT}
   INSTALL_COMMAND cmake --build <BINARY_DIR> --config Release --target install
+  DOWNLOAD_NO_PROGRESS ON
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  )
+)
 
 
 ExternalProject_Get_Property(tbb-project INSTALL_DIR)
 add_library(tbb STATIC IMPORTED)
-set(TBB_LIBRARY ${INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}tbb_static${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(TBB_LIBRARY ${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}tbb_debug${CMAKE_STATIC_LIBRARY_SUFFIX})
+else()
+  set(TBB_LIBRARY ${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}tbb${CMAKE_STATIC_LIBRARY_SUFFIX})
+endif ()
+
 set(TBB_INCLUDE_DIR ${INSTALL_DIR}/include)
 file(MAKE_DIRECTORY ${TBB_INCLUDE_DIR})  # Must exist.
 set_property(TARGET tbb PROPERTY IMPORTED_LOCATION ${TBB_LIBRARY})
