@@ -120,17 +120,6 @@ public:
         return false;
     }
 
-    // checks if the next token is of the given type and pops it if so
-    // if not return false
-    constexpr auto pop_next_is(TokenTypes type) noexcept -> bool
-    {
-        if(next_is(type)) {
-            pop();
-            return true;
-        }
-
-        return false;
-    }
 
     constexpr auto next_area() noexcept -> std::optional<TextArea>
     {
@@ -173,6 +162,19 @@ public:
         -> TextArea
     {
         return TextArea{position_, position_};
+    }
+
+    // checks if the next token is of the given type and pops it if so
+    // if not return false
+    constexpr auto pop_next_is(TokenTypes type) noexcept -> std::optional<Token>
+    {
+        if(next_is(type)) {
+            return peek_and_pop().value();
+            // pop();
+            // return true;
+        }
+
+        return std::nullopt;
     }
 
 private:
