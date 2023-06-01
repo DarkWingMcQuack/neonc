@@ -13,49 +13,51 @@
 
 namespace parser {
 
-// TODO: discuss if tuple types should be (a & b & c) or (a, b, c)
 template<class T>
 class TypeParser
 {
 public:
     constexpr auto type() noexcept -> std::expected<ast::Type, common::error::Error>
     {
-        using lexing::TokenTypes;
-        using common::error::UnexpectedToken;
-
-        auto start_type_res = [this] {
-            if(type_lexer().next_is(TokenTypes::L_PARANTHESIS)) {
-                return compound_type();
-            }
-            if(type_lexer().next_is(TokenTypes::SELF_TYPE)) {
-                return static_cast<T*>(this)->self_type();
-            }
-            return static_cast<T*>(this)->named_type();
-        }();
-
-
-        if(not start_type_res) {
-            auto lex_res = type_lexer().peek_and_pop();
-            if(not lex_res.has_value()) {
-                return std::unexpected(lex_res.error());
-            }
-
-            auto token = std::move(lex_res.value());
-
-            UnexpectedToken error{token.getType(),
-                                  token.getArea(),
-                                  TokenTypes::IDENTIFIER,
-                                  TokenTypes::SELF_TYPE,
-                                  TokenTypes::L_PARANTHESIS};
-            return std::unexpected(std::move(error));
-        }
-
-        auto start_type = std::move(start_type_res.value());
-
-        return type(std::move(start_type));
+        return start()
+            .and_then([this](auto&& t) {
+                return type(std::move(t));
+            });
     }
 
 private:
+    constexpr auto start() noexcept -> std::expected<ast::Type, common::error::Error>
+    {
+        using common::error::UnexpectedToken;
+        using common::error::Error;
+        using ast::Type;
+        using lexing::TokenTypes;
+
+        if(type_lexer().next_is(TokenTypes::L_PARANTHESIS)) {
+            return compound_type();
+        }
+        if(type_lexer().next_is(TokenTypes::SELF_TYPE)) {
+            return static_cast<T*>(this)->self_type();
+        }
+
+        if(type_lexer().next_is(TokenTypes::IDENTIFIER)) {
+            return static_cast<T*>(this)->named_type();
+        }
+
+        return type_lexer()
+            .peek_and_pop()
+            .and_then(
+                [this](auto token) -> std::expected<Type, Error> {
+                    UnexpectedToken error{token.getType(),
+                                          token.getArea(),
+                                          TokenTypes::IDENTIFIER,
+                                          TokenTypes::SELF_TYPE,
+                                          TokenTypes::L_PARANTHESIS};
+
+                    return std::unexpected(std::move(error));
+                });
+    }
+
     constexpr auto type(ast::Type&& already_parsed) noexcept
         -> std::expected<ast::Type, common::error::Error>
     {
@@ -72,6 +74,22 @@ private:
                     return type(std::move(t));
                 });
         }
+
+        // if(type_lexer().next_is(lexing::TokenTypes::BITWISE_AND)) {
+        //     return tuple_type(ast::getTextArea(already_parsed),
+        //                       std::move(already_parsed))
+        //         .and_then([this](auto&& t) {
+        //             return type(std::move(t));
+        //         });
+        // }
+
+        // if(type_lexer().next_is(lexing::TokenTypes::BITWISE_OR)) {
+        //     return union_type(ast::getTextArea(already_parsed),
+        //                       std::move(already_parsed))
+        //         .and_then([this](auto&& t) {
+        //             return type(std::move(t));
+        //         });
+        // }
 
         return std::move(already_parsed);
     }
