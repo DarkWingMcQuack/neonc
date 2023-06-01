@@ -30,6 +30,7 @@ endfunction()
 
 new_test(lexer/LexerTest.cpp LexerTest)
 new_test(parser/ParserTest.cpp ParserTest)
+new_test(parser/TypeParsingTest.cpp TypeParsingTest)
 new_test(parser/NamedTypeParsingTest.cpp NamedTypeParsingTest)
 new_test(parser/SelfTypeParsingTest.cpp SelfTypeParsingTest)
 new_test(parser/OptionalTypeParsingTest.cpp OptionalTypeParsingTest)
