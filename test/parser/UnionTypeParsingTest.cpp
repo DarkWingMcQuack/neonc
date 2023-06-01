@@ -83,7 +83,7 @@ inline auto union_type_test_negative(std::string_view text)
 }
 
 
-TEST(TupleTypeParsingTest, TupleTypeParsingPositiveTest)
+TEST(UnionTypeParsingTest, UnionTypeParsingPositiveTest)
 {
     union_type_test_positive("(a|b)",
                              unionT(

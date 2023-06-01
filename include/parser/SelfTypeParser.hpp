@@ -18,26 +18,26 @@ template<class T>
 class SelfTypeParser
 {
 public:
-    constexpr auto self_type() noexcept
-        -> std::expected<ast::Type, common::error::Error>
+    constexpr auto self_type() noexcept -> std::expected<ast::Type, common::error::Error>
     {
         using common::error::UnexpectedToken;
+        using common::error::Error;
         using lexing::TokenTypes;
+        using ast::Type;
 
-        auto result = self_type_lexer().peek_and_pop();
-        if(not result.has_value()) {
-            return std::unexpected(result.error());
-        }
+        return self_type_lexer()
+            .peek_and_pop()
+            .and_then(
+                [this](auto &&token) -> std::expected<ast::Type, Error> {
+                    if(token.getType() == TokenTypes::SELF_TYPE) {
+                        return ast::Type{ast::SelfType{token.getArea()}};
+                    }
 
-        auto token = std::move(result.value());
-        if(token.getType() == TokenTypes::SELF_TYPE) {
-            return ast::Type{ast::SelfType{token.getArea()}};
-        }
-
-        UnexpectedToken error{token.getType(),
-                              token.getArea(),
-                              TokenTypes::IDENTIFIER};
-        return std::unexpected(std::move(error));
+                    UnexpectedToken error{token.getType(),
+                                          token.getArea(),
+                                          TokenTypes::IDENTIFIER};
+                    return std::unexpected(std::move(error));
+                });
     }
 
 private:

@@ -17,8 +17,7 @@ template<class T>
 class NamedTypeParser
 {
 public:
-    constexpr auto named_type() noexcept
-        -> std::expected<ast::Type, common::error::Error>
+    constexpr auto named_type() noexcept -> std::expected<ast::Type, common::error::Error>
     {
         std::vector<ast::Identifier> names;
 
@@ -50,9 +49,9 @@ public:
     }
 
 private:
-    constexpr auto named_type_lexer() noexcept -> lexing::Lexer&
+    constexpr auto named_type_lexer() noexcept -> lexing::Lexer &
     {
-        return static_cast<T*>(this)->lexer_;
+        return static_cast<T *>(this)->lexer_;
     }
 };
 } // namespace parser
