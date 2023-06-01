@@ -8,15 +8,20 @@
 #include <parser/IfExpressionParser.hpp>
 #include <parser/LParExpressionParser.hpp>
 #include <parser/LetStmtParser.hpp>
+#include <parser/NamedTypeParser.hpp>
+#include <parser/SelfTypeParser.hpp>
 #include <parser/SimpleExpressionParser.hpp>
 #include <parser/SimpleLambdaOrIdentifierParser.hpp>
 #include <parser/StatementParser.hpp>
+#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
 namespace parser {
 
-class Parser final : public TypeParser<Parser>,
+class Parser final : public SelfTypeParser<Parser>,
+                     public NamedTypeParser<Parser>,
+                     public TypeParser<Parser>,
                      public SimpleExpressionParser<Parser>,
                      public StatmentParser<Parser>,
                      public IfExpressionParser<Parser>,
@@ -43,6 +48,8 @@ public:
 
 private:
     friend class TypeParser<Parser>;
+    friend class NamedTypeParser<Parser>;
+    friend class SelfTypeParser<Parser>;
     friend class SimpleExpressionParser<Parser>;
     friend class StatmentParser<Parser>;
     friend class ForElementParser<Parser>;

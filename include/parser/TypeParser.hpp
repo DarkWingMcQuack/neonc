@@ -18,8 +18,7 @@ template<class T>
 class TypeParser
 {
 public:
-    constexpr auto type() noexcept
-        -> std::expected<ast::Type, common::error::Error>
+    constexpr auto type() noexcept -> std::expected<ast::Type, common::error::Error>
     {
         using lexing::TokenTypes;
         using common::error::UnexpectedToken;
@@ -29,10 +28,11 @@ public:
                 return compound_type();
             }
             if(type_lexer().next_is(TokenTypes::SELF_TYPE)) {
-                return self_type();
+                return static_cast<T*>(this)->self_type();
             }
-            return named_type();
+            return static_cast<T*>(this)->named_type();
         }();
+
 
         if(not start_type_res) {
             auto lex_res = type_lexer().peek_and_pop();
@@ -60,79 +60,22 @@ private:
         -> std::expected<ast::Type, common::error::Error>
     {
         if(type_lexer().next_is(lexing::TokenTypes::QUESTIONMARK)) {
-            auto opt_res = optional_type(std::move(already_parsed));
-            if(not opt_res) {
-                return opt_res;
-            }
-
-            return type(std::move(opt_res.value()));
+            return optional_type(std::move(already_parsed))
+                .and_then([this](auto&& t) {
+                    return type(std::move(t));
+                });
         }
 
         if(type_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            auto lambda_res = simple_lambda_type(std::move(already_parsed));
-            if(not lambda_res) {
-                return lambda_res;
-            }
-
-            return type(std::move(lambda_res.value()));
+            return simple_lambda_type(std::move(already_parsed))
+                .and_then([this](auto&& t) {
+                    return type(std::move(t));
+                });
         }
 
         return std::move(already_parsed);
     }
 
-    constexpr auto self_type() noexcept
-        -> std::expected<ast::Type, common::error::Error>
-    {
-        using common::error::UnexpectedToken;
-        using lexing::TokenTypes;
-
-        auto result = type_lexer().peek_and_pop();
-        if(not result.has_value()) {
-            return std::unexpected(result.error());
-        }
-
-        auto token = std::move(result.value());
-        if(token.getType() == TokenTypes::SELF_TYPE) {
-            return ast::Type{ast::SelfType{token.getArea()}};
-        }
-
-        UnexpectedToken error{token.getType(),
-                              token.getArea(),
-                              TokenTypes::IDENTIFIER};
-        return std::unexpected(std::move(error));
-    }
-
-    constexpr auto named_type() noexcept
-        -> std::expected<ast::Type, common::error::Error>
-    {
-        std::vector<ast::Identifier> names;
-
-        auto first_identifier_res = static_cast<T*>(this)->identifier();
-        if(not first_identifier_res) {
-            return std::unexpected(std::move(first_identifier_res.error()));
-        }
-
-        names.emplace_back(std::move(first_identifier_res.value()));
-
-        while(type_lexer().pop_next_is(lexing::TokenTypes::COLON_COLON)) {
-            auto identifier_res = static_cast<T*>(this)->identifier();
-            if(not identifier_res) {
-                return std::unexpected(std::move(identifier_res.error()));
-            }
-            names.emplace_back(std::move(identifier_res.value()));
-        }
-
-        auto area = lexing::TextArea::combine(names.front().getArea(),
-                                              names.back().getArea());
-
-        auto type_name = std::move(names.back());
-        names.pop_back();
-
-        return ast::Type{
-            ast::NamedType{std::move(area),
-                           std::move(names),
-                           std::move(type_name)}};
-    }
 
     // only invoke if the next token is &
     constexpr auto tuple_type(lexing::TextArea start, ast::Type&& first_type) noexcept
@@ -368,19 +311,19 @@ private:
         // to be valid we should have read & or | or , or )
         // so we get the token and create an error
 
-        auto token_res = type_lexer().peek_and_pop();
-        if(not token_res.has_value()) {
-            return std::unexpected(std::move(token_res.error()));
-        }
-        auto token = std::move(token_res.value());
+        return type_lexer()
+            .peek_and_pop()
+            .and_then(
+                [this](auto&& token) -> std::expected<ast::Type, common::error::Error> {
+                    UnexpectedToken error{token.getType(),
+                                          token.getArea(),
+                                          TokenTypes::BITWISE_AND,
+                                          TokenTypes::BITWISE_OR,
+                                          TokenTypes::COMMA,
+                                          TokenTypes::R_PARANTHESIS};
 
-        UnexpectedToken error{token.getType(),
-                              token.getArea(),
-                              TokenTypes::BITWISE_AND,
-                              TokenTypes::BITWISE_OR,
-                              TokenTypes::COMMA,
-                              TokenTypes::R_PARANTHESIS};
-        return std::unexpected(std::move(error));
+                    return std::unexpected(std::move(error));
+                });
     }
 
     /**
