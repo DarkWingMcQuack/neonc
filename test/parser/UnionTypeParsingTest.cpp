@@ -85,19 +85,19 @@ inline auto union_type_test_negative(std::string_view text)
 
 TEST(UnionTypeParsingTest, UnionTypeParsingPositiveTest)
 {
-    union_type_test_positive("(a|b)",
-                             unionT(
-                                 namedT("a"),
-                                 namedT("b")));
-    union_type_test_positive("(a|b|c)",
-                             unionT(
-                                 namedT("a"),
-                                 namedT("b"),
-                                 namedT("c")));
+    union_type_test_positive("(a|b)", unionT(namedT("a"), namedT("b")));
+    union_type_test_positive("(a|b|c)", unionT(namedT("a"), namedT("b"), namedT("c")));
     union_type_test_positive("(a|b|c|d)", unionT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
     union_type_test_positive("((a|b|c|d))", unionT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
     union_type_test_positive("(((a|b|c|d)))", unionT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
     union_type_test_positive("((a|b|c|(d=>e)))", unionT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
+
+
+    union_type_test_positive("a|b", unionT(namedT("a"), namedT("b")));
+    union_type_test_positive("a|b|c", unionT(namedT("a"), namedT("b"), namedT("c")));
+    union_type_test_positive("a|b|c|d", unionT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
+    union_type_test_positive("a|b|c|(d=>e)", unionT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
+    union_type_test_positive("a|b|c|d=>e", unionT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
 }
 
 TEST(UnionTypeParsingTest, UnionTypeParsingNegativeTest)

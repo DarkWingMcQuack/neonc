@@ -8,19 +8,31 @@
 #include <parser/IfExpressionParser.hpp>
 #include <parser/LParExpressionParser.hpp>
 #include <parser/LetStmtParser.hpp>
-#include <parser/NamedTypeParser.hpp>
-#include <parser/SelfTypeParser.hpp>
 #include <parser/SimpleExpressionParser.hpp>
 #include <parser/SimpleLambdaOrIdentifierParser.hpp>
 #include <parser/StatementParser.hpp>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
+#include <parser/types/BasicTypeParser.hpp>
+#include <parser/types/NamedTypeParser.hpp>
+#include <parser/types/OneArgLambdaTypeParser.hpp>
+#include <parser/types/OptionalTypeParser.hpp>
+#include <parser/types/ParanthesisTypeParser.hpp>
+#include <parser/types/SelfTypeParser.hpp>
+#include <parser/types/TupleTypeParser.hpp>
+#include <parser/types/TypeParser.hpp>
+#include <parser/types/UnionTypeParser.hpp>
 #include <string_view>
 
 namespace parser {
 
 class Parser final : public SelfTypeParser<Parser>,
                      public NamedTypeParser<Parser>,
+                     public BasicTypeParser<Parser>,
+                     public UnionTypeParser<Parser>,
+                     public TupleTypeParser<Parser>,
+                     public ParanthesisTypeParser<Parser>,
+                     public OneArgLambdaTypeParser<Parser>,
+                     public OptionalTypeParser<Parser>,
                      public TypeParser<Parser>,
                      public SimpleExpressionParser<Parser>,
                      public StatmentParser<Parser>,
@@ -48,6 +60,12 @@ public:
 
 private:
     friend class TypeParser<Parser>;
+    friend class OptionalTypeParser<Parser>;
+    friend class BasicTypeParser<Parser>;
+    friend class ParanthesisTypeParser<Parser>;
+    friend class OneArgLambdaTypeParser<Parser>;
+    friend class UnionTypeParser<Parser>;
+    friend class TupleTypeParser<Parser>;
     friend class NamedTypeParser<Parser>;
     friend class SelfTypeParser<Parser>;
     friend class SimpleExpressionParser<Parser>;

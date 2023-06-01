@@ -224,3 +224,80 @@ TEST(TypeParsingTest, ComplexTupleTypeParsingTest)
                       namedT("e"),
                       namedT("f"))));
 }
+
+TEST(TypeParsingTest, PrecedenceTupleUnionTypeParsingTest)
+{
+    auto result = Parser{"a&b|c&d"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), unionT(tupleT(namedT("a"), namedT("b")), tupleT(namedT("c"), namedT("d"))));
+}
+
+TEST(TypeParsingTest, PrecedenceUnionTupleTypeParsingTest)
+{
+    auto result = Parser{"a|b&c|d"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), unionT(namedT("a"), tupleT(namedT("b"), namedT("c")), namedT("d")));
+}
+
+TEST(TypeParsingTest, PrecedenceComplexNestedTupleUnionTypeParsingTest)
+{
+    auto result = Parser{"a|b&c&d|e"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(),
+              unionT(namedT("a"),
+                     tupleT(namedT("b"), namedT("c"), namedT("d")),
+                     namedT("e")));
+}
+
+TEST(TypeParsingTest, PrecedenceComplexNestedUnionTupleTypeParsingTest)
+{
+    auto result = Parser{"a&b|c&d|e"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), unionT(tupleT(namedT("a"), namedT("b")), tupleT(namedT("c"), namedT("d")), namedT("e")));
+}
+
+TEST(TypeParsingTest, PrecedenceLambdaWithTupleUnionParameterTypeParsingTest)
+{
+    auto result = Parser{"(a, b&c|d)=>e"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), lambdaT(namedT("a"), unionT(tupleT(namedT("b"), namedT("c")), namedT("d")), namedT("e")));
+}
+
+TEST(TypeParsingTest, PrecedenceComplexNestedTypesParsingTest)
+{
+    auto result = Parser{"a&b|c&d=>e|f&g"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(),
+              unionT(tupleT(namedT("a"), namedT("b")),
+                     tupleT(namedT("c"), lambdaT(namedT("d"), namedT("e"))),
+                     tupleT(namedT("f"), namedT("g"))));
+}
+
+TEST(TypeParsingTest, PrecedenceTupleLambdaTypeParsingTest)
+{
+    auto result = Parser{"(a, b)=>c&d"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(),
+              tupleT(lambdaT(namedT("a"), namedT("b"), namedT("c")), namedT("d")));
+}
+
+TEST(TypeParsingTest, PrecedenceLambdaTupleTypeParsingTest)
+{
+    auto result = Parser{"a&(b, c)=>d"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), tupleT(namedT("a"), lambdaT(namedT("b"), namedT("c"), namedT("d"))));
+}
+
+TEST(TypeParsingTest, PrecedenceComplexNestedTupleLambdaTypeParsingTest)
+{
+    auto result = Parser{"(a, b)=>c&d&(e, f)=>g"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), tupleT(lambdaT(namedT("a"), namedT("b"), namedT("c")), namedT("d"), lambdaT(namedT("e"), namedT("f"), namedT("g"))));
+}
+
+TEST(TypeParsingTest, PrecedenceLambdaWithTupleParameterTypeParsingTest)
+{
+    auto result = Parser{"(a, b&c)=>d"}.type();
+    ASSERT_TRUE(!!result);
+    EXPECT_EQ(result.value(), lambdaT(namedT("a"), tupleT(namedT("b"), namedT("c")), namedT("d")));
+}

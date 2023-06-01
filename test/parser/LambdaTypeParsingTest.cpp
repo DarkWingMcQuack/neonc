@@ -83,7 +83,7 @@ inline auto lambda_type_test_negative(std::string_view text)
 }
 
 
-TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
+TEST(LambdaTypeParsingTest, LambdaTypeParsingPositiveTest)
 {
     lambda_type_test_positive("hello=>hello", lambdaT(namedT("hello"), namedT("hello")));
 
@@ -142,7 +142,7 @@ TEST(LambdaTypeParsingTest, OptionalTypeParsingPositiveTest)
                                           namedT("b"), namedT("c")))));
 }
 
-TEST(LambdaTypeParsingTest, OptionalTypeParsingNegativeTest)
+TEST(LambdaTypeParsingTest, LambdaTypeParsingNegativeTest)
 {
     lambda_type_test_negative("hello");
     lambda_type_test_negative("hello?");

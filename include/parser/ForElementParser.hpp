@@ -5,7 +5,6 @@
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <lexer/Lexer.hpp>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 

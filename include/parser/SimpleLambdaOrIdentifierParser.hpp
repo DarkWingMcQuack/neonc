@@ -7,7 +7,6 @@
 #include <lexer/Lexer.hpp>
 #include <lexer/TextArea.hpp>
 #include <lexer/Tokens.hpp>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 

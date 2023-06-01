@@ -6,7 +6,6 @@
 #include <common/Error.hpp>
 #include <exception>
 #include <lexer/Lexer.hpp>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 

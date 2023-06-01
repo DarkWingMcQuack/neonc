@@ -15,7 +15,6 @@
 #include <lexer/TextArea.hpp>
 #include <lexer/Tokens.hpp>
 #include <optional>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 #include <variant>

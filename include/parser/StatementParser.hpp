@@ -1,13 +1,12 @@
 #pragma once
 
-#include "common/Error.hpp"
-#include "lexer/Tokens.hpp"
+#include <common/Error.hpp>
+#include <lexer/Tokens.hpp>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <exception>
 #include <lexer/Lexer.hpp>
 #include <optional>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
