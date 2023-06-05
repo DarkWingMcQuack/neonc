@@ -177,6 +177,32 @@ public:
         return std::nullopt;
     }
 
+    // return token if token type is one of the template arguments,
+    // otherwise an UnexepectedTokenError
+    template<lexing::TokenTypes... types>
+    constexpr auto expect() noexcept -> std::expected<lexing::Token, common::error::Error>
+    {
+        using common::error::UnexpectedToken;
+        using common::error::Error;
+        using lexing::Token;
+
+        return peek_and_pop()
+            .and_then(
+                [](auto token) -> std::expected<Token, Error> {
+                    if(((types != token.getType()) and ...)) {
+                        fmt::print("value : {}\n", token.getValue());
+
+                        UnexpectedToken error{token.getType(),
+                                              token.getArea(),
+                                              types...};
+
+                        return std::unexpected(std::move(error));
+                    }
+
+                    return token;
+                });
+    }
+
 private:
     constexpr auto lexNext() noexcept -> std::expected<Token, common::error::Error>
     {
