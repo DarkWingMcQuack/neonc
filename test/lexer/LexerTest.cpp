@@ -232,3 +232,73 @@ TEST(LexerTest, LineCommentTest)
     nextShouldBe(lexer, lexing::TokenTypes::IDENTIFIER);
     nextShouldBe(lexer, lexing::TokenTypes::END_OF_FILE);
 }
+
+TEST(LexerTest, MultiDigitIntegerTest)
+{
+    assertStringToLexedToken("12345", lexing::TokenTypes::INTEGER);
+    assertStringToLexedToken("0", lexing::TokenTypes::INTEGER);
+}
+
+TEST(LexerTest, IdentifierWithNumbersTest)
+{
+    assertStringToLexedToken("var1", lexing::TokenTypes::IDENTIFIER);
+    assertStringToLexedToken("_var2", lexing::TokenTypes::IDENTIFIER);
+}
+
+TEST(LexerTest, UnaryPlusMinusTest)
+{
+    auto lexer = lexing::Lexer{"+42 -42"};
+    auto result = lexer.peek<4>();
+
+    ASSERT_TRUE(!!result);
+
+    auto [plus, pos, minus, neg] = result.value();
+
+    EXPECT_EQ(plus.getType(), lexing::TokenTypes::PLUS);
+    EXPECT_EQ(pos.getType(), lexing::TokenTypes::INTEGER);
+    EXPECT_EQ(minus.getType(), lexing::TokenTypes::MINUS);
+    EXPECT_EQ(neg.getType(), lexing::TokenTypes::INTEGER);
+}
+
+TEST(LexerTest, MultilineStringTest)
+{
+    assertStringToLexedToken("\"This is a \n multiline \n string\"", lexing::TokenTypes::STANDARD_STRING);
+}
+
+TEST(LexerTest, FloatingPointTest)
+{
+    assertStringToLexedToken("123.456", lexing::TokenTypes::DOUBLE);
+    assertStringToLexedToken("0.0", lexing::TokenTypes::DOUBLE);
+    assertStringToLexedToken(".5", lexing::TokenTypes::DOUBLE);
+}
+
+TEST(LexerTest, ExpectMethodTest)
+{
+    // Test 1: Expected token is found
+    {
+        auto lexer = lexing::Lexer("let");
+        auto result = lexer.expect<lexing::TokenTypes::LET>();
+        ASSERT_TRUE(result.has_value()); // Success is indicated by the presence of a value
+    }
+
+    // Test 2: Unexpected token causes an error
+    {
+        auto lexer = lexing::Lexer("fun");
+        auto result = lexer.expect<lexing::TokenTypes::LET>();
+        ASSERT_FALSE(result.has_value()); // Failure is indicated by an empty optional
+    }
+
+    // Test 3: Multiple expected token types
+    {
+        auto lexer = lexing::Lexer("let");
+        auto result = lexer.expect<lexing::TokenTypes::LET, lexing::TokenTypes::FUN>();
+        ASSERT_TRUE(result.has_value());
+    }
+
+    // Test 4: No token in the stream
+    {
+        auto lexer = lexing::Lexer("");
+        auto result = lexer.expect<lexing::TokenTypes::LET>();
+        ASSERT_FALSE(result.has_value()); // This should probably return an error
+    }
+}
