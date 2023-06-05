@@ -22,40 +22,21 @@ public:
         using common::error::UnexpectedToken;
         using lexing::TokenTypes;
 
-        auto start_token_res = if_expr_lexer().peek_and_pop();
-        if(not start_token_res.has_value()) {
-            return std::unexpected(std::move(start_token_res.error()));
+        // consume the IF Token
+        auto start_res = if_expr_lexer().template expect<TokenTypes::IF>();
+        if(not start_res.has_value()) {
+            return std::unexpected(std::move(start_res.error()));
         }
-        auto start_token = std::move(start_token_res.value());
-
-        if(start_token.getType() != lexing::TokenTypes::IF) {
-            UnexpectedToken error{start_token.getType(),
-                                  start_token.getArea(),
-                                  TokenTypes::IF};
-
-            return std::unexpected(std::move(error));
-        }
-
-        auto start = start_token.getArea();
-
+        auto start = start_res.value().getArea();
 
         // consume the ( Token
-        auto open_token_res = if_expr_lexer().peek_and_pop();
-        if(not open_token_res.has_value()) {
-            return std::unexpected(std::move(open_token_res.error()));
-        }
-        auto open_token = std::move(open_token_res.value());
-
-        if(open_token.getType() != lexing::TokenTypes::L_PARANTHESIS) {
-            UnexpectedToken error{open_token.getType(),
-                                  open_token.getArea(),
-                                  TokenTypes::L_PARANTHESIS};
-
-            return std::unexpected(std::move(error));
+        if(auto open_res = if_expr_lexer().template expect<TokenTypes::L_PARANTHESIS>();
+           not open_res.has_value()) {
+            return std::unexpected(std::move(open_res.error()));
         }
 
         // parse the condition
-        auto if_condition_res = static_cast<T*>(this)->expression();
+        auto if_condition_res = static_cast<T *>(this)->expression();
         if(not if_condition_res.has_value()) {
             return if_condition_res;
         }
@@ -63,23 +44,13 @@ public:
 
 
         // consume the ) Token
-        auto close_token_res = if_expr_lexer().peek_and_pop();
-        if(not close_token_res.has_value()) {
-            return std::unexpected(std::move(close_token_res.error()));
+        if(auto close_res = if_expr_lexer().template expect<TokenTypes::R_PARANTHESIS>();
+           not close_res.has_value()) {
+            return std::unexpected(std::move(close_res.error()));
         }
-        auto close_token = std::move(close_token_res.value());
-
-        if(close_token.getType() != lexing::TokenTypes::R_PARANTHESIS) {
-            UnexpectedToken error{close_token.getType(),
-                                  close_token.getArea(),
-                                  TokenTypes::R_PARANTHESIS};
-
-            return std::unexpected(std::move(error));
-        }
-
 
         // parse the "then" expression
-        auto if_block_expr_res = static_cast<T*>(this)->expression();
+        auto if_block_expr_res = static_cast<T *>(this)->expression();
         if(not if_block_expr_res.has_value()) {
             return if_block_expr_res;
         }
@@ -96,21 +67,13 @@ public:
         }
 
         // consume the "else" Token
-        auto else_token_res = if_expr_lexer().peek_and_pop();
-        if(not else_token_res.has_value()) {
+        if(auto else_token_res = if_expr_lexer().template expect<TokenTypes::ELSE>();
+           not else_token_res.has_value()) {
             return std::unexpected(std::move(else_token_res.error()));
         }
-        auto else_token = std::move(else_token_res.value());
 
-        if(else_token.getType() != lexing::TokenTypes::ELSE) {
-            UnexpectedToken error{else_token.getType(),
-                                  else_token.getArea(),
-                                  TokenTypes::ELSE};
-
-            return std::unexpected(std::move(error));
-        }
-
-        auto else_block_res = static_cast<T*>(this)->expression();
+        // parse the else expression
+        auto else_block_res = static_cast<T *>(this)->expression();
         if(not else_block_res.has_value()) {
             return std::unexpected(std::move(else_block_res.error()));
         }
@@ -133,59 +96,32 @@ private:
         using lexing::TokenTypes;
 
         // consume the "elif" Token
-        auto elif_token_res = if_expr_lexer().peek_and_pop();
-        if(not elif_token_res.has_value()) {
-            return std::unexpected(std::move(elif_token_res.error()));
+        auto start_res = if_expr_lexer().template expect<TokenTypes::ELIF>();
+        if(not start_res.has_value()) {
+            return std::unexpected(std::move(start_res.error()));
         }
-        auto elif_token = std::move(elif_token_res.value());
-
-        if(elif_token.getType() != lexing::TokenTypes::ELIF) {
-            UnexpectedToken error{elif_token.getType(),
-                                  elif_token.getArea(),
-                                  TokenTypes::ELIF};
-
-            return std::unexpected(std::move(error));
-        }
-
-        auto start = elif_token.getArea();
+        auto start = start_res.value().getArea();
 
         // consume the ( Token
-        auto open_l_token_res = if_expr_lexer().peek_and_pop();
-        if(not open_l_token_res.has_value()) {
-            return std::unexpected(std::move(open_l_token_res.error()));
-        }
-        auto open_l_token = std::move(open_l_token_res.value());
-
-        if(open_l_token.getType() != lexing::TokenTypes::L_PARANTHESIS) {
-            UnexpectedToken error{open_l_token.getType(),
-                                  open_l_token.getArea(),
-                                  TokenTypes::L_PARANTHESIS};
-
-            return std::unexpected(std::move(error));
+        if(auto open_res = if_expr_lexer().template expect<TokenTypes::L_PARANTHESIS>();
+           not open_res.has_value()) {
+            return std::unexpected(std::move(open_res.error()));
         }
 
-        auto elif_condition_res = static_cast<T*>(this)->expression();
+        auto elif_condition_res = static_cast<T *>(this)->expression();
         if(not elif_condition_res) {
             return std::unexpected(std::move(elif_condition_res.error()));
         }
         auto elif_condition = std::move(elif_condition_res.value());
 
         // consume the ) Token
-        auto open_r_token_res = if_expr_lexer().peek_and_pop();
-        if(not open_r_token_res.has_value()) {
-            return std::unexpected(std::move(open_r_token_res.error()));
-        }
-        auto open_r_token = std::move(open_r_token_res.value());
-
-        if(open_r_token.getType() != lexing::TokenTypes::R_PARANTHESIS) {
-            UnexpectedToken error{open_r_token.getType(),
-                                  open_r_token.getArea(),
-                                  TokenTypes::R_PARANTHESIS};
-
-            return std::unexpected(std::move(error));
+        if(auto close_res = if_expr_lexer().template expect<TokenTypes::R_PARANTHESIS>();
+           not close_res.has_value()) {
+            return std::unexpected(std::move(close_res.error()));
         }
 
-        auto block_expr_res = static_cast<T*>(this)->expression();
+
+        auto block_expr_res = static_cast<T *>(this)->expression();
         if(not block_expr_res.has_value()) {
             return std::unexpected(std::move(block_expr_res.error()));
         }
@@ -199,9 +135,9 @@ private:
     }
 
 private:
-    constexpr auto if_expr_lexer() noexcept -> lexing::Lexer&
+    constexpr auto if_expr_lexer() noexcept -> lexing::Lexer &
     {
-        return static_cast<T*>(this)->lexer_;
+        return static_cast<T *>(this)->lexer_;
     }
 };
 
