@@ -33,6 +33,22 @@ class Lexer
     }
 
 public:
+    /**
+     * @brief Construct a new Lexer object from a string view.
+     *
+     * This constructor takes a string view as input and initializes the Lexer
+     * with the content provided. The string view is expected to contain the
+     * source code that the Lexer will tokenize.
+     *
+     * @param content The source code to be tokenized as a string view.
+     *
+     * @note The Lexer does not own the string view and does not modify its content.
+     *
+     * Usage Example:
+     * @code
+     *     auto lexer = lexing::Lexer("let x = 10");
+     * @endcode
+     */
     constexpr Lexer(std::string_view content) noexcept
         : content_(content) {}
 
@@ -40,6 +56,7 @@ public:
     constexpr auto operator=(Lexer&&) noexcept -> Lexer& = default;
     constexpr Lexer(const Lexer&) noexcept = delete;
     constexpr auto operator=(const Lexer&) noexcept -> Lexer& = delete;
+
     /**
      * @brief Peeks at the next token from the lexer without removing it from the internal buffer.
      *
@@ -166,14 +183,6 @@ public:
     }
 
 
-    constexpr auto next_area() noexcept -> std::optional<TextArea>
-    {
-        if(auto result = peek()) {
-            return result.value().getArea();
-        }
-        return std::nullopt;
-    }
-
     /**
      * @brief Removes the first N tokens from the lexer's internal token buffer.
      *
@@ -228,16 +237,41 @@ public:
         return TextArea{position_, position_};
     }
 
-    // checks if the next token is of the given type and pops it if so
-    // if not return false
+    /**
+     * @brief Checks if the next token is of a specific type and if so, pops it from the lexer.
+     *
+     * This method checks if the next token in the lexer matches the provided type.
+     * If it does, the token is removed from the lexer and returned. If the next token
+     * does not match the provided type or if there are no more tokens in the lexer,
+     * the method returns std::nullopt.
+     *
+     * @param type The type of token to check for and potentially pop.
+     *
+     * @return A std::optional containing the popped token if the next token matches
+     *         the provided type. Otherwise, std::nullopt is returned.
+     *
+     * @note The token is removed from the lexer if it matches the provided type.
+     *
+     * @exception No exceptions are thrown as it's a noexcept function.
+     *
+     * Usage Example:
+     * @code
+     *     auto lexer = lexing::Lexer("let x = 10");
+     *     auto token = lexer.pop_next_is(lexing::TokenTypes::LET);
+     *     if (token.has_value()) {
+     *         std::cout << "Token found and popped: " << token.value().toString() << '\n';
+     *     }
+     * @endcode
+     */
     constexpr auto pop_next_is(TokenTypes type) noexcept -> std::optional<Token>
     {
+        // Check if the next token matches the provided type
         if(next_is(type)) {
+            // If it does, pop the token and return it
             return peek_and_pop().value();
-            // pop();
-            // return true;
         }
 
+        // If there is no next token or if it doesn't match the provided type, return std::nullopt
         return std::nullopt;
     }
 
