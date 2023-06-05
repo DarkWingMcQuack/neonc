@@ -26,13 +26,16 @@ public:
         using lexing::TokenTypes;
         using ast::Type;
 
-        return parse_token(TokenTypes::L_PARANTHESIS)
+        return expect<TokenTypes::L_PARANTHESIS>()
+            .transform([](const auto &token) {
+                return token.getArea();
+            })
             .and_then(
                 [&](auto &&start_area) {
                     return parse_type_list()
                         .and_then(
                             [&](auto &&type_list) {
-                                return parse_token(TokenTypes::R_PARANTHESIS)
+                                return expect<TokenTypes::R_PARANTHESIS>()
                                     .transform(
                                         [&](auto /*token*/) {
                                             return std::move(type_list);
@@ -44,7 +47,10 @@ public:
                                     return std::move(type_list.front());
                                 }
 
-                                return parse_lambda_ret()
+                                return expect<lexing::TokenTypes::LAMBDA_ARROW>()
+                                    .and_then([this](auto /*token*/) {
+                                        return static_cast<T *>(this)->optional_type();
+                                    })
                                     .transform(
                                         [&](auto &&ret_type) {
                                             auto area = lexing::TextArea::combine(start_area, ast::getTextArea(ret_type));
@@ -58,35 +64,6 @@ public:
     }
 
 private:
-    constexpr auto parse_token(lexing::TokenTypes type) noexcept -> std::expected<lexing::TextArea, common::error::Error>
-    {
-        using common::error::UnexpectedToken;
-        using common::error::Error;
-        using lexing::TokenTypes;
-        using lexing::TextArea;
-
-        return par_type_lexer()
-            .peek_and_pop()
-            .and_then(
-                [&](auto &&token) -> std::expected<TextArea, Error> {
-                    if(token.getType() != type) {
-                        UnexpectedToken error{token.getType(),
-                                              token.getArea(),
-                                              type};
-                        return std::unexpected(std::move(error));
-                    }
-
-                    return token.getArea();
-                });
-    }
-
-    constexpr auto parse_lambda_ret() noexcept -> std::expected<ast::Type, common::error::Error>
-    {
-        return parse_token(lexing::TokenTypes::LAMBDA_ARROW)
-            .and_then([this](auto /*token*/) {
-                return static_cast<T *>(this)->optional_type();
-            });
-    }
 
     constexpr auto parse_type_list() noexcept -> std::expected<std::vector<ast::Type>, common::error::Error>
 
@@ -103,7 +80,6 @@ private:
         std::vector<ast::Type> types;
         types.emplace_back(std::move(first_type_res.value()));
 
-        // Continue parsing the union type until no more '&' is encountered
         while(par_type_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
             auto next_type = static_cast<T *>(this)->type();
             if(not next_type) {
@@ -117,6 +93,11 @@ private:
     }
 
 private:
+    template<lexing::TokenTypes... types>
+    constexpr auto expect() noexcept -> std::expected<lexing::Token, common::error::Error>
+    {
+        return par_type_lexer().template expect<types...>();
+    }
     constexpr auto par_type_lexer() noexcept -> lexing::Lexer &
     {
         return static_cast<T *>(this)->lexer_;
