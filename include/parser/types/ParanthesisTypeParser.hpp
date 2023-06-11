@@ -15,6 +15,11 @@
 
 namespace parser {
 
+/**
+ * @class ParanthesisTypeParser
+ * @brief ParanthesisTypeParser is a template class for parsing parenthesis types, following the CRTP (Curiously Recurring Template Pattern).
+ * @details The class provides the functionality for parsing types that are surrounded by parentheses and expects the derived class to provide implementations for type() and the lexer_ member.
+ */
 template<class T>
 class ParanthesisTypeParser
 {
@@ -64,9 +69,15 @@ public:
     }
 
 private:
-
+    /**
+     * @brief Tries to parse a list of types separated by commas.
+     * @details This method first tries to parse a type and then continues parsing types separated by commas
+     * until no more comma tokens are encountered.
+     *
+     * @return On success, returns an expected value containing a vector of the parsed Types.
+     *         On failure, returns an expected value containing an error.
+     */
     constexpr auto parse_type_list() noexcept -> std::expected<std::vector<ast::Type>, common::error::Error>
-
     {
         using lexing::TokenTypes;
         using lexing::TextArea;
@@ -83,7 +94,6 @@ private:
         while(par_type_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
             auto next_type = static_cast<T *>(this)->type();
             if(not next_type) {
-                // If parsing the next type failed, propagate the error
                 return std::unexpected(std::move(next_type.error()));
             }
             types.emplace_back(std::move(next_type.value()));
@@ -93,6 +103,12 @@ private:
     }
 
 private:
+    /**
+     * @brief Tries to parse a token of one of the specified types.
+     * @details This method tries to parse a token of one of the specified types. If the next token in the lexer is not of one of the specified types, it returns an error.
+     *
+     * @return On success, returns an expected value containing the parsed token. On failure, returns an expected value containing an error.
+     */
     template<lexing::TokenTypes... types>
     constexpr auto expect() noexcept -> std::expected<lexing::Token, common::error::Error>
     {
