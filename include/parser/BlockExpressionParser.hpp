@@ -2,8 +2,12 @@
 
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <ast/expression/BlockExpr.hpp>
+#include <common/Error.hpp>
+#include <functional>
 #include <lexer/Lexer.hpp>
-#include <parser/TypeParser.hpp>
+#include <lexer/TextArea.hpp>
+#include <lexer/Tokens.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
@@ -13,13 +17,16 @@ template<class T>
 class BlockExpressionParser
 {
 public:
-    constexpr auto block_expression() noexcept -> std::optional<ast::BlockExpr>
+    constexpr auto block_expression() noexcept -> std::expected<ast::BlockExpr, common::error::Error>
     {
-        auto result = try_singe_expr_block();
-        if(std::holds_alternative<std::nullopt_t>(result)) {
-            // TODO: propagate error
-            return std::nullopt;
+        using lexing::TokenTypes;
+        using lexing::TextArea;
+
+        auto result_res = try_singe_expr_block();
+        if(not result_res.has_value()) {
+            return std::unexpected(std::move(result_res.error()));
         }
+        auto result = std::move(result_res.value());
 
         if(std::holds_alternative<ast::BlockExpr>(result)) {
             return std::move(std::get<ast::BlockExpr>(result));
@@ -27,96 +34,92 @@ public:
 
         auto [start, stmts] = std::move(std::get<1>(result));
 
-        // clang-format off
-                if(not(block_expr_lexer().pop_next_is(lexing::TokenTypes::SEMICOLON) or
-                           block_expr_lexer().pop_next_is(lexing::TokenTypes::NEWLINE))) {
-                  // TODO: return error "expected newline or ;"
-                  return std::nullopt;
-                }
-        // clang-format on
+        if(auto res = expect<TokenTypes::SEMICOLON, TokenTypes::NEWLINE>();
+           not res.has_value()) {
+            return std::unexpected(std::move(res.error()));
+        }
 
-        while(not block_expr_lexer().next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            auto stmt_opt = static_cast<T*>(this)->statement();
-            if(not stmt_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+
+        while(not block_expr_lexer().next_is(TokenTypes::LAMBDA_ARROW)) {
+
+            auto stmt_res = static_cast<T *>(this)->statement();
+            if(not stmt_res.has_value()) {
+                return std::unexpected(std::move(stmt_res.error()));
             }
-            auto stmt = std::move(stmt_opt.value());
 
-            stmts.emplace_back(std::move(stmt));
+            stmts.emplace_back(std::move(stmt_res.value()));
 
-            // clang-format off
-                        if(not(block_expr_lexer().pop_next_is(lexing::TokenTypes::SEMICOLON) or
-                                   block_expr_lexer().pop_next_is(lexing::TokenTypes::NEWLINE))) {
-                                // TODO: return error "expected newline or ;"
-                                return std::nullopt;
-                        }
-            // clang-format on
+            if(auto res = expect<TokenTypes::SEMICOLON, TokenTypes::NEWLINE>();
+               not res.has_value()) {
+                return std::unexpected(std::move(res.error()));
+            }
         }
 
-        if(not block_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            // TODO: return error "a block expression needs to return an expression with =>expr"
-            return std::nullopt;
+        if(auto res = expect<TokenTypes::LAMBDA_ARROW>();
+           not res.has_value()) {
+            return std::unexpected(std::move(res.error()));
         }
 
-        auto expr_opt = static_cast<T*>(this)->expression();
-        if(not expr_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto expr_res = static_cast<T *>(this)->expression();
+        if(not expr_res.has_value()) {
+            return std::unexpected(std::move(expr_res.error()));
         }
-        auto expr = std::move(expr_opt.value());
+        auto expr = std::move(expr_res.value());
 
-        if(not block_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
-            // TODO: return error: "expected } after block return statment"
-            return std::nullopt;
+        auto end_res = expect<TokenTypes::R_BRACKET>();
+        if(not end_res.has_value()) {
+            return std::unexpected(std::move(end_res.error()));
         }
+        auto end = end_res.value().getArea();
 
-        auto end = block_expr_lexer().peek_and_pop().value().getArea();
-        auto area = lexing::TextArea::combine(start, end);
+        auto area = TextArea::combine(start, end);
         return ast::BlockExpr{area, std::move(stmts), std::move(expr)};
     }
 
 private:
     constexpr auto try_singe_expr_block() noexcept
-        -> std::variant<ast::BlockExpr,
-                        std::pair<lexing::TextArea, std::vector<ast::Statement>>,
-                        std::nullopt_t>
+        -> std::expected<
+            std::variant<ast::BlockExpr,
+                         std::pair<lexing::TextArea,
+                                   std::vector<ast::Statement>>>,
+            common::error::Error>
     {
-        if(not block_expr_lexer().next_is(lexing::TokenTypes::L_BRACKET)) {
-            return std::nullopt;
-        }
+        using lexing::TextArea;
+        using common::error::Error;
+        using lexing::TokenTypes;
 
-        auto start = block_expr_lexer().peek_and_pop().value().getArea();
+        auto start_res = expect<TokenTypes::L_BRACKET>();
+        if(not start_res.has_value()) {
+            return std::unexpected(std::move(start_res.error()));
+        }
+        auto start = start_res.value().getArea();
 
         // handle the case of a expr block which only contains a
         //{=> <expr>} without any statements pre the return statement
         if(block_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            auto ret_expr_opt = static_cast<T*>(this)->expression();
-            if(not ret_expr_opt.has_value()) {
-                // TODO: propagate error
-                return std::nullopt;
+            auto ret_expr_res = static_cast<T *>(this)->expression();
+            if(not ret_expr_res.has_value()) {
+                return std::unexpected(std::move(ret_expr_res.error()));
             }
-            auto ret_expr = std::move(ret_expr_opt.value());
+            auto ret_expr = std::move(ret_expr_res.value());
 
-            if(not block_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)) {
-                // TODO: return "expected }" error
-                return std::nullopt;
+            auto end_res = expect<TokenTypes::R_BRACKET>();
+            if(not end_res.has_value()) {
+                return std::unexpected(std::move(end_res.error()));
             }
-
-            auto end = block_expr_lexer().peek_and_pop().value().getArea();
-            auto area = lexing::TextArea::combine(start, end);
+            auto end = end_res.value().getArea();
+            auto area = TextArea::combine(start, end);
 
             return ast::BlockExpr{std::move(area),
                                   {},
                                   std::move(ret_expr)};
         }
 
-        auto stmt_opt = static_cast<T*>(this)->statement();
-        if(not stmt_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        auto stmt_res = static_cast<T *>(this)->statement();
+        if(not stmt_res.has_value()) {
+            return std::unexpected(std::move(stmt_res.error()));
         }
-        auto stmt = std::move(stmt_opt.value());
+        auto stmt = std::move(stmt_res.value());
 
         if(block_expr_lexer().next_is(lexing::TokenTypes::R_BRACKET)
            and std::holds_alternative<ast::Expression>(stmt)) {
@@ -129,18 +132,23 @@ private:
                                   std::move(ret_expr)};
         }
 
-
-
         std::vector<ast::Statement> stmts;
         stmts.emplace_back(std::move(stmt));
 
         return std::pair{start, std::move(stmts)};
     }
 
+
 private:
-    constexpr auto block_expr_lexer() noexcept -> lexing::Lexer&
+    template<lexing::TokenTypes... types>
+    constexpr auto expect() noexcept -> std::expected<lexing::Token, common::error::Error>
     {
-        return static_cast<T*>(this)->lexer_;
+        return block_expr_lexer().template expect<types...>();
+    }
+
+    constexpr auto block_expr_lexer() noexcept -> lexing::Lexer &
+    {
+        return static_cast<T *>(this)->lexer_;
     }
 };
 

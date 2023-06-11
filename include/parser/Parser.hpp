@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ast/Ast.hpp>
+#include <ast/common/ForElements.hpp>
 #include <lexer/Lexer.hpp>
 #include <parser/BlockExpressionParser.hpp>
 #include <parser/ExpressionPrattParser.hpp>
@@ -12,19 +13,36 @@
 #include <parser/SimpleLambdaOrIdentifierParser.hpp>
 #include <parser/StatementParser.hpp>
 #include <parser/Utils.hpp>
+#include <parser/types/BasicTypeParser.hpp>
+#include <parser/types/NamedTypeParser.hpp>
+#include <parser/types/OneArgLambdaTypeParser.hpp>
+#include <parser/types/OptionalTypeParser.hpp>
+#include <parser/types/ParanthesisTypeParser.hpp>
+#include <parser/types/SelfTypeParser.hpp>
+#include <parser/types/TupleTypeParser.hpp>
+#include <parser/types/TypeParser.hpp>
+#include <parser/types/UnionTypeParser.hpp>
 #include <string_view>
 
 namespace parser {
 
-class Parser final : public TypeParser<Parser>,
+class Parser final : public SelfTypeParser<Parser>,
+                     public NamedTypeParser<Parser>,
+                     public BasicTypeParser<Parser>,
+                     public UnionTypeParser<Parser>,
+                     public TupleTypeParser<Parser>,
+                     public ParanthesisTypeParser<Parser>,
+                     public OneArgLambdaTypeParser<Parser>,
+                     public OptionalTypeParser<Parser>,
+                     public TypeParser<Parser>,
                      public SimpleExpressionParser<Parser>,
                      public StatmentParser<Parser>,
                      public IfExpressionParser<Parser>,
                      public BlockExpressionParser<Parser>,
                      public SimpleLambdaOrIdentifierParser<Parser>,
                      public LParExpressionParser<Parser>,
-                     public ForElementParser<Parser>,
                      public ExpressionPrattParser<Parser>,
+                     public ForElementParser<Parser>,
                      public LetStmtParser<Parser>,
                      public IdentifierParser<Parser>
 {
@@ -43,6 +61,14 @@ public:
 
 private:
     friend class TypeParser<Parser>;
+    friend class OptionalTypeParser<Parser>;
+    friend class BasicTypeParser<Parser>;
+    friend class ParanthesisTypeParser<Parser>;
+    friend class OneArgLambdaTypeParser<Parser>;
+    friend class UnionTypeParser<Parser>;
+    friend class TupleTypeParser<Parser>;
+    friend class NamedTypeParser<Parser>;
+    friend class SelfTypeParser<Parser>;
     friend class SimpleExpressionParser<Parser>;
     friend class StatmentParser<Parser>;
     friend class ForElementParser<Parser>;

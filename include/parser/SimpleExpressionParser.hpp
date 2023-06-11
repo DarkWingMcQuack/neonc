@@ -1,12 +1,11 @@
 #pragma once
 
-#include "common/Error.hpp"
+#include <common/Error.hpp>
 #include "lexer/Tokens.hpp"
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
 #include <expected>
 #include <lexer/Lexer.hpp>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
@@ -56,21 +55,23 @@ public:
             return result.value();
         }
 
-        if(auto result = static_cast<T*>(this)->identifier_or_simple_lambda()) {
+        if(simple_expr_lexer().next_is(TokenTypes::IDENTIFIER)) {
+            return static_cast<T *>(this)->identifier_or_simple_lambda();
+        }
+
+        if(simple_expr_lexer().next_is(TokenTypes::IF)) {
+            return static_cast<T *>(this)->if_expression();
+        }
+
+        if(simple_expr_lexer().next_is(TokenTypes::L_PARANTHESIS)) {
+            return static_cast<T *>(this)->l_par_expression();
+        }
+
+        if(auto result = static_cast<T *>(this)->block_expression()) {
             return std::move(result.value());
         }
 
-        if(auto result = static_cast<T*>(this)->if_expression()) {
-            return std::move(result.value());
-        }
 
-        if(auto result = static_cast<T*>(this)->block_expression()) {
-            return std::move(result.value());
-        }
-
-        if(auto result = static_cast<T*>(this)->l_par_expression()) {
-            return std::move(result.value());
-        }
 
         auto token_res = simple_expr_lexer().peek();
         if(not token_res.has_value()) {
@@ -85,6 +86,8 @@ public:
                               TokenTypes::DOUBLE,
                               TokenTypes::TRUE,
                               TokenTypes::FALSE,
+                              TokenTypes::INTEGER,
+                              TokenTypes::STANDARD_STRING,
                               TokenTypes::SELF_VALUE,
                               TokenTypes::IF,
                               TokenTypes::L_BRACKET,
@@ -153,9 +156,9 @@ private:
 
 
 private:
-    constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer&
+    constexpr auto simple_expr_lexer() noexcept -> lexing::Lexer &
     {
-        return static_cast<T*>(this)->lexer_;
+        return static_cast<T *>(this)->lexer_;
     }
 };
 

@@ -3,10 +3,21 @@
 #include <algorithm>
 #include <ast/Ast.hpp>
 #include <ast/Forward.hpp>
+#include <ast/common/Identifier.hpp>
+#include <ast/expression/LambdaExpr.hpp>
+#include <ast/expression/TupleExpr.hpp>
+#include <common/Error.hpp>
+#include <exception>
+#include <expected>
+#include <fmt/core.h>
+#include <iterator>
 #include <lexer/Lexer.hpp>
-#include <parser/TypeParser.hpp>
+#include <lexer/TextArea.hpp>
+#include <lexer/Tokens.hpp>
+#include <optional>
 #include <parser/Utils.hpp>
 #include <string_view>
+#include <variant>
 
 namespace parser {
 
@@ -17,315 +28,229 @@ template<class T>
 class LParExpressionParser
 {
 public:
-    constexpr auto l_par_expression() noexcept -> std::optional<ast::Expression>
+    constexpr auto l_par_expression() noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::L_PARANTHESIS)) {
-            return std::nullopt;
+        auto start_token_res = lpar_expr_lexer().peek_and_pop();
+        if(not start_token_res.has_value()) {
+            return std::unexpected(std::move(start_token_res.error()));
         }
+        auto start = start_token_res.value().getArea();
 
-        auto start = lpar_expr_lexer().peek_and_pop().value().getArea();
+        std::vector<std::variant<ast::Identifier, ast::LambdaParameter, ast::Expression>> results;
 
-        // parse the first expression after the ( because thats what all the three options
-        // what it could be have in common
-        auto expr_opt = static_cast<T*>(this)->expression();
-        if(not expr_opt) {
-            // TODO: propagate error
-            return std::nullopt;
-        }
-        auto expr = std::move(expr_opt.value());
+        bool is_lambda = false;
+        bool is_tuple = false;
 
-        // if the next token is ) then it was a grouped expression or a lambda
-        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::R_PARANTHESIS)) {
-            // check if it could be a lambda otherwise return the expr itself
-            return try_lambda(start, std::move(expr));
-        }
+        while(true) {
+            auto next_elem_res = parse_next_element();
+            if(not next_elem_res.has_value()) {
+                return std::unexpected(std::move(next_elem_res.error()));
+            }
+            auto next_elem = std::move(next_elem_res.value());
 
-        // TODO: if next token is a : then it is a lambda expression
 
-        // if next token is a , then we have (<expr>, which coule be a lambda expression "(a, b) => c" or a tuple (a, b)
-        if(lpar_expr_lexer().next_is(lexing::TokenTypes::COMMA)) {
+            is_tuple |= std::holds_alternative<ast::Expression>(next_elem);
+            is_lambda |= std::holds_alternative<ast::LambdaParameter>(next_elem);
 
-            // try parsing a tuple or a lambda expression from the expressions lists
-            auto res = tuple_or_lambda_params(start, std::move(expr));
+            results.emplace_back(std::move(next_elem));
 
-            return std::visit(
-                [this, start = start](auto&& r) -> std::optional<ast::Expression> {
-                    if constexpr(std::same_as<std::nullopt_t, std::decay_t<decltype(r)>>) {
-                        return std::nullopt;
-                    } else {
-                        // r can be a list of parameters or a tuple
-                        // if it is a list of parameters, it is clear that it is a lambda expression
-                        // but if it is a tuple, it can still be a lambda expression when it is followed by a =>
-                        return try_lambda(start, std::move(r));
-                    }
-                },
-                std::move(res));
-        }
-
-        // TODO: return error "expected ) or : or ,"
-        return std::nullopt;
-    }
-
-private:
-    // given a list of exprssions, this method checks if all the expressions are identifiers
-    // and if so it converts them to a lits of lambda parameters
-    constexpr auto exprs_to_parameters(std::vector<ast::Expression>&& parsed) noexcept
-        -> std::optional<std::vector<ast::LambdaParameter>>
-    {
-        for(const auto& elem : parsed) {
-            if(not std::holds_alternative<ast::Identifier>(elem)) {
-                // TODO: return error "elem" should be an identifier and not an ...
-                return std::nullopt;
+            if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
+                break;
             }
         }
 
+        auto r_par_token_res = lpar_expr_lexer().peek_and_pop();
+        if(not r_par_token_res.has_value()) {
+            return std::unexpected(std::move(r_par_token_res.error()));
+        }
+        auto r_par_token = std::move(r_par_token_res.value());
+        if(r_par_token.getType() != lexing::TokenTypes::R_PARANTHESIS) {
+            common::error::UnexpectedToken error{
+                r_par_token.getType(),
+                r_par_token.getArea(),
+                lexing::TokenTypes::R_PARANTHESIS};
 
-        std::vector<ast::LambdaParameter> parameters;
-        parameters.reserve(parsed.size());
+            return std::unexpected(std::move(error));
+        }
+        auto end = r_par_token.getArea();
 
-        std::transform(std::make_move_iterator(std::begin(parsed)),
-                       std::make_move_iterator(std::end(parsed)),
-                       std::back_inserter(parameters),
-                       [](auto&& expr) {
-                           auto id = std::move(std::get<ast::Identifier>(expr));
+        if(is_tuple) {
+            return build_tuple(std::move(results), start, end);
+        }
+
+        if(is_lambda) {
+            return build_lambda(std::move(results), start);
+        }
+
+        return lambda_or_tuple(std::move(results), start, end);
+    }
+
+private:
+    // given a list of variants which are only allowed to hold expressions and identifiers
+    // this function builds a tuple expression
+    constexpr auto build_tuple(std::vector<std::variant<ast::Identifier, ast::LambdaParameter, ast::Expression>>&& results,
+                               lexing::TextArea start,
+                               lexing::TextArea end) noexcept
+        -> std::expected<ast::Expression, common::error::Error>
+    {
+        std::vector<ast::Expression> exprs;
+        exprs.reserve(results.size());
+
+        std::transform(std::make_move_iterator(std::begin(results)),
+                       std::make_move_iterator(std::end(results)),
+                       std::back_inserter(exprs),
+                       [](auto&& v) {
+                           if(std::holds_alternative<ast::Identifier>(v)) {
+                               auto id = std::move(std::get<ast::Identifier>(std::move(v)));
+                               return ast::Expression{std::move(id)};
+                           }
+                           return std::move(std::get<ast::Expression>(std::move(v)));
+                       });
+
+        auto area = lexing::TextArea::combine(start, end);
+
+        // a tuple of size 1 is not a tuple but just the expression which was paired
+        if(exprs.size() == 1) {
+            return std::move(exprs[0]);
+        }
+
+        return ast::Expression{ast::forward<ast::TupleExpr>(area, std::move(exprs))};
+    }
+
+    // given a list of variants which are only allowed to hold lambda parameters and identifiers
+    // this function builds the lambda parameters, then parses the rest of the lambda expression and builds it
+    constexpr auto build_lambda(std::vector<std::variant<ast::Identifier, ast::LambdaParameter, ast::Expression>>&& results,
+                                lexing::TextArea start) noexcept
+        -> std::expected<ast::Expression, common::error::Error>
+    {
+        std::vector<ast::LambdaParameter> params;
+        params.reserve(results.size());
+
+        std::transform(std::make_move_iterator(std::begin(results)),
+                       std::make_move_iterator(std::end(results)),
+                       std::back_inserter(params),
+                       [](auto&& v) {
+                           if(std::holds_alternative<ast::LambdaParameter>(v)) {
+                               return std::move(std::get<ast::LambdaParameter>(std::move(v)));
+                           }
+
+                           auto id = std::move(std::get<ast::Identifier>(std::move(v)));
                            return ast::LambdaParameter{std::move(id)};
                        });
 
-        return std::move(parameters);
-    }
 
-    // parse a lambda parameter <id> (: <type>)?
-    constexpr auto lambda_parameter() noexcept -> std::optional<ast::LambdaParameter>
-    {
-        auto id_opt = static_cast<T*>(this)->identifier();
-        if(not id_opt.has_value()) {
-            // TODO: propagte error
-            return std::nullopt;
+        auto arrow_token_res = lpar_expr_lexer().peek_and_pop();
+        if(not arrow_token_res.has_value()) {
+            return std::unexpected(std::move(arrow_token_res.error()));
         }
-        auto id = std::move(id_opt.value());
+        auto arrow_token = std::move(arrow_token_res.value());
+        if(arrow_token.getType() != lexing::TokenTypes::LAMBDA_ARROW) {
+            common::error::UnexpectedToken error{
+                arrow_token.getType(),
+                arrow_token.getArea(),
+                lexing::TokenTypes::LAMBDA_ARROW};
 
-        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
-            auto type_opt = static_cast<T*>(this)->type();
-            if(not type_opt.has_value()) {
-                // TODO: propagte error
-                return std::nullopt;
-            }
-            auto type = std::move(type_opt.value());
-
-            return ast::LambdaParameter{std::move(id), std::move(type)};
-        }
-        return ast::LambdaParameter{std::move(id)};
-    }
-
-    // parse a lambda parameter which is a simple identifier or "id: <type>" given the id is already parsed
-    // and the start is at the colon right before the type
-    constexpr auto lambda_parameter(ast::Identifier&& id) noexcept -> std::optional<ast::LambdaParameter>
-    {
-        if(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
-            auto type_opt = static_cast<T*>(this)->type();
-            if(not type_opt.has_value()) {
-                // TODO: propagte error
-                return std::nullopt;
-            }
-            auto type = std::move(type_opt.value());
-
-            return ast::LambdaParameter{std::move(id), std::move(type)};
-        }
-        return ast::LambdaParameter{std::move(id)};
-    }
-
-    // when parsing a tuple and we have a list of already parsed expressions and then at a point the next expression is <expr>:<type>
-    // it is known that the tuple wasnt realy a tuple but a lambda parameter list
-    // this method starts right at the first colon
-    // it extracts all the already parsed expressions, checks if they are identifiers and if to assignes the type after the first colon
-    // to the last parsed identifier
-    // then it continues to parse the list of lambda parameters
-    constexpr auto lambda_parameters_from_starting_tuple(std::vector<ast::Expression>&& parsed) noexcept
-        -> std::optional<std::vector<ast::LambdaParameter>>
-    {
-        // sanity check
-        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COLON)) {
-            // TODO: log something
-            return std::nullopt;
+            return std::unexpected(std::move(error));
         }
 
-        auto type_opt = static_cast<T*>(this)->type();
-        if(not type_opt.has_value()) {
-            // TODO: propagte error
-            return std::nullopt;
+        auto body_res = static_cast<T*>(this)->expression();
+        if(not body_res.has_value()) {
+            return std::unexpected(std::move(body_res.error()));
         }
-        auto type = std::move(type_opt.value());
+        auto body = std::move(body_res.value());
 
-        auto params_opt = exprs_to_parameters(std::move(parsed));
-        if(not params_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
-        }
-        auto params = std::move(params_opt.value());
-
-        params.back().setType(std::move(type));
-
-        while(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
-            auto param_opt = lambda_parameter();
-            if(not param_opt.has_value()) {
-                return std::nullopt;
-            }
-
-            params.emplace_back(std::move(param_opt.value()));
-        }
-
-        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::R_PARANTHESIS)) {
-            // TODO: return "expected ) error"
-            return std::nullopt;
-        }
-
-        return std::make_optional(std::move(params));
-    }
-
-    // given (<expr> we try to parse a tuple or a lambda parameter list here
-    // when in any case there is a "id : type" pattern in the parsing then it musst be a lambda parameter list
-    // if it is just a lits of expressions without type annotation then it musst be a tuple
-    constexpr auto tuple_or_lambda_params(lexing::TextArea start, ast::Expression&& first) noexcept
-        -> std::variant<ast::TupleExpr,
-                        std::vector<ast::LambdaParameter>,
-                        std::nullopt_t>
-    {
-        std::vector<ast::Expression> expressions;
-        expressions.emplace_back(std::move(first));
-
-        while(lpar_expr_lexer().pop_next_is(lexing::TokenTypes::COMMA)) {
-            auto expr_opt = static_cast<T*>(this)->expression();
-            if(not expr_opt) {
-                // TODO: propagate error
-                return std::nullopt;
-            }
-            auto expr = std::move(expr_opt.value());
-            expressions.emplace_back(std::move(expr));
-        }
-
-        // do not pop the colon
-        if(lpar_expr_lexer().next_is(lexing::TokenTypes::COLON)) {
-            auto params_opt = lambda_parameters_from_starting_tuple(std::move(expressions));
-            if(not params_opt.has_value()) {
-                return std::nullopt;
-            }
-            return std::move(params_opt.value());
-        }
-
-        if(not lpar_expr_lexer().next_is(lexing::TokenTypes::R_PARANTHESIS)) {
-            // TODO: return "expected ) error"
-            return std::nullopt;
-        }
-
-        auto end = lpar_expr_lexer().peek_and_pop().value().getArea();
-        auto area = lexing::TextArea::combine(start, end);
-
-        return ast::TupleExpr{area, std::move(expressions)};
-    }
-
-
-    // given a list of lambda parameters such as (a: Int, b, c: Int) it musst be a lambda expression and therefore be followed by a => token
-    // consume this token, parse the body and return the lambda expression
-    constexpr auto try_lambda(lexing::TextArea start, std::vector<ast::LambdaParameter>&& parameters) noexcept
-        -> std::optional<ast::Expression>
-    {
-        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            // TODO: return error "expected =>"
-            return std::nullopt;
-        }
-
-        auto body_opt = static_cast<T*>(this)->expression();
-        if(not body_opt.has_value()) {
-            return std::nullopt;
-        }
-        auto body = std::move(body_opt.value());
         auto end = ast::getTextArea(body);
         auto area = lexing::TextArea::combine(start, end);
 
         return ast::Expression{
             ast::forward<ast::LambdaExpr>(area,
-                                          std::move(parameters),
+                                          std::move(params),
                                           std::move(body))};
     }
 
-    // given a parsed tuple expression it could be the case that this is a lambda expression
-    // to this be the case the tuple expression needs to be followed by a => token
-    // if this is the case it is a lambda expression and all the expressions in the tuple need to be identifiers
-    // if the tuple is not followed by a => token we just return the tuple itself, because it is just a tuple and not an lambda expression
-    constexpr auto try_lambda(lexing::TextArea start, ast::TupleExpr&& tuple) noexcept
-        -> std::optional<ast::Expression>
+    // given a vector of just identifiers, this function looks ahead one token
+    // and decides if it should build a tuple expression or a lambda expression
+    // and then returns the right one
+    constexpr auto lambda_or_tuple(std::vector<std::variant<ast::Identifier, ast::LambdaParameter, ast::Expression>>&& results,
+                                   lexing::TextArea start,
+                                   lexing::TextArea end) noexcept
+        -> std::expected<ast::Expression, common::error::Error>
     {
-        // if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            return ast::Expression{
-                ast::forward<ast::TupleExpr>(std::move(tuple))};
+
+        auto arrow_token_res = lpar_expr_lexer().peek();
+        if(not arrow_token_res.has_value()) {
+            return std::unexpected(std::move(arrow_token_res.error()));
+        }
+        auto arrow_token = std::move(arrow_token_res.value());
+
+        if(arrow_token.getType() == lexing::TokenTypes::LAMBDA_ARROW) {
+            return build_lambda(std::move(results), start);
         }
 
-        // parse the body of the lambda expression
-        auto body_opt = static_cast<T*>(this)->expression();
-        if(not body_opt.has_value()) {
-            return std::nullopt;
-        }
-        auto body = std::move(body_opt.value());
-
-        // calculate the area of the lambda expression
-        auto end = ast::getTextArea(body);
-        auto area = lexing::TextArea::combine(start, end);
-
-        // move expressions out of the tuple
-        auto exprs = std::move(tuple.getExpressions());
-
-        // check if all expressions are identifiers
-        auto param_opt = exprs_to_parameters(std::move(exprs));
-        if(not param_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
-        }
-        auto parameters = std::move(param_opt.value());
-
-        return ast::Expression{
-            ast::forward<ast::LambdaExpr>(area,
-                                          std::move(parameters),
-                                          std::move(body))};
+        return build_tuple(std::move(results), start, end);
     }
-    // given an expression after a (expr)=> we try to parse a lambda here
-    // for this to be a valid lambda, the expression needs to be a parameter which means it needs to be an Identifier
-    // if that is true we parse the => followed by the lambda body
-    // if the expr in (<expresssion>) is not followed by a => it is only a grouped expression and we return the simple expression again
-    constexpr auto try_lambda(lexing::TextArea start, ast::Expression&& first) noexcept
-        -> std::optional<ast::Expression>
+
+    // parses an element of an l_par expression
+    constexpr auto parse_next_element() noexcept
+        -> std::expected<std::variant<ast::Identifier, ast::LambdaParameter, ast::Expression>, common::error::Error>
     {
-        // if the next identifier is not a lambda arrow then the expression was realy a tuple expression
-        if(not lpar_expr_lexer().pop_next_is(lexing::TokenTypes::LAMBDA_ARROW)) {
-            return std::move(first);
+        auto peek_res = lpar_expr_lexer().template peek<2>();
+        if(not peek_res.has_value()) {
+            return std::unexpected(std::move(peek_res.error()));
+        }
+        auto [first, second] = std::move(peek_res.value());
+
+        if(first.getType() == lexing::TokenTypes::IDENTIFIER
+           and second.getType() == lexing::TokenTypes::COLON) {
+            return typed_lambda_parameter();
         }
 
-        auto body_opt = static_cast<T*>(this)->expression();
-        if(not body_opt.has_value()) {
-            return std::nullopt;
+        if(first.getType() == lexing::TokenTypes::IDENTIFIER
+           and second.getType() == lexing::TokenTypes::COMMA) {
+            return static_cast<T*>(this)->identifier();
         }
-        auto body = std::move(body_opt.value());
 
-        auto end = ast::getTextArea(body);
-        auto area = lexing::TextArea::combine(start, end);
-
-        std::vector<ast::Expression> exprs;
-        exprs.emplace_back(std::move(first));
-
-        auto param_opt = exprs_to_parameters(std::move(exprs));
-        if(not param_opt.has_value()) {
-            // TODO: propagate error
-            return std::nullopt;
+        if(first.getType() == lexing::TokenTypes::IDENTIFIER
+           and second.getType() == lexing::TokenTypes::R_PARANTHESIS) {
+            return static_cast<T*>(this)->identifier();
         }
-        auto parameters = std::move(param_opt.value());
 
-        return ast::Expression{
-            ast::forward<ast::LambdaExpr>(area,
-                                          std::move(parameters),
-                                          std::move(body))};
+        return static_cast<T*>(this)->expression();
     }
 
-private:
+    // parse a lambda parameter <id> : <type>
+    constexpr auto typed_lambda_parameter() noexcept
+        -> std::expected<ast::LambdaParameter, common::error::Error>
+    {
+        auto id_res = static_cast<T*>(this)->identifier();
+        if(not id_res.has_value()) {
+            return std::unexpected(std::move(id_res.error()));
+        }
+        auto id = std::move(id_res.value());
+
+        auto colon_token_res = lpar_expr_lexer().peek_and_pop();
+        if(not colon_token_res.has_value()) {
+            return std::unexpected(std::move(colon_token_res.error()));
+        }
+        auto colon_token = std::move(colon_token_res.value());
+
+        if(colon_token.getType() != lexing::TokenTypes::COLON) {
+            common::error::UnexpectedToken error{colon_token.getType(),
+                                                 colon_token.getArea(),
+                                                 lexing::TokenTypes::COLON};
+            return std::unexpected(std::move(error));
+        }
+
+        auto type_res = static_cast<T*>(this)->type();
+        if(not type_res.has_value()) {
+            return std::unexpected(std::move(type_res.error()));
+        }
+        auto type = std::move(type_res.value());
+
+        return ast::LambdaParameter{std::move(id), std::move(type)};
+    }
+
     constexpr auto lpar_expr_lexer() noexcept -> lexing::Lexer&
     {
         return static_cast<T*>(this)->lexer_;

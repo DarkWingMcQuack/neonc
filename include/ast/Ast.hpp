@@ -28,6 +28,12 @@ using Type = std::variant<NamedType,
                           Forward<OptionalType>,
                           Forward<LambdaType>>;
 
+class ForLetElement;
+class ForMonadicElement;
+
+using ForElement = std::variant<Forward<ForLetElement>,
+                                Forward<ForMonadicElement>>;
+
 class IfExpr;
 class FunctionCall;
 class LambdaExpr;
@@ -189,6 +195,7 @@ constexpr auto setTextArea(T& ast_element, lexing::TextArea new_area) noexcept
 #include <ast/type/TupleType.hpp>
 #include <ast/type/UnionType.hpp>
 
+#include <ast/common/ForElements.hpp>
 #include <ast/expression/BinaryOperation.hpp>
 #include <ast/expression/BlockExpr.hpp>
 #include <ast/expression/ForExpr.hpp>

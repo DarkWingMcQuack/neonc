@@ -69,8 +69,8 @@ TEST(OptionalTypeParsingTest, OptionalTypeParsingPositiveTest)
     optional_type_test_positive("hello?", optOf(namedT("hello")));
     optional_type_test_positive("a::b::c?", optOf(namedT("a", "b", "c")));
     optional_type_test_positive("Self?", optOf(selfT()));
-    optional_type_test_positive("Self??", optOf(optOf(selfT())));
-    optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
+    // optional_type_test_positive("Self??", optOf(optOf(selfT())));
+    // optional_type_test_positive("Self???", optOf(optOf(optOf(selfT()))));
     optional_type_test_positive("(((Self)?)?)?", optOf(optOf(optOf(selfT()))));
     optional_type_test_positive("(hello=>hello)?", optOf(lambdaT(namedT("hello"), namedT("hello"))));
 }

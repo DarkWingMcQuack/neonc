@@ -91,6 +91,13 @@ TEST(TupleTypeParsingTest, TupleTypeParsingPositiveTest)
     tuple_type_test_positive("((a&b&c&d))", tupleT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
     tuple_type_test_positive("(((a&b&c&d)))", tupleT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
     tuple_type_test_positive("((a&b&c&(d=>e)))", tupleT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
+
+
+    tuple_type_test_positive("a&b", tupleT(namedT("a"), namedT("b")));
+    tuple_type_test_positive("a&b&c", tupleT(namedT("a"), namedT("b"), namedT("c")));
+    tuple_type_test_positive("a&b&c&d", tupleT(namedT("a"), namedT("b"), namedT("c"), namedT("d")));
+    tuple_type_test_positive("a&b&c&(d=>e)", tupleT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
+    tuple_type_test_positive("a&b&c&d=>e", tupleT(namedT("a"), namedT("b"), namedT("c"), lambdaT(namedT("d"), namedT("e"))));
 }
 
 TEST(TupleTypeParsingTest, TupleTypeParsingNegativeTest)

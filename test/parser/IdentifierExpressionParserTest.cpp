@@ -8,14 +8,13 @@ using parser::Parser;
 
 auto identifier_test_positive(std::string_view text, std::string_view expct)
 {
-    ast::Identifier expexted{{0, 0}, expct};
+    ast::Expression expexted = ast::Identifier{{0, 0}, expct};
 
-    auto result = Parser{text}.simple_expression();
+    auto result = Parser{text}.expression();
 
     ASSERT_TRUE(!!result);
-    ASSERT_TRUE(std::holds_alternative<ast::Identifier>(result.value()));
 
-    EXPECT_EQ(std::get<ast::Identifier>(result.value()), expexted);
+    EXPECT_EQ(result.value(), expexted);
 }
 
 auto identifier_test_negative(std::string_view text)

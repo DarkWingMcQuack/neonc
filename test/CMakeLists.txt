@@ -30,6 +30,7 @@ endfunction()
 
 new_test(lexer/LexerTest.cpp LexerTest)
 new_test(parser/ParserTest.cpp ParserTest)
+new_test(parser/TypeParsingTest.cpp TypeParsingTest)
 new_test(parser/NamedTypeParsingTest.cpp NamedTypeParsingTest)
 new_test(parser/SelfTypeParsingTest.cpp SelfTypeParsingTest)
 new_test(parser/OptionalTypeParsingTest.cpp OptionalTypeParsingTest)
@@ -45,6 +46,8 @@ new_test(parser/SelfExpressionParserTest.cpp SelfExpressionParserTest)
 new_test(parser/IfExpressionParserTest.cpp IfExpressionParserTest)
 new_test(parser/LetStatementParserTest.cpp LetStatementParserTest)
 
+new_test(parser/DoubleExprParserTest.cpp DoubleExprParserTest)
+
 new_test(parser/AdditionExprParserTest.cpp AdditionExprParserTest)
 new_test(parser/SubstractionExprParserTest.cpp SubstractionExprParserTest)
 new_test(parser/MultiplicationExprParserTest.cpp MultiplicationExprParserTest)
@@ -56,6 +59,7 @@ new_test(parser/LogicalNotExprParserTest.cpp LogicalNotExprParserTest)
 new_test(parser/LambdaExprParserTest.cpp LambdaExprParserTest)
 new_test(parser/BlockExprParserTest.cpp BlockExprParserTest)
 new_test(parser/FunctionCallExprParserTest.cpp FunctionCallExprParserTest)
+new_test(parser/ForElementParserTest.cpp ForElementParserTest)
 
 
 

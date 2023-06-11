@@ -8,7 +8,6 @@
 #include <lexer/Lexer.hpp>
 #include <lexer/Tokens.hpp>
 #include <optional>
-#include <parser/TypeParser.hpp>
 #include <parser/Utils.hpp>
 #include <string_view>
 
@@ -141,8 +140,7 @@ private:
 
             auto lhs_opt = build_expr(std::move(lhs), op, std::move(rhs));
             if(not lhs_opt.has_value()) {
-                Error error = InternalCompilerError{};
-                return std::unexpected(std::move(error));
+                return std::unexpected(InternalCompilerError{});
             }
             lhs = std::move(lhs_opt.value());
         }
@@ -158,6 +156,7 @@ private:
         if(expr_lexer().next_is_prefix_operator()) {
             auto op = expr_lexer().peek_and_pop().value();
 
+
             auto r_bp_opt = prefix_binding_power(op.getType());
             if(not r_bp_opt.has_value()) {
                 Error error = InternalCompilerError{};
@@ -165,14 +164,15 @@ private:
             }
             auto r_bp = r_bp_opt.value();
 
+
             auto rhs_res = expression_bp(r_bp);
             if(not rhs_res.has_value()) {
                 return rhs_res;
             }
             auto rhs = std::move(rhs_res.value());
 
-            auto expr_opt = build_expr(op, std::move(rhs));
 
+            auto expr_opt = build_expr(op, std::move(rhs));
             if(not expr_opt.has_value()) {
                 Error error = InternalCompilerError{};
                 return std::unexpected(std::move(error));

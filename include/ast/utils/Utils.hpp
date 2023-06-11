@@ -5,6 +5,19 @@
 #include <variant>
 
 namespace ast::utils {
+/**
+ * @brief Visits a variant object with a visitor.
+ * @details This function template provides a generic way to visit a variant object with a visitor function or lambda.
+ * It uses compile-time type checks to handle both std::variant and non-std::variant types.
+ * @tparam Visitor The type of the visitor function or lambda.
+ * @tparam Variant The type of the variant object.
+ * @param visitor The visitor function or lambda to be invoked for each alternative in the variant.
+ * @param var The variant object to be visited.
+ * @return The result of invoking the visitor function or lambda, if any.
+ * @note The visitor function or lambda should have overloads for each alternative in the variant, or a default fallback overload.
+ * If the visitor returns void, the function performs a void visit and does not return any result.
+ * If the visitor returns a non-void type, the function returns the result of the visitor invocation.
+ */
 template<class Visitor, class Variant>
 auto visit(Visitor&& visitor, Variant&& var) noexcept
 {
