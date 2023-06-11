@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ast/Ast.hpp>
+#include <ast/common/ForElements.hpp>
 #include <lexer/Lexer.hpp>
 #include <parser/BlockExpressionParser.hpp>
 #include <parser/ExpressionPrattParser.hpp>
@@ -40,8 +41,8 @@ class Parser final : public SelfTypeParser<Parser>,
                      public BlockExpressionParser<Parser>,
                      public SimpleLambdaOrIdentifierParser<Parser>,
                      public LParExpressionParser<Parser>,
-                     public ForElementParser<Parser>,
                      public ExpressionPrattParser<Parser>,
+                     public ForElementParser<Parser>,
                      public LetStmtParser<Parser>,
                      public IdentifierParser<Parser>
 {
